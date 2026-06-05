@@ -130,7 +130,8 @@ learning/         base_rate_updater.py — L1: update strategy base-rates after 
 
 loop/             runner.py — LoopRunner (takes LoopConfig with dbs: NoahDbs)
                   state.py — RunState + begin/update/finish_run (→ noah_portfolio.db)
-                  scheduler.py — Windows Task Scheduler entrypoint
+                  scheduler.py — Windows Task Scheduler entrypoint (EOD, once daily)
+                  intraday_monitor.py — 5-min position manager during market hours (S8)
 
 broker/           paper.py — PaperBroker(portfolio_db, market_db)
                   live.py — LiveBroker stub (Phase 1+)
@@ -386,9 +387,9 @@ before a position is proposed. Strategies generate candidates; Edge Proof valida
 
 | Strategy | Source | Description |
 |---|---|---|
-| `trailing_stop.py` | Video Level 1 | Trailing floor — stop rises as price rises, locking gains. Replaces fixed `price_invalidation` with a dynamic trailing invalidation point on trending positions. |
-| `dca_ladder.py` | Video Level 1 | Systematic laddering — buy on dips in compliant ETFs across predefined price levels. Position-building mode alongside single-entry. |
-| `congress_signal.py` | Video Level 2 | Congressional filing signal — STOCK Act disclosures (45-day lag) aggregated from Capital Trades or similar. Used as **one observe-step signal** only; does NOT bypass Edge Proof. Only Sharia-compliant names acted on. |
+| `trailing_stop.py` | Video Level 1 | Trailing floor — stop rises as price rises, locking gains. Dynamic invalidation point replaces fixed `price_invalidation`. Default rules: −10% initial stop; move floor up 5% below current price every time stock climbs 10%. **50% profit early-close rule**: if position reaches 50% of its profit target before time-stop, close early and recycle capital. All parameters overridable in `limits.yaml`. |
+| `dca_ladder.py` | Video Level 1 | Systematic laddering — buy dips across predefined price levels. Default ladder (video-sourced, all overridable in `limits.yaml`): −15% → buy 10 shares; −20% → buy 10 more; −30% → buy 20 more; −50% → buy 50 more. Floor only goes down to add, never triggers a sell. |
+| `congress_signal.py` | Video Level 2 | Congressional filing signal — STOCK Act disclosures (45-day lag) sourced from **Capital Trades** (capitaltrades.com). Used as **one observe-step signal** only; does NOT bypass Edge Proof; blind copy is forbidden. Only Sharia-compliant names among the disclosed trades are considered. |
 | `etf_rotation.py` | Regime logic | Rotate between SPUS / HLAL / MNZL based on macro regime classification. |
 | `momentum.py` | Price action | Trend-following on compliant single names and ETFs. |
 | `mean_reversion.py` | Price action | Quality-dip accumulation when a compliant name pulls back to key support. |
@@ -430,6 +431,27 @@ Level 4 — Founder-only, system never touches:
   Change the ±band limits themselves.
 ```
 
+#### Intraday Position Monitor (`loop/intraday_monitor.py`)
+
+The EOD loop handles research, thesis, and new position decisions. It is not fast enough
+for active position management strategies like trailing stop and DCA ladder, which must
+react to intraday price moves in near real-time.
+
+Two separate loops run concurrently:
+
+| Loop | Cadence | Responsibility |
+|---|---|---|
+| **EOD loop** (`loop/scheduler.py`) | Once daily, post-close | Observe → Thesis → Choose → Act → Measure → Learn |
+| **Intraday monitor** (`loop/intraday_monitor.py`) | Every 5 min, market hours only (9:30am–4pm ET, Mon–Fri) | Manage open positions: update trailing floors, trigger ladder buys, apply 50%-profit early close, check stop losses |
+
+The intraday monitor does **not** open new positions — it only manages positions that the
+EOD loop has already opened and the Constitution has already approved. It operates within
+the same guardrail envelope: every management action (floor move, ladder buy, early close)
+routes through `Constitution.evaluate()` before execution.
+
+`config/limits.yaml` controls the monitor cadence and market hours window
+(founder-owned, agent-read-only).
+
 #### Regime → Strategy affinity learning (`learning/regime_matcher.py`)
 
 After enough resolved trades (minimum N=20 per regime), the system learns empirically
@@ -438,10 +460,12 @@ which strategies perform above/below their base-rate in each regime, and updates
 affinity changes (Level 3).
 
 **Gate:** Strategy registry has ≥3 active strategies; all produce signals that pass Edge
-Proof; trailing stop replaces fixed invalidation for trending positions; DCA ladder
-operates correctly on SPUS/HLAL; congress_signal feeds observe step without bypassing
-proof; base-rate updater records every resolved trade; auto weight adjustment stays within
-founder-set band; improvement proposals land in Learning Ledger for review.
+Proof; trailing stop replaces fixed invalidation for trending positions with 50%-profit
+early-close working; DCA ladder fires at correct price levels from `limits.yaml` defaults;
+congress_signal feeds observe step from Capital Trades without bypassing proof;
+intraday monitor runs every 5 min during market hours and correctly updates floors without
+opening new positions; base-rate updater records every resolved trade; auto weight
+adjustment stays within founder-set band; improvement proposals land in Learning Ledger.
 
 ---
 
