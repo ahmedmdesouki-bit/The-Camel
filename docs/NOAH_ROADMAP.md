@@ -180,6 +180,11 @@ return `trade_allowed=false`; `trade_allowed=false` blocks the allocator; tests 
 reject, missing-sample, weak-benchmark, weak-evidence, stale-input. Adversarial case added:
 strategy produces a signal without Edge Proof → blocked.
 
+**STATUS: COMPLETE** (217 tests). `engine/edge_proof_v0.py` + `Allocator.request(...,
+edge_report=, require_edge=)`; `require_edge=True` rejects a trade with no/weak/stale report
+(`limit_hit="no_edge_proof"`) before the Constitution is consulted. Backward compatible:
+existing S3 allocator calls (no edge_report) are unchanged. Logs to `noah_learning.db`.
+
 ---
 
 ### S5 — Operator State Machine + Opportunity Router + Learning Ledger

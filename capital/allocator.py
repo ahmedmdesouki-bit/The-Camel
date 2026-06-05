@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from guardrail.constitution import Action, Constitution, Decision, PortfolioState
+from engine.edge_proof_v0 import EdgeReport, gate as edge_gate
 
 log = logging.getLogger(__name__)
 
@@ -25,12 +26,26 @@ class Allocator:
     def __init__(self, constitution: Optional[Constitution] = None):
         self.constitution = constitution or Constitution()
 
-    def request(self, action: Action, state: PortfolioState) -> AllocationResult:
+    def request(self, action: Action, state: PortfolioState,
+                edge_report: Optional[EdgeReport] = None,
+                require_edge: bool = False) -> AllocationResult:
         """
         Evaluate a proposed action.
-        Returns AllocationResult — approved=True only if Constitution allows it.
+        Returns AllocationResult — approved=True only if both the Edge Proof gate (when
+        required or when a report is supplied) AND the Constitution allow it.
         Never adjusts the notional to fit; rejection is explicit and logged.
+
+        Edge Proof gate (S4.5): if `require_edge` is set, a trade with no EdgeReport is
+        rejected; any supplied report that is not `trade_allowed` is rejected. `trade_allowed`
+        thus blocks the allocator before the Constitution is even consulted.
         """
+        if require_edge or edge_report is not None:
+            ok, ereason = edge_gate(edge_report)
+            if not ok:
+                d = Decision(False, f"Edge proof failed: {ereason}", "no_edge_proof")
+                log.warning("Allocator REJECTED %s — %s", action.symbol, d.reason)
+                return AllocationResult(approved=False, decision=d, notional_usd=0.0)
+
         decision = self.constitution.evaluate(action, state)
         if not decision.allow:
             log.warning(

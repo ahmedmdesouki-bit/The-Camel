@@ -70,6 +70,10 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   idempotency, point-in-time columns, ThesisCard template, secrets + adversarial suites;
   → **197 passed**. Two items deferred by dependency: max cancel/replace (→ S11 LiveBroker),
   earnings blackout (→ S7 earnings data).
+- **Sprint 4.5 COMPLETE.** Edge Proof v0 (`engine/edge_proof_v0.py`): historical hit-rate +
+  forward-return vs benchmark from `noah_market.db`; `gate()` wired into the allocator — no
+  trade proceeds without a passing `EdgeReport`; missing/weak/stale → `trade_allowed=false`.
+  → **217 passed**.
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `NoahDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -269,7 +273,7 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 Sequence:
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 (Edge Proof v0) <- NEXT -> S5 -> S5.5 (Minimal Ops)
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 <- NEXT -> S5.5 (Minimal Ops)
 -> S6 -> S7 -> S8 -> S9 -> S10 -> S11 -> S12
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
@@ -280,7 +284,7 @@ Guiding principle: **Safety first. Evidence second. Autonomy last.**
 | S2 OK | Sharia gate + data | off-list + haram rejected; prices land (62 tests) |
 | S3 OK | Loop + broker + ledger + allocator | full paper loop runs; ledger reconciles (110 tests) |
 | S4 OK | Hardening + Budget Kernel + freshness | config-immutability proven; stale data blocks; no dup orders (197 tests) |
-| S4.5 | Edge Proof v0 | no trade without an EdgeReport |
+| S4.5 OK | Edge Proof v0 | no trade without an EdgeReport (217 tests) |
 | S5 | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof |
 | S5.5 | Minimal ops visibility | health report w/ GREEN/YELLOW/RED/BLACK; kill-switch test |
 | S6 | Dashboard + Telegram + Tailscale kill switch | kill switch stops next tick; backup restore verified |

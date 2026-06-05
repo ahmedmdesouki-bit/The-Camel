@@ -7,7 +7,20 @@
 
 ## 2026-06-06
 
-**Sprint 4 (Hardening) COMPLETE — branch `s4-hardening`, 110 → 197 tests green.**
+**Sprint 4.5 (Edge Proof v0) COMPLETE — 197 → 217 tests green.**
+`engine/edge_proof_v0.py`: forward-return distribution + hit rate + benchmark excess from
+`noah_market.db`; every missing/weak/stale input defaults to `trade_allowed=false`. `gate()`
+wired into `Allocator.request(..., edge_report=, require_edge=)` — with `require_edge=True`, a
+trade with no/failing EdgeReport is rejected (`no_edge_proof`) before the Constitution.
+Backward compatible with S3 allocator calls; decisions log to the learning ledger.
+*Process note:* the S4 merge first failed for lack of a git identity (now set repo-local);
+the unmerged branch's safe-delete was refused, so nothing was lost — recovered and merged cleanly.
+
+---
+
+## 2026-06-06
+
+**Sprint 4 (Hardening) COMPLETE — 110 → 197 tests green.**
 Three increments:
 - *S4a* — Constitution hardening: kill-switch now checked inside `evaluate()` (no bypass),
   rolling velocity stops (5d/14d) + cooldown, orders-per-day cap, illiquidity/slippage gate
