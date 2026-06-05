@@ -49,6 +49,52 @@ CREATE TABLE IF NOT EXISTS guardrail_events (
     reason      TEXT,
     limit_hit   TEXT
 );
+
+CREATE TABLE IF NOT EXISTS orders (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    symbol      TEXT,
+    side        TEXT,
+    qty         REAL,
+    type        TEXT DEFAULT 'market',
+    limit_price REAL,
+    status      TEXT,
+    broker      TEXT DEFAULT 'paper',
+    mode        TEXT DEFAULT 'paper',
+    approval_id TEXT,
+    thesis_id   TEXT,
+    created_at  TEXT,
+    filled_at   TEXT,
+    fill_price  REAL
+);
+
+CREATE TABLE IF NOT EXISTS ledger (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts            TEXT,
+    type          TEXT,
+    symbol        TEXT,
+    amount        REAL,
+    balance_after REAL,
+    ref           TEXT,
+    hash          TEXT
+);
+
+CREATE TABLE IF NOT EXISTS runs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    started_at  TEXT,
+    ended_at    TEXT,
+    phase       INTEGER,
+    steps_json  TEXT,
+    outcome     TEXT
+);
+
+CREATE TABLE IF NOT EXISTS positions (
+    symbol        TEXT PRIMARY KEY,
+    qty           REAL,
+    avg_cost      REAL,
+    market_value  REAL,
+    unrealized_pnl REAL,
+    updated_at    TEXT DEFAULT (datetime('now'))
+);
 """
 
 
