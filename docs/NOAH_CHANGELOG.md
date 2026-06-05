@@ -7,6 +7,23 @@
 
 ## 2026-06-06
 
+**Sprint 4 (Hardening) COMPLETE — branch `s4-hardening`, 110 → 197 tests green.**
+Three increments:
+- *S4a* — Constitution hardening: kill-switch now checked inside `evaluate()` (no bypass),
+  rolling velocity stops (5d/14d) + cooldown, orders-per-day cap, illiquidity/slippage gate
+  (skips when data absent). Guardrail file → 43 tests (≥40 gate met).
+- *S4b* — new modules: config_guard (proves rule #7), Tool Permission Matrix, Budget Kernel,
+  data freshness / quality / sanitiser, source allowlist, Playwright stub.
+- *S4c* — point-in-time columns (event/reported/ingested/known), broker idempotency
+  (client_order_id + DuplicateOrderException), full ThesisCard template + is_trade_ready,
+  secrets-leak tests, consolidated 8-case adversarial suite.
+Deferred by dependency: max cancel/replace → S11 (LiveBroker); earnings blackout → S7.
+*Awaiting founder approval to merge `s4-hardening` → master (branch-workflow convention).*
+
+---
+
+## 2026-06-06
+
 **QA/QC pass — fixed 4 findings + the minors. 110 tests green.**
 - **Ledger sign convention (real bug):** PaperBroker recorded BUY as positive (deployed)
   while the ledger is a cash account (DEPOSIT positive). Fixed to BUY = cash out (negative),

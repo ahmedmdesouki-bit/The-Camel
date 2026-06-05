@@ -64,6 +64,12 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   ingestion + triangulation; → 62 passed.
 - **Sprint 3 COMPLETE.** Loop runner, PaperBroker, append-only ledger, capital allocator;
   → 110 passed.
+- **Sprint 4 COMPLETE** *(branch `s4-hardening`)*. Constitution hardening (rolling stops,
+  illiquidity gate, kill-switch in `evaluate`), Budget Kernel, Tool Permission Matrix, config
+  immutability, data freshness/quality/sanitiser, source allowlist, Playwright stub, broker
+  idempotency, point-in-time columns, ThesisCard template, secrets + adversarial suites;
+  → **197 passed**. Two items deferred by dependency: max cancel/replace (→ S11 LiveBroker),
+  earnings blackout (→ S7 earnings data).
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `NoahDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -263,7 +269,7 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 Sequence:
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 -> S4.5 (Edge Proof v0) -> S5 -> S5.5 (Minimal Ops)
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 (Edge Proof v0) <- NEXT -> S5 -> S5.5 (Minimal Ops)
 -> S6 -> S7 -> S8 -> S9 -> S10 -> S11 -> S12
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
@@ -273,7 +279,7 @@ Guiding principle: **Safety first. Evidence second. Autonomy last.**
 | S1 OK | Guardrail Service | rogue-action suite 100% rejected (28 tests) |
 | S2 OK | Sharia gate + data | off-list + haram rejected; prices land (62 tests) |
 | S3 OK | Loop + broker + ledger + allocator | full paper loop runs; ledger reconciles (110 tests) |
-| S4 | Hardening + Budget Kernel + freshness | config-immutability proven; stale data blocks; no dup orders |
+| S4 OK | Hardening + Budget Kernel + freshness | config-immutability proven; stale data blocks; no dup orders (197 tests) |
 | S4.5 | Edge Proof v0 | no trade without an EdgeReport |
 | S5 | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof |
 | S5.5 | Minimal ops visibility | health report w/ GREEN/YELLOW/RED/BLACK; kill-switch test |
