@@ -213,6 +213,10 @@ Observe
 - `security/source_allowlist.py` — allowlist of approved data sources for critical signals;
   reject data from unlisted sources. `log_retrieved_source(url, content_hash)` appends an
   audit trail entry for every external fetch.
+- `data/playwright.py` — stub adapter with `NotImplementedError` on every public function.
+  Enforces the Tool Permission Matrix constraint in code: Playwright may never be used for
+  live broker actions, money movement, or whitelist/approval changes. Real implementation
+  wired in a later sprint for scraping/QA only.
 
 *Schema extensions (existing tables only):*
 - `whitelist`: +`historical_drift_count`, +`purification_ratio` ✅ (live in noah_sharia.db)
