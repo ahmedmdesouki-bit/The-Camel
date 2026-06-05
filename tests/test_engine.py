@@ -61,8 +61,29 @@ def test_warnings_clean_thesis():
                       already_priced_in="some", overfitting_check="ok",
                       probability_tilt="lean long")
     tc = ThesisCard(symbol="SPUS", thesis="Strong thesis", invalidation="x",
-                    profit_take="y", time_stop="z", base_rate=br)
+                    profit_take="y", time_stop="z", base_rate=br,
+                    opportunity_cost_justification="higher risk-adjusted return than SPUS beta")
     assert tc.warnings() == []
+
+
+# ---------------- S4: opportunity-cost gate + trade-ready ----------------
+
+def test_warnings_flags_missing_opportunity_cost():
+    tc = ThesisCard(symbol="SPUS", thesis="ok", invalidation="x",
+                    profit_take="y", time_stop="z")
+    assert any("opportunity-cost" in w for w in tc.warnings())
+
+def test_is_trade_ready_requires_opportunity_cost():
+    tc = ThesisCard(symbol="SPUS", invalidation="x", profit_take="y", time_stop="z")
+    assert tc.is_complete()            # Constitution minimum met
+    assert not tc.is_trade_ready()     # but not trade-ready without the justification
+    tc.opportunity_cost_justification = "asymmetric setup vs index beta"
+    assert tc.is_trade_ready()
+
+def test_is_trade_ready_needs_complete_invalidation():
+    tc = ThesisCard(symbol="SPUS", profit_take="y", time_stop="z",
+                    opportunity_cost_justification="x")
+    assert not tc.is_trade_ready()     # missing price invalidation
 
 
 # ─────────────────── BaseRateCard ───────────────────────────────

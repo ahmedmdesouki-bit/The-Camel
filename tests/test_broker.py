@@ -94,3 +94,26 @@ def test_paper_broker_sequential_orders(broker, portfolio_db):
     with sqlite3.connect(portfolio_db) as conn:
         count = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
     assert count == 2
+
+
+# ---------------- S4: idempotency (pre-flight duplicate-order check) ----------------
+
+def test_duplicate_client_order_id_rejected(broker, portfolio_db):
+    from broker.paper import DuplicateOrderException
+    broker.submit(buy_action(), good_decision(), client_order_id="intent-1")
+    with pytest.raises(DuplicateOrderException):
+        broker.submit(buy_action(), good_decision(), client_order_id="intent-1")
+    # the duplicate must NOT have created a second order
+    with sqlite3.connect(portfolio_db) as conn:
+        count = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
+    assert count == 1
+
+def test_auto_client_order_id_is_unique(broker):
+    f1 = broker.submit(buy_action(), good_decision())
+    f2 = broker.submit(buy_action(), good_decision())
+    assert f1.client_order_id and f2.client_order_id
+    assert f1.client_order_id != f2.client_order_id
+
+def test_fill_carries_realism_marker(broker):
+    f = broker.submit(buy_action(), good_decision())
+    assert f.execution_quality == "simulated_unrealistic" and f.fill_model == "last_close"
