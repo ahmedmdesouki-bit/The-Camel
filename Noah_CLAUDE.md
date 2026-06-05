@@ -133,6 +133,23 @@ pyproject.toml    pytest pythonpath = ["."]
 
 ---
 
+## Upgraded operator loop (§4)
+
+```
+Observe
+→ Generate Opportunities
+→ Opportunity Router          (Trader / Entrepreneur / Research / System improvement / Wait)
+→ Edge / Product Proof        (Edge Proof Engine or Entrepreneur Product Gate)
+→ Guardrail Constitution
+→ Budget Kernel
+→ Human Approval Gate
+→ Act
+→ Measure
+→ Learn → Learning Ledger
+```
+
+---
+
 ## Conventions
 
 - Python 3.12. Keep `guardrail/` and `engine/` pure (no I/O) — unit-testable.
@@ -142,6 +159,8 @@ pyproject.toml    pytest pythonpath = ["."]
 - Secrets only in `.env` / Windows Credential Manager. Never in code, logs, or commits.
 - Raw external text is sanitised to structured JSON before reaching the LLM.
   Never pass scraped content directly to the reasoning engine.
+- **Branch workflow (§14.3):** create a feature branch → add/modify one module → add unit
+  tests → run full suite → do not merge to main without approval. No direct main commits.
 
 ---
 
@@ -170,15 +189,30 @@ pyproject.toml    pytest pythonpath = ["."]
 - Rolling Velocity Stop: 5-day rolling P&L ≤ −8% → 48h cooldown freeze; 14-day ≤ −12% → halt.
 - Illiquidity / Slippage Gate: bid-ask spread > 0.5% → reject; order > 1% of 30-day ADV → reject.
   (Skips gracefully when spread data unavailable — IEX free tier limitation.)
-- Additional hard rules: max orders/day, stale-data rejection, earnings blackout, source quorum.
+- Additional hard rules: max orders/day, **max cancel/replace attempts** (prevent broker API
+  loops), stale-data rejection, earnings blackout, source quorum, corporate action check
+  (splits/mergers/delistings/ticker changes — defer to S7 enforcement).
 
 *New modules:*
 - `capital/budget_kernel.py` — daily/weekly/monthly spend limits; capital buckets
   (Core 50%, Trader 10–20%, Entrepreneur 20–30%, System 5–10%, Emergency 10–20%).
-- `governance/tool_permissions.py` — Tool Permission Matrix (what each tool may do /
-  requires approval / is forbidden).
+- `governance/tool_permissions.py` — Tool Permission Matrix. Full table:
+
+  | Tool | Allowed | Requires approval | Forbidden |
+  |---|---|---|---|
+  | GitHub | Create branch, commit, open PR | Merge to main | Delete repo |
+  | Supabase | Read/write app DB | Schema migration | Delete tables |
+  | Netlify/Cloudflare | Deploy preview | Production deploy | Delete domain/DNS |
+  | Playwright | Browse, scrape, QA | Submit non-financial forms | Live broker actions, move money, change account/margin/whitelist/approval settings |
+  | Broker API | Paper trade | Live order | Withdrawals, margin, options |
+  | Telegram | Send alerts | Approval confirmation | Change rules |
+
+  Every tool action evaluated by `evaluate_tool_action(tool, action, state)`.
 - `data/freshness.py` — `check_freshness(symbol, max_age_hours)` blocks action on stale data.
 - `data/sanitiser.py` — `sanitise(raw_text) → dict` prompt-injection filter.
+- `security/source_allowlist.py` — allowlist of approved data sources for critical signals;
+  reject data from unlisted sources. `log_retrieved_source(url, content_hash)` appends an
+  audit trail entry for every external fetch.
 
 *Schema extensions (existing tables only):*
 - `whitelist`: +`historical_drift_count`, +`purification_ratio` ✅ (live in noah_sharia.db)
@@ -186,9 +220,14 @@ pyproject.toml    pytest pythonpath = ["."]
 - `orders`: +`client_order_id` (UUID, idempotency) ✅
 - `broker/paper.py`: `pre_flight_execution_check()` — raises `DuplicateOrderException`.
 
-*ThesisCard extension:*
-- Add: `regime`, `theme`, `worst_forward_return`, `avg_drawdown`, `liquidity_view`,
-  separate `price_invalidation` / `fundamental_invalidation` / `sharia_invalidation`.
+*ThesisCard extension — full standardised template (§5.6):*
+- `company` (display name), `regime`, `theme`, `sharia_status`, `time_horizon`
+- `signal_summary`, `why_now`, `already_priced_in`
+- `worst_forward_return`, `avg_drawdown` (base-rate fields)
+- `valuation_view`, `liquidity_view`, `portfolio_fit`
+- `price_invalidation`, `fundamental_invalidation`, `sharia_invalidation`, `time_stop`
+- `order_type` (limit by default), `approval_status`, `final_decision`
+- Output format: `probability + expected_return + downside_risk + confidence + invalidation + approval_status`
 
 **Gate:** Constitution ≥ 40 tests; stale data blocks action; budget limits enforced;
 no duplicate orders possible.
@@ -201,35 +240,64 @@ no duplicate orders possible.
    AWAITING_APPROVAL → ACTING → MONITORING → LEARNING → PAUSED → KILLED`
   Transition rules: cannot jump from FORMING_THESIS to ACTING; cannot ACT without guardrail
   approval; cannot leave PAUSED without founder approval.
-- `operator/opportunity_router.py` — scores Trader / Entrepreneur / Research / **Wait**.
-  "Wait" is a first-class output, not the absence of output.
+- `operator/opportunity_router.py` — scores five valid paths:
+  **Trader / Entrepreneur / Research / System improvement / Wait**.
+  "Wait" and "System improvement" are first-class outputs, not the absence of a decision.
+  Scoring weights (§11.5): Expected upside 20% · Evidence quality 20% · Downside risk 20% ·
+  Sharia/compliance clarity 15% · Capital required 10% · Time required 10% ·
+  Strategic learning value 5%.
+  Output: `{recommended_path, reason, confidence, capital_required, approval_required}`.
+- `operator/task_queue.py` — persistent task queue; every planned action is enqueued before
+  execution, enabling pause/resume and auditing of intent vs outcome.
 - `operator/learning_ledger.py` — writes to `noah_learning.db`:
   decision_type, thesis_summary, expected/actual outcome, mistake_type, lesson, pattern.
-- `ops/health_monitor.py` — machine uptime, internet, DB connections, guardrail status,
-  last heartbeat, current mode.
+  Combines outcomes from Trader AND Entrepreneur arms (shared learning system).
+- `operator/append_op_log.py` — append-only operator action log (separate from the trade
+  ledger); every state transition and tool invocation is recorded.
+- `ops/health_monitor.py` — full check list:
+  machine uptime · internet status · **disk status** · **CPU/memory usage** ·
+  DB connections · broker connection · **Telegram connection** ·
+  **secrets availability (without exposing secrets)** · last heartbeat ·
+  guardrail service status · current mode (paper/micro-live/paused/killed).
 
 **Gate:** State machine prevents state jumps; Opportunity Router returns "Wait" when no
-edge proven; Learning Ledger records every decision outcome.
+edge proven; Learning Ledger records every decision outcome; task queue persists intent.
 
 ---
 
-### S6 — Dashboard + Monitoring + Kill Switch over Tailscale
+### S6 — Dashboard + Monitoring + Kill Switch over Tailscale + Ops Hardening
 *(Was original S4)*
 - Dashboard reading live SQLite state (positions, P&L, ledger, guardrail events, Sharia flags).
-- Daily Telegram health report (Noah Daily Health Report template from Feedback 2 §11.8).
+- Daily Telegram health report — exact format (§11.8):
+  ```
+  Noah Daily Health Report
+  Status: Running | Mode: Paper | Broker: Connected | DB: Connected
+  Guardrail Service: Passed | Open thesis cards: N | Open paper positions: N
+  Live capital at risk: $0 | Paper capital at risk: $N | Issues: None
+  ```
 - Kill switch reachable over Tailscale.
 - Machine heartbeat + uptime monitor.
 - Full reconciliation report (ledger vs broker paper statement).
+- **Weekly kill-switch test** — automated test fires kill, verifies loop halts, resumes; result logged.
+- **Secrets manager** — move all secrets from `.env` into Windows Credential Manager or
+  equivalent; startup check refuses to run if secrets are in plaintext env vars.
+- **Log rotation** — bound log file growth; retain last 30 days of operator logs.
+- **Off-box encrypted backup** — daily encrypted backup of all seven DB files to an
+  external location; documented restore procedure tested at least once.
+- **Machine hardening ops checklist** (non-code, founder action):
+  BitLocker enabled · dedicated OS user for Noah · UPS/power backup · 5G/hotspot
+  fallback internet · Tailscale ACLs locked to founder devices · MFA on all accounts.
 
 **Gate:** Kill switch stops next loop tick; daily-loss-stop simulation halts; dashboard
-reflects paper trade within one refresh.
+reflects paper trade within one refresh; weekly kill-switch test passes; backup restore
+verified; secrets not in plaintext.
 
 ---
 
 ### S7 — Edge Proof Engine
 *The most important missing module — no live money until this exists.*
 
-Every trade candidate passes 13 checks before a position is proposed:
+Every trade candidate passes 13 checks before a position is proposed (§5.2):
 
 ```
 classify_regime()           → macro regime (expansion / contraction / crisis / recovery)
@@ -239,10 +307,17 @@ calculate_forward_returns() → median, worst, distribution
 calculate_base_rate()       → sample N, hit rate, magnitude
 check_counter_signals()     → what would invalidate the thesis
 check_valuation()           → is the setup priced in?
+check_momentum()            → technical / momentum confirmation (step 8 §5.2)
 check_liquidity()           → spread, ADV, whole-share constraints
-compare_to_benchmark()      → vs SPUS / HLAL on risk-adjusted terms
+check_sharia()              → re-confirm whitelist + frozen status at trade time (step 10 §5.2)
+check_portfolio_fit()       → position + sector concentration within current portfolio (step 11 §5.2)
+corporate_action_check()    → splits, mergers, delistings, ticker changes since last screen
 generate_edge_report()      → structured JSON output (below)
 ```
+
+Additional guardrail wired here: **model disagreement rule** — when BOARDROOM sub-agents
+(Bull, Bear, Sharia Auditor) conflict materially, `generate_edge_report()` sets
+`trade_allowed=false` and routes to Human Approval Gate instead of auto-proceeding.
 
 Minimum edge report:
 ```json
@@ -257,21 +332,37 @@ Minimum edge report:
 
 Observe-step structure follows: Regime → Theme → Asset Class → Sector → Company → Candidate.
 
-**Gate:** Every signal reports all 10 fields; `trade_allowed=false` blocks the allocator;
-no edge proof = no trade.
+**Gate:** Every signal passes all 13 checks; `trade_allowed=false` blocks the allocator;
+no edge proof = no trade; model disagreement routes to human approval.
 
 ---
 
 ### S8 — Entrepreneur Track
 *(Was original S5)*
-- Entrepreneur Product Gate: product_thesis → PRD → build plan → GitHub issues →
-  MVP → tests → staging → human approval → production → outcome measurement.
-  No production deploy without tests + founder approval.
+- Entrepreneur Product Gate — every product must answer all 11 fields before a line of code
+  is written (§11.7):
+  1. Problem statement
+  2. Target customer
+  3. Evidence of pain
+  4. Competitor check
+  5. Monetization hypothesis
+  6. MVP scope
+  7. Build cost
+  8. Launch risk
+  9. Sharia / compliance check
+  10. Data / privacy check
+  11. Success metric
+- Build pipeline: product_thesis → PRD → build plan → GitHub issues → MVP → tests →
+  staging → human approval → production → outcome measurement.
+  No direct production deploy without tests + founder approval.
 - Entrepreneur Constitution (separate from Trader constitution).
+  Risk areas: wasted money, legally risky claims, customer data mishandling, copyrighted
+  assets, non-compliant products, reputational damage — all gated.
 - Ship one compliant AI product (Stripe test mode acceptable for Phase 0).
 
-**Gate:** No build without product thesis + Sharia check + approval; live URL;
-payment-capable.
+**Gate:** No build without all 11 product gate fields + Sharia check + approval;
+no paid spend without budget approval; no customer data collection without privacy check;
+live URL; payment-capable.
 
 ---
 
@@ -279,17 +370,19 @@ payment-capable.
 *Run after ≥ 28 days of paper data has accumulated.*
 
 - Historical return testing: look-ahead bias prevention, survivorship bias prevention,
-  data leakage checks.
+  data leakage checks, overfitting check.
 - Walk-forward testing (out-of-sample validation).
 - Transaction costs + slippage + spread modeling.
 - Whole-share constraints (Sahm compatibility).
-- Sharia whitelist availability at the historical point.
+- Sharia whitelist availability at the historical point (point-in-time compliance status).
+- **Delisted companies** — exclude or account for names that were delisted in the test window.
 - Crisis tests: 2000 dot-com, 2008 GFC, 2020 COVID, 2022 inflation/rate shock.
-- Benchmark comparison vs SPUS / HLAL / simple DCA.
+- Benchmark comparison vs **SPUS / HLAL / Cash / simple DCA**.
+  If Noah cannot beat simple DCA on risk-adjusted terms after costs, it should not trade actively.
 - Signal leaderboard.
 
-**Gate:** Every strategy tested out-of-sample; weak signals (no benchmark excess after
-costs) are rejected; Noah must beat simple DCA on risk-adjusted terms to trade actively.
+**Gate:** Every strategy tested out-of-sample; delisted companies handled; all four
+benchmarks compared; weak signals rejected; Noah beats simple DCA before any live execution.
 
 ---
 
