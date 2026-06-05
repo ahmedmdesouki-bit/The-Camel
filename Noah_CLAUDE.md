@@ -3,14 +3,39 @@
 > You are working on **Noah**, a guardrailed autonomous AI operator that runs a
 > continuous Observe→Thesis→Choose→Act→Measure→Learn loop across two domains:
 > **Trader Noah** (Sharia-compliant markets) and **Entrepreneur Noah** (Sharia-compliant
-> AI products). Founder: Chiko (Riyadh). Runtime: the founder's **Windows PC**.
+> AI products). Founder: Chiko (Riyadh). Runtime: Windows PC.
 > This file is the source of truth for how to work here. Read it fully before acting.
 
+---
+
+## North Star
+
+> Noah is a Sharia-compliant autonomous operator with a deterministic constitution,
+> an edge-proof engine, a budget kernel, and a learning ledger.
+> Noah is not a stock-picking chatbot.
+> LLM proposes. Math tests. Guardrails decide. Human approves high-risk actions.
+
+## Priority hierarchy (never invert this)
+
+```
+1. Sharia compliance
+2. Capital preservation
+3. System integrity
+4. Evidence quality
+5. Learning speed
+6. Return generation
+7. Autonomy expansion
+```
+
 ## Prime directive
+
 Build the **safety core first; earn autonomy with evidence.** Never weaken a guardrail to
 make a feature work. If a task would require bypassing the Constitution, stop and flag it.
 
-## Non-negotiable rules (the Constitution — see guardrail/constitution.py)
+---
+
+## Non-negotiable rules (the Constitution — guardrail/constitution.py)
+
 1. **Sharia gate is a hard wall.** Only whitelisted, compliant, non-frozen instruments are
    tradeable. Business models are screened for haram activity. No leverage, derivatives,
    shorting, margin, or crypto-derivatives — ever.
@@ -18,55 +43,375 @@ make a feature work. If a task would require bypassing the Constitution, stop an
 3. **Withdrawals are forbidden.** The broker API key must be trade-only, withdrawals disabled.
 4. **Live money needs a human approval gate** until Phase 2, then only inside the per-order
    envelope. Phase 0 is paper only.
-5. **Everything is logged** — append-only ledger; limits are founder-owned config the agent
-   process cannot write.
-6. Limits live in `config/limits.yaml`. Do not hardcode limits elsewhere; read them from config.
+5. **Everything is logged** — append-only ledger with SHA-256 hash chain; limits are
+   founder-owned config the agent process cannot write.
+6. Limits live in `config/limits.yaml`. Do not hardcode limits elsewhere.
+7. **Noah cannot change its own rules.** No agent-callable override path exists.
+8. **Noah cannot act on stale or single-source data.** (Sprint 4 enforcement)
+9. **Noah cannot act unless broker/account state reconciles.** (Sprint 4 enforcement)
+
+---
 
 ## Current status
-- **Sprint 1 COMPLETE.** Guardrail Service implemented; `pytest -q` → **28 passed**, including
-  the full rogue-action suite. Do not regress these tests.
+
+- **Sprint 1 COMPLETE.** Guardrail Service; `pytest -q` → 28 passed.
+- **Sprint 2 COMPLETE.** Sharia gate (whitelist, re-screen, classifier) + Alpaca data
+  ingestion + triangulation; → 62 passed.
+- **Sprint 3 COMPLETE.** Loop runner, PaperBroker, append-only ledger, capital allocator;
+  → 110 passed.
+- **7-DB architecture live.** All modules now use domain-specific SQLite files via `NoahDbs`.
+
+> Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
+> and hits Windows MAX_PATH without the virtual drive. `git config --global core.longpaths true`
+> is already set.
+
+---
+
+## Seven-database architecture (Phase 0 — SQLite)
+
+Each domain owns its own SQLite file. Callers construct `NoahDbs.from_dir(base_dir)` and
+pass the right sub-path to each module.
+
+| DB file | Owner module(s) | Content |
+|---|---|---|
+| `noah_market.db` | `data/` | prices, dividends, splits |
+| `noah_macro.db` | stub → Sprint 7 | rates, PMIs, yield curve, GDP |
+| `noah_fundamentals.db` | stub → Sprint 7 | revenue, margins, EPS, FCF, debt |
+| `noah_news.db` | stub → Sprint 7 | structured event objects (never raw text) |
+| `noah_sharia.db` | `sharia/` | whitelist (versioned), sharia_events |
+| `noah_portfolio.db` | `broker/`, `ledger/`, `loop/` | orders, positions, ledger, runs |
+| `noah_learning.db` | Sprint 5 | decisions, outcomes, mistake log, lessons |
+
+Migrate to Supabase when multi-device / dashboard / remote access is needed (Sprint 6+).
+
+---
 
 ## Repo map
-- `guardrail/constitution.py` — `Constitution.evaluate(action, state) -> Decision`. The gate.
-- `guardrail/__init__.py` — public exports.
-- `config/limits.yaml` — founder-owned limits (phase, caps, envelope, cash tiers).
-- `db/schema.sql` — Postgres/Supabase schema. **Phase 0 may use local SQLite instead.**
-- `tests/test_guardrail.py` — boundary + rogue-action suites. Keep green.
-- `ops/kill_switch.py` — halt/resume (never auto-liquidates).
-- `.env.example` — copy to `.env` (never commit). Phase 0 needs only Alpaca PAPER keys.
+
+```
+guardrail/        constitution.py — evaluate(action, state) -> Decision. The gate.
+                  __init__.py
+
+config/           limits.yaml — founder-owned (phase, caps, envelope, cash tiers)
+
+db/               paths.py — NoahDbs dataclass + init_all()
+                  market.py / sharia.py / portfolio.py / learning.py (DDL)
+                  macro.py / fundamentals.py / news.py (stubs)
+                  sqlite.py — connect() helper
+
+sharia/           whitelist.py — load/add/freeze/unfreeze (→ noah_sharia.db)
+                  screener.py — quarterly AAOIFI re-screen job
+                  classifier.py — business-model haram classifier
+
+data/             store.py — store_price / get_prices (→ noah_market.db)
+                  triangulation.py — cross-source disagreement (>0.5% flags)
+                  alpaca.py — Alpaca paper EOD ingestion adapter
+
+engine/           thesis.py — ThesisCard + BaseRateCard (no I/O, no DB)
+
+loop/             runner.py — LoopRunner (takes LoopConfig with dbs: NoahDbs)
+                  state.py — RunState + begin/update/finish_run (→ noah_portfolio.db)
+                  scheduler.py — Windows Task Scheduler entrypoint
+
+broker/           paper.py — PaperBroker(portfolio_db, market_db)
+                  live.py — LiveBroker stub (Phase 1+)
+
+ledger/           writer.py — append_entry + SHA-256 hash chain (→ noah_portfolio.db)
+                  reconcile.py — verify_hash_chain + balance diff
+
+capital/          allocator.py — Allocator.request() routes through Constitution
+
+ops/              kill_switch.py — halt / resume / is_halted (file flag)
+
+db/schema.sql     Postgres/Supabase schema (Phase 1+ migration target)
+tests/            test_guardrail.py, test_sharia.py, test_data.py,
+                  test_engine.py, test_loop.py, test_broker.py,
+                  test_ledger.py, test_capital.py
+conftest.py       sys.path fix + shared dbs(tmp_path) fixture
+pyproject.toml    pytest pythonpath = ["."]
+```
+
+---
 
 ## Conventions
-- Python 3.12. Keep `guardrail/` pure (no I/O) so it stays unit-testable.
-- Every new consequential action type must route through `Constitution.evaluate`.
-- New modules get tests in `tests/`. Run `pytest -q` before declaring a task done.
-- Adapter pattern for broker/data: `PaperBroker` (Alpaca paper) first; `LiveBroker` behind a flag.
-- Secrets only in `.env` / Windows Credential Manager. Never in code, logs, or commits.
 
-## Phase 0 simplified stack (single Windows machine — don't over-build)
-- DB: **SQLite** locally (migrate to Supabase when you need remote/dashboard/multi-device).
-- Harness: a **plain Python loop** (adopt Claude Agent SDK only when real tool-use autonomy is needed).
-- Data/broker: **Alpaca paper** (free). yfinance ok for quick prototypes.
-- Notifications/approvals: **Telegram bot** (Phase 1).
-- Scheduler: **Windows Task Scheduler** to run the loop post-close.
+- Python 3.12. Keep `guardrail/` and `engine/` pure (no I/O) — unit-testable.
+- Every new consequential action type must route through `Constitution.evaluate`.
+- New modules get tests in `tests/`. Run `pytest -q` via `N:\` before declaring done.
+- Adapter pattern: `PaperBroker` first; `LiveBroker` behind a feature flag.
+- Secrets only in `.env` / Windows Credential Manager. Never in code, logs, or commits.
+- Raw external text is sanitised to structured JSON before reaching the LLM.
+  Never pass scraped content directly to the reasoning engine.
+
+---
+
+## Phase 0 simplified stack
+
+- DB: **SQLite** × 7 (migrate to Supabase when remote/dashboard needed).
+- Harness: **plain Python loop** (adopt Claude Agent SDK when real tool-use autonomy needed).
+- Data/broker: **Alpaca paper** (free IEX feed). yfinance ok for quick prototypes.
+- Notifications/approvals: **Telegram bot** (Sprint 6).
+- Scheduler: **Windows Task Scheduler** → `python loop/scheduler.py` post-close.
 - Remote access + kill switch: **Tailscale**.
 
-## Build roadmap (sprints)
-- S1 ✅ Guardrail Service + schema + tests.
-- S2 → Sharia gate module (whitelist, quarterly re-screen job, business-model classifier)
-  + Alpaca paper data ingestion + triangulation. Gate: off-list + haram both rejected; prices land.
-- S3 → Thesis/base-rate engine + loop runner + PaperBroker + ledger + reconciliation + allocator.
-  Gate: full unattended paper loop runs, ledger reconciles.
-- S4 → Dashboard on live DB + monitoring/alerts + kill switch over Tailscale.
-- S5 → Entrepreneur pipeline; ship one compliant product (Stripe test).
-- Run Phase 0 ≥28 days, 0 guardrail breaches → unlock Phase 1 (Approval channel + LiveBroker).
+---
+
+## Build roadmap
+
+### Completed
+- **S1 ✅** Guardrail Service + schema + tests. Gate: 28 rogue-action tests green.
+- **S2 ✅** Sharia gate + data ingestion. Gate: off-list + haram rejected; prices land.
+- **S3 ✅** Loop runner + PaperBroker + ledger + allocator. Gate: full paper loop runs; ledger reconciles.
+
+---
+
+### S4 — Hardening: Guardrail extensions + Budget Kernel + Data Freshness
+*Constitution additions (Feedback 1 + 2):*
+- Rolling Velocity Stop: 5-day rolling P&L ≤ −8% → 48h cooldown freeze; 14-day ≤ −12% → halt.
+- Illiquidity / Slippage Gate: bid-ask spread > 0.5% → reject; order > 1% of 30-day ADV → reject.
+  (Skips gracefully when spread data unavailable — IEX free tier limitation.)
+- Additional hard rules: max orders/day, stale-data rejection, earnings blackout, source quorum.
+
+*New modules:*
+- `capital/budget_kernel.py` — daily/weekly/monthly spend limits; capital buckets
+  (Core 50%, Trader 10–20%, Entrepreneur 20–30%, System 5–10%, Emergency 10–20%).
+- `governance/tool_permissions.py` — Tool Permission Matrix (what each tool may do /
+  requires approval / is forbidden).
+- `data/freshness.py` — `check_freshness(symbol, max_age_hours)` blocks action on stale data.
+- `data/sanitiser.py` — `sanitise(raw_text) → dict` prompt-injection filter.
+
+*Schema extensions (existing tables only):*
+- `whitelist`: +`historical_drift_count`, +`purification_ratio` ✅ (live in noah_sharia.db)
+- `sharia_events`: +`trigger_period`, +`reasoning_summary` ✅
+- `orders`: +`client_order_id` (UUID, idempotency) ✅
+- `broker/paper.py`: `pre_flight_execution_check()` — raises `DuplicateOrderException`.
+
+*ThesisCard extension:*
+- Add: `regime`, `theme`, `worst_forward_return`, `avg_drawdown`, `liquidity_view`,
+  separate `price_invalidation` / `fundamental_invalidation` / `sharia_invalidation`.
+
+**Gate:** Constitution ≥ 40 tests; stale data blocks action; budget limits enforced;
+no duplicate orders possible.
+
+---
+
+### S5 — Operator State Machine + Opportunity Router + Learning Ledger
+- `operator/state_machine.py` — 11 formal states:
+  `IDLE → OBSERVING → RESEARCHING → FORMING_THESIS → TESTING_EDGE →
+   AWAITING_APPROVAL → ACTING → MONITORING → LEARNING → PAUSED → KILLED`
+  Transition rules: cannot jump from FORMING_THESIS to ACTING; cannot ACT without guardrail
+  approval; cannot leave PAUSED without founder approval.
+- `operator/opportunity_router.py` — scores Trader / Entrepreneur / Research / **Wait**.
+  "Wait" is a first-class output, not the absence of output.
+- `operator/learning_ledger.py` — writes to `noah_learning.db`:
+  decision_type, thesis_summary, expected/actual outcome, mistake_type, lesson, pattern.
+- `ops/health_monitor.py` — machine uptime, internet, DB connections, guardrail status,
+  last heartbeat, current mode.
+
+**Gate:** State machine prevents state jumps; Opportunity Router returns "Wait" when no
+edge proven; Learning Ledger records every decision outcome.
+
+---
+
+### S6 — Dashboard + Monitoring + Kill Switch over Tailscale
+*(Was original S4)*
+- Dashboard reading live SQLite state (positions, P&L, ledger, guardrail events, Sharia flags).
+- Daily Telegram health report (Noah Daily Health Report template from Feedback 2 §11.8).
+- Kill switch reachable over Tailscale.
+- Machine heartbeat + uptime monitor.
+- Full reconciliation report (ledger vs broker paper statement).
+
+**Gate:** Kill switch stops next loop tick; daily-loss-stop simulation halts; dashboard
+reflects paper trade within one refresh.
+
+---
+
+### S7 — Edge Proof Engine
+*The most important missing module — no live money until this exists.*
+
+Every trade candidate passes 13 checks before a position is proposed:
+
+```
+classify_regime()           → macro regime (expansion / contraction / crisis / recovery)
+find_historical_analogues() → prior cases matching this setup
+run_event_study()           → forward-return distribution around the trigger
+calculate_forward_returns() → median, worst, distribution
+calculate_base_rate()       → sample N, hit rate, magnitude
+check_counter_signals()     → what would invalidate the thesis
+check_valuation()           → is the setup priced in?
+check_liquidity()           → spread, ADV, whole-share constraints
+compare_to_benchmark()      → vs SPUS / HLAL on risk-adjusted terms
+generate_edge_report()      → structured JSON output (below)
+```
+
+Minimum edge report:
+```json
+{
+  "signal": "...", "sample_size": 42, "hit_rate": 0.61,
+  "median_forward_return": 0.084, "worst_forward_return": -0.21,
+  "max_drawdown": -0.18, "benchmark_excess_return": 0.032,
+  "confidence": 0.66, "trade_allowed": false,
+  "reason": "Sample size acceptable but excess return not strong after costs."
+}
+```
+
+Observe-step structure follows: Regime → Theme → Asset Class → Sector → Company → Candidate.
+
+**Gate:** Every signal reports all 10 fields; `trade_allowed=false` blocks the allocator;
+no edge proof = no trade.
+
+---
+
+### S8 — Entrepreneur Track
+*(Was original S5)*
+- Entrepreneur Product Gate: product_thesis → PRD → build plan → GitHub issues →
+  MVP → tests → staging → human approval → production → outcome measurement.
+  No production deploy without tests + founder approval.
+- Entrepreneur Constitution (separate from Trader constitution).
+- Ship one compliant AI product (Stripe test mode acceptable for Phase 0).
+
+**Gate:** No build without product thesis + Sharia check + approval; live URL;
+payment-capable.
+
+---
+
+### S9 — Edge Lab (Backtesting)
+*Run after ≥ 28 days of paper data has accumulated.*
+
+- Historical return testing: look-ahead bias prevention, survivorship bias prevention,
+  data leakage checks.
+- Walk-forward testing (out-of-sample validation).
+- Transaction costs + slippage + spread modeling.
+- Whole-share constraints (Sahm compatibility).
+- Sharia whitelist availability at the historical point.
+- Crisis tests: 2000 dot-com, 2008 GFC, 2020 COVID, 2022 inflation/rate shock.
+- Benchmark comparison vs SPUS / HLAL / simple DCA.
+- Signal leaderboard.
+
+**Gate:** Every strategy tested out-of-sample; weak signals (no benchmark excess after
+costs) are rejected; Noah must beat simple DCA on risk-adjusted terms to trade actively.
+
+---
+
+### S10 — Micro-Live Readiness (Phase 1)
+
+**Prerequisites (all must pass):**
+- ≥ 28 days continuous paper operation.
+- 0 guardrail breaches.
+- Ledger reconciles with broker paper statement.
+- Every position had thesis + invalidation point.
+- Kill switch tested and confirmed working.
+- Broker API key scoped trade-only, withdrawals disabled.
+- Edge Proof Engine has approved at least one signal.
+- Approval flow end-to-end tested.
+
+*Deliverables:*
+- Approval Channel (Telegram one-tap approve / veto with timeout = veto).
+- LiveBroker (Alpaca paper → live, behind phase flag).
+- Limit orders only (no market orders in live mode).
+- No pre-market / after-hours trading.
+- Live broker key scope verification at startup.
+
+Initial live permissions:
+```
+Human approval required for every live trade.
+No autonomous live execution.
+Max total live capital: $100–500.
+Limit orders only.
+Whitelist only.
+No pre-market / after-hours.
+```
+
+---
+
+### S11 — Module Restructure (last sprint)
+*(Section 14.5 of Feedback 2)*
+
+Restructure the flat layout into a clean domain hierarchy. All 200+ tests must stay green.
+
+```
+governance/
+  constitution.py       (moved from guardrail/)
+  sharia_registry.py    (from sharia/)
+  risk_rules.py
+  budget_kernel.py      (from capital/)
+  tool_permissions.py
+  approvals.py
+
+operator/
+  state_machine.py
+  task_queue.py
+  opportunity_router.py
+  learning_ledger.py
+  health_monitor.py
+  kill_switch.py        (from ops/)
+
+trader/
+  thesis_card.py        (from engine/)
+  edge_proof_engine.py
+  regime_classifier.py
+  event_study.py
+  forward_returns.py
+  portfolio_engine.py
+  paper_broker.py       (from broker/)
+  broker_reconciliation.py
+
+entrepreneur/
+  product_thesis.py
+  prd_generator.py
+  build_workflow.py
+  compliance_gate.py
+  qa_checklist.py
+
+data/
+  market_data.py
+  macro_data.py
+  company_fundamentals.py
+  news_events.py
+  data_freshness.py
+  sanitiser.py
+
+security/
+  prompt_injection_filter.py
+  secrets_check.py
+  source_validation.py
+
+alerts/
+  telegram_bot.py
+  daily_report.py
+```
+
+**Gate:** Full test suite green after restructure; all imports updated; CLAUDE.md updated.
+
+---
 
 ## Open decisions (ask the founder before assuming)
-1. Live broker for Phase 1: Alpaca vs IBKR (paper = Alpaca regardless).
+
+1. Live broker for Phase 1: Alpaca vs IBKR.
 2. Notification channel: Telegram (default) vs Pushover.
 3. First Entrepreneur product to ship.
-4. Canonical Sharia screener for the whitelist: Musaffa vs Zoya.
+4. Canonical Sharia screener: Musaffa vs Zoya.
 5. Starting limit values in `config/limits.yaml`.
+6. Capital bucket percentages (defaults in S4 Budget Kernel).
+
+---
 
 ## Definition of done (v1)
-Guardrail suite green; Noah runs the full loop unattended on paper nightly; dashboard + ledger
-reflect it; kill switch + alerts work; one compliant product deployed; 28 days clean paper ops.
+
+All of the following must be true before Phase 1 (live money) is unlocked:
+
+- All tests green (target ≥ 200 tests by S7).
+- Agent cannot modify its own constitution / config.
+- Tool permissions enforced before every tool action.
+- Budget limits enforced before every money/spend action.
+- Data freshness checked before every trade decision.
+- Broker/account reconciliation clean.
+- State machine prevents skipped steps.
+- ThesisCard required before any paper trade.
+- Invalidation required before any paper trade.
+- Every action logged.
+- Edge Proof Engine approved at least one signal.
+- Daily health report working.
+- Kill switch working over Tailscale.
+- No live trading possible unless explicitly enabled by founder-owned config.
+- 28 days clean paper operation meeting Phase 0 exit criteria.

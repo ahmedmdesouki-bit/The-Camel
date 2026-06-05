@@ -1,3 +1,4 @@
-from .sqlite import init_db, connect
+from .paths import NoahDbs, init_all
+from .sqlite import connect  # thin sqlite3 wrapper used by all modules
 
-__all__ = ["init_db", "connect"]
+__all__ = ["NoahDbs", "init_all", "connect"]

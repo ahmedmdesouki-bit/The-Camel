@@ -1,13 +1,13 @@
 """
-Windows Task Scheduler entrypoint.
-Runs the paper loop once post-market-close (configure Task Scheduler to fire ~4:30pm ET).
+Windows Task Scheduler entrypoint — runs the paper loop post-market-close.
 
 Usage:
     python loop/scheduler.py
 
-Environment variables (set in Task Scheduler or .env):
-    NOAH_DB     path to local SQLite DB  (default: noah.db in repo root)
-    NOAH_PHASE  0 | 1 | 2 | 3            (default: 0)
+Environment variables:
+    NOAH_DB_DIR   directory that holds all seven noah_*.db files
+                  (default: repo root)
+    NOAH_PHASE    0 | 1 | 2 | 3  (default: 0)
 """
 import logging
 import os
@@ -22,15 +22,16 @@ log = logging.getLogger("noah.scheduler")
 
 
 def main() -> None:
-    db_path = os.environ.get(
-        "NOAH_DB",
-        str(Path(__file__).resolve().parent.parent / "noah.db"),
+    db_dir = os.environ.get(
+        "NOAH_DB_DIR",
+        str(Path(__file__).resolve().parent.parent),
     )
     phase = int(os.environ.get("NOAH_PHASE", "0"))
-    log.info("Scheduler fired. phase=%d db=%s", phase, db_path)
+    log.info("Scheduler fired. phase=%d db_dir=%s", phase, db_dir)
 
-    from db.sqlite import init_db
-    init_db(db_path)
+    from db.paths import NoahDbs, init_all
+    dbs = NoahDbs.from_dir(db_dir)
+    init_all(dbs)
 
     from loop.runner import LoopConfig, LoopRunner
     from sharia.whitelist import load_whitelist
@@ -39,11 +40,11 @@ def main() -> None:
     def get_portfolio() -> PortfolioState:
         return PortfolioState(
             fund_usd=0, cash_usd=0,
-            whitelist=load_whitelist(db_path),
+            whitelist=load_whitelist(dbs.sharia),
         )
 
     cfg = LoopConfig(
-        db_path=db_path,
+        dbs=dbs,
         phase=phase,
         get_portfolio_state=get_portfolio,
     )

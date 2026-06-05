@@ -1,10 +1,9 @@
 """
 Sprint 3 — PaperBroker tests.
-Gate: paper orders fill and write to orders + ledger.
+PaperBroker(portfolio_db, market_db) since 7-DB migration.
 """
 import pytest
 import sqlite3
-from db.sqlite import init_db
 from data.store import store_price
 from broker.paper import PaperBroker
 from guardrail.constitution import (
@@ -13,10 +12,16 @@ from guardrail.constitution import (
 
 
 @pytest.fixture
-def tmp_db(tmp_path):
-    db = str(tmp_path / "adam.db")
-    init_db(db)
-    return db
+def broker(dbs):
+    return PaperBroker(dbs.portfolio, dbs.market)
+
+@pytest.fixture
+def portfolio_db(dbs):
+    return dbs.portfolio
+
+@pytest.fixture
+def market_db(dbs):
+    return dbs.market
 
 
 def good_decision():
@@ -36,63 +41,54 @@ def buy_action(symbol="SPUS", notional=500.0):
 
 # ─────────────────── basic fills ────────────────────────────────
 
-def test_paper_broker_fills_at_fallback_price(tmp_db):
-    broker = PaperBroker(tmp_db)
+def test_paper_broker_fills_at_fallback_price(broker):
     fill = broker.submit(buy_action(), good_decision())
     assert fill.symbol == "SPUS"
-    assert fill.fill_price == pytest.approx(1.0)   # fallback: no price data
-    assert fill.qty == pytest.approx(500.0)         # 500 / 1.0
+    assert fill.fill_price == pytest.approx(1.0)
+    assert fill.qty == pytest.approx(500.0)
 
-def test_paper_broker_fills_at_last_close(tmp_db):
-    store_price(tmp_db, dict(symbol="SPUS", date="2026-06-04",
-                             open=50.0, high=51.0, low=49.5, close=50.0,
-                             volume=100_000, adj_close=50.0), source="alpaca")
-    broker = PaperBroker(tmp_db)
+def test_paper_broker_fills_at_last_close(dbs):
+    store_price(dbs.market, dict(symbol="SPUS", date="2026-06-04",
+                                 open=50.0, high=51.0, low=49.5, close=50.0,
+                                 volume=100_000, adj_close=50.0), source="alpaca")
+    broker = PaperBroker(dbs.portfolio, dbs.market)
     fill = broker.submit(buy_action(notional=500.0), good_decision())
     assert fill.fill_price == pytest.approx(50.0)
-    assert fill.qty == pytest.approx(10.0)   # 500 / 50
+    assert fill.qty == pytest.approx(10.0)
 
-def test_paper_broker_writes_to_orders(tmp_db):
-    broker = PaperBroker(tmp_db)
+def test_paper_broker_writes_to_orders(broker, portfolio_db):
     fill = broker.submit(buy_action(), good_decision())
-    with sqlite3.connect(tmp_db) as conn:
-        row = conn.execute("SELECT symbol, side, status FROM orders WHERE id=?",
-                           (fill.order_id,)).fetchone()
+    with sqlite3.connect(portfolio_db) as conn:
+        row = conn.execute(
+            "SELECT symbol, side, status FROM orders WHERE id=?", (fill.order_id,)
+        ).fetchone()
     assert row == ("SPUS", "buy", "filled")
 
-def test_paper_broker_writes_to_ledger(tmp_db):
-    broker = PaperBroker(tmp_db)
+def test_paper_broker_writes_to_ledger(broker, portfolio_db):
     broker.submit(buy_action(notional=300.0), good_decision())
-    with sqlite3.connect(tmp_db) as conn:
+    with sqlite3.connect(portfolio_db) as conn:
         row = conn.execute(
             "SELECT type, amount FROM ledger ORDER BY id DESC LIMIT 1"
         ).fetchone()
-    assert row[0] == "BUY"
-    assert row[1] == pytest.approx(300.0)
+    assert row[0] == "BUY" and row[1] == pytest.approx(300.0)
 
-def test_paper_broker_rejects_blocked_decision(tmp_db):
-    broker = PaperBroker(tmp_db)
+def test_paper_broker_rejects_blocked_decision(broker):
     with pytest.raises(ValueError, match="blocked"):
         broker.submit(buy_action(), bad_decision())
 
-def test_paper_broker_sell_writes_negative_to_ledger(tmp_db):
-    broker = PaperBroker(tmp_db)
-    sell_action = Action(
-        type=ActionType.TRADE, symbol="SPUS", side="sell",
-        notional_usd=200.0, instrument_type="etf", mode="paper",
-    )
-    broker.submit(sell_action, good_decision())
-    with sqlite3.connect(tmp_db) as conn:
+def test_paper_broker_sell_writes_negative_to_ledger(broker, portfolio_db):
+    sell = Action(type=ActionType.TRADE, symbol="SPUS", side="sell",
+                  notional_usd=200.0, instrument_type="etf", mode="paper")
+    broker.submit(sell, good_decision())
+    with sqlite3.connect(portfolio_db) as conn:
         row = conn.execute(
             "SELECT type, amount FROM ledger ORDER BY id DESC LIMIT 1"
         ).fetchone()
-    assert row[0] == "SELL"
-    assert row[1] == pytest.approx(-200.0)
+    assert row[0] == "SELL" and row[1] == pytest.approx(-200.0)
 
-def test_paper_broker_sequential_orders(tmp_db):
-    broker = PaperBroker(tmp_db)
+def test_paper_broker_sequential_orders(broker, portfolio_db):
     broker.submit(buy_action(notional=100.0), good_decision())
     broker.submit(buy_action(notional=200.0), good_decision())
-    with sqlite3.connect(tmp_db) as conn:
+    with sqlite3.connect(portfolio_db) as conn:
         count = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
     assert count == 2
