@@ -131,6 +131,11 @@ no duplicate orders possible; config write attempt by agent is blocked + logged;
 switch blocks action mid-loop; point-in-time columns present on `prices`; paper fills
 carry the realism marker; secrets-leak tests pass.
 
+**STATUS: COMPLETE** (branch `s4-hardening`, 197 tests; guardrail file = 43, ≥40 met).
+Deferred by dependency: **max cancel/replace attempts** → S11 (no cancel/replace path exists
+until LiveBroker); **earnings blackout** → S7 (needs an earnings calendar from the
+fundamentals DB). Corporate-action check was already pre-deferred to S7.
+
 ---
 
 ### S4.5 — Edge Proof v0  (evidence gate, pulled forward)

@@ -6,7 +6,12 @@
 
 ---
 
-## Current suite — 110 tests green (Sprints 1–3)
+## Current suite — 197 tests green (Sprints 1–4)
+
+*Sprint 4 added ~87 tests across guardrail hardening (43 in `test_guardrail.py`), governance,
+budget, data-hardening, security, secrets, and the adversarial suite. The per-file table below
+covers the Sprint 1–3 core; S4 added `test_governance.py`, `test_budget.py`,
+`test_data_hardening.py`, `test_security.py`, `test_secrets.py`, `test_adversarial.py`.*
 
 | File | Count | Covers |
 |---|---|---|
