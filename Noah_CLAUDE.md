@@ -106,8 +106,27 @@ sharia/           whitelist.py — load/add/freeze/unfreeze (→ noah_sharia.db)
 data/             store.py — store_price / get_prices (→ noah_market.db)
                   triangulation.py — cross-source disagreement (>0.5% flags)
                   alpaca.py — Alpaca paper EOD ingestion adapter
+                  congress_filings.py — STOCK Act filing data adapter (stub → S8)
+                  playwright.py — headless browser adapter stub (NotImplementedError; live → S8+)
 
 engine/           thesis.py — ThesisCard + BaseRateCard (no I/O, no DB)
+
+strategies/       registry.py — StrategyRegistry: register, lookup, activate, deactivate, weight
+                  base.py — BaseStrategy abstract class (signal, entry, exit, sizing)
+                  trailing_stop.py — trailing floor + locking-gains exit mode
+                  dca_ladder.py — systematic laddering / DCA on dips
+                  etf_rotation.py — regime-based rotation between SPUS / HLAL / MNZL
+                  momentum.py — trend-following on compliant names
+                  mean_reversion.py — quality-dip accumulation
+                  congress_signal.py — congressional filing signal (feeds Edge Proof, not blind copy)
+                  mixer.py — StrategyMixer: blend by weight, regime affinity, live performance
+
+learning/         base_rate_updater.py — L1: update strategy base-rates after trade resolution
+                  strategy_scorer.py — L2: score vs expected; compute auto weight within band
+                  regime_matcher.py — learn regime→strategy affinity from resolved outcomes
+                  anomaly_detector.py — flag systematic underperformance vs base-rate
+                  improvement_proposer.py — L3: write proposed changes for founder approval
+                                            (proposes only — never auto-applies)
 
 loop/             runner.py — LoopRunner (takes LoopConfig with dbs: NoahDbs)
                   state.py — RunState + begin/update/finish_run (→ noah_portfolio.db)
@@ -341,8 +360,91 @@ no edge proof = no trade; model disagreement routes to human approval.
 
 ---
 
-### S8 — Entrepreneur Track
-*(Was original S5)*
+### S8 — Strategy Models + Learning Engine
+
+Noah should not be locked into one approach. This sprint builds a **Strategy Registry** —
+a library of named, backtested, switchable strategy modules — plus a tiered learning engine
+that makes the system progressively smarter from real outcomes without violating the
+Constitution's "Noah cannot change its own rules" constraint.
+
+#### Strategy Registry (`strategies/`)
+
+Every strategy is a module that implements `BaseStrategy`:
+- `signal(observations) → List[SignalCandidate]` — what to look at
+- `entry_logic(signal) → EntryPlan` — how to enter (single, ladder, scaled)
+- `exit_logic(position) → ExitPlan` — fixed, trailing floor, or time-based
+- `sizing_logic(signal, state) → float` — notional amount, respecting Constitution caps
+- `applicable_regimes: List[str]` — which macro regimes favour this strategy
+- `base_rate: BaseRateCard` — live-updated hit rate, median return, worst return, drawdown
+
+Signals from every strategy **still pass through the full 13-check Edge Proof Engine**
+before a position is proposed. Strategies generate candidates; Edge Proof validates them.
+
+**Initial strategy library (Sharia-compliant, no options/derivatives ever):**
+
+| Strategy | Source | Description |
+|---|---|---|
+| `trailing_stop.py` | Video Level 1 | Trailing floor — stop rises as price rises, locking gains. Replaces fixed `price_invalidation` with a dynamic trailing invalidation point on trending positions. |
+| `dca_ladder.py` | Video Level 1 | Systematic laddering — buy on dips in compliant ETFs across predefined price levels. Position-building mode alongside single-entry. |
+| `congress_signal.py` | Video Level 2 | Congressional filing signal — STOCK Act disclosures (45-day lag) aggregated from Capital Trades or similar. Used as **one observe-step signal** only; does NOT bypass Edge Proof. Only Sharia-compliant names acted on. |
+| `etf_rotation.py` | Regime logic | Rotate between SPUS / HLAL / MNZL based on macro regime classification. |
+| `momentum.py` | Price action | Trend-following on compliant single names and ETFs. |
+| `mean_reversion.py` | Price action | Quality-dip accumulation when a compliant name pulls back to key support. |
+
+**Wheel Strategy (Video Level 3) — permanently excluded.**
+Cash Secured Puts and Covered Calls are options (derivatives). Haram + Constitution rule #1.
+No exceptions. Do not revisit.
+
+#### StrategyMixer (`strategies/mixer.py`)
+
+Blends active strategies into a combined signal set:
+- **By regime** — activate strategies with matching `applicable_regimes` for today's regime
+- **By weight** — configurable weight per strategy (founder-set defaults in `limits.yaml`)
+- **By performance** — within the auto-weight band, shift weight toward outperformers
+- **Mixed signals** — multiple strategies can agree on the same ticker, increasing conviction
+
+#### Ongoing Learning Engine (`learning/`) — four permission tiers
+
+```
+Level 1 — Fully autonomous (no approval):
+  After every resolved trade, update the strategy's base-rate record:
+  hit/miss, actual return, actual drawdown, regime at entry.
+  Pure bookkeeping. No rule changes.
+
+Level 2 — Auto within founder-set band (default ±10%):
+  Adjust strategy weights based on 30-day rolling performance vs expected base-rate.
+  If trailing_stop hits 68% when base-rate says 60% → weight increases.
+  Band limits live in config/limits.yaml (founder-owned, agent-read-only).
+
+Level 3 — Propose only, founder approves:
+  Activate or deactivate a strategy.
+  Change a strategy's regime affinity mapping.
+  improvement_proposer.py writes a structured proposal to the Learning Ledger.
+  Founder reviews and approves/rejects. Nothing changes without explicit approval.
+
+Level 4 — Founder-only, system never touches:
+  Add a new strategy to the registry.
+  Modify the Constitution or risk rules.
+  Change the ±band limits themselves.
+```
+
+#### Regime → Strategy affinity learning (`learning/regime_matcher.py`)
+
+After enough resolved trades (minimum N=20 per regime), the system learns empirically
+which strategies perform above/below their base-rate in each regime, and updates the
+`applicable_regimes` suggestions it proposes to the founder. The founder approves all
+affinity changes (Level 3).
+
+**Gate:** Strategy registry has ≥3 active strategies; all produce signals that pass Edge
+Proof; trailing stop replaces fixed invalidation for trending positions; DCA ladder
+operates correctly on SPUS/HLAL; congress_signal feeds observe step without bypassing
+proof; base-rate updater records every resolved trade; auto weight adjustment stays within
+founder-set band; improvement proposals land in Learning Ledger for review.
+
+---
+
+### S9 — Entrepreneur Track
+*(Was S8)*
 - Entrepreneur Product Gate — every product must answer all 11 fields before a line of code
   is written (§11.7):
   1. Problem statement
@@ -370,7 +472,7 @@ live URL; payment-capable.
 
 ---
 
-### S9 — Edge Lab (Backtesting)
+### S10 — Edge Lab (Backtesting)
 *Run after ≥ 28 days of paper data has accumulated.*
 
 - Historical return testing: look-ahead bias prevention, survivorship bias prevention,
@@ -385,12 +487,17 @@ live URL; payment-capable.
   If Noah cannot beat simple DCA on risk-adjusted terms after costs, it should not trade actively.
 - Signal leaderboard.
 
+- Per-strategy backtesting: every registered strategy in the registry is tested independently
+  and as a mixed portfolio. StrategyMixer blends are tested across regimes.
+- Strategy leaderboard: rank all strategies by risk-adjusted return after costs.
+
 **Gate:** Every strategy tested out-of-sample; delisted companies handled; all four
-benchmarks compared; weak signals rejected; Noah beats simple DCA before any live execution.
+benchmarks compared; weak signals rejected; each strategy has a published base-rate record;
+StrategyMixer blend tested; Noah beats simple DCA before any live execution.
 
 ---
 
-### S10 — Micro-Live Readiness (Phase 1)
+### S11 — Micro-Live Readiness (Phase 1)
 
 **Prerequisites (all must pass):**
 - ≥ 28 days continuous paper operation.
@@ -421,7 +528,7 @@ No pre-market / after-hours.
 
 ---
 
-### S11 — Module Restructure (last sprint)
+### S12 — Module Restructure (last sprint)
 *(Section 14.5 of Feedback 2)*
 
 Restructure the flat layout into a clean domain hierarchy. All 200+ tests must stay green.
@@ -497,7 +604,7 @@ alerts/
 
 All of the following must be true before Phase 1 (live money) is unlocked:
 
-- All tests green (target ≥ 200 tests by S7).
+- All tests green (target ≥ 200 tests by S8).
 - Agent cannot modify its own constitution / config.
 - Tool permissions enforced before every tool action.
 - Budget limits enforced before every money/spend action.
@@ -505,9 +612,12 @@ All of the following must be true before Phase 1 (live money) is unlocked:
 - Broker/account reconciliation clean.
 - State machine prevents skipped steps.
 - ThesisCard required before any paper trade.
-- Invalidation required before any paper trade.
+- Invalidation required before any paper trade (fixed or trailing floor).
 - Every action logged.
 - Edge Proof Engine approved at least one signal.
+- Strategy Registry has ≥ 3 active strategies with live base-rates.
+- Learning Engine updating base-rates autonomously after resolved trades.
+- Improvement proposals landing in Learning Ledger (Level 3 — not auto-applied).
 - Daily health report working.
 - Kill switch working over Tailscale.
 - No live trading possible unless explicitly enabled by founder-owned config.
