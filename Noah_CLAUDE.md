@@ -242,13 +242,16 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 
 | Doc | Canonical for |
 |---|---|
+| `README.md` | Repo entry point (top-level orientation) |
 | `docs/README.md` | Documentation index |
+| `docs/NOAH_BRIEF.md` | Project context: why/who, real capital, open questions |
 | `docs/NOAH_ROADMAP.md` | Full sprint plan S1-S12 + open decisions + definition of done |
 | `docs/NOAH_CONSTITUTION.md` | The rules in prose (Sharia, risk, phase gates) |
 | `docs/NOAH_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
 | `docs/NOAH_TESTING.md` | Test strategy, adversarial + integration suites |
 | `docs/NOAH_LIVE_READINESS.md` | Phase 1 go-live checklist + definition of done |
 | `docs/NOAH_CHANGELOG.md` | Sprint & decision history |
+| `docs/source-materials/` | Archived original PRDs/specs/playbook (provenance only) |
 | `HANDOFF.md` | Current status + tech stack + how to run |
 
 **Rule:** a fact has ONE home. Changing a sprint? Edit `docs/NOAH_ROADMAP.md`, not here.

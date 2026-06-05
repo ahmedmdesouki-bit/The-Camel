@@ -14,3 +14,7 @@ dist/
 *.xlsx
 # Alpaca paper key — never commit
 alpaca_paper.json
+# transient/junk artifacts
+pytest-cache-files-*/
+adam/
+zi0Yq9dR

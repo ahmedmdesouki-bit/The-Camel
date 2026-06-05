@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-06-06
+
+**Consolidation: one source of truth, clean repo.**
+Folded `Noah_Project_Brief.md` → `docs/NOAH_BRIEF.md` (canonical "why/who" doc: founder
+constraints, real capital ~$126 + $100/mo, $10K target, origin, open questions). Added a
+top-level `README.md` entry point. Archived all legacy source docs (ADAM/Noah PRDs & specs,
+StockSense playbook/dashboard/tracker generator) to `docs/source-materials/` via git-tracked
+renames (history preserved, nothing deleted). Removed junk (pytest cache `adam/`, stale
+placeholder, stray zip) and gitignored transients. Root now holds only code + the canonical
+entry docs. 110 tests green.
+
+---
+
 ## 2026-06-05
 
 **Docs: 9-document split with canonical-source discipline.**

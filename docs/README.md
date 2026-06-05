@@ -24,6 +24,7 @@ the others point here rather than copy. This is the rule that keeps the docs fro
 | **`README.md`** (this file) | Orientation + index | Everyone | The map of all docs |
 | **`../Noah_CLAUDE.md`** | Agent operating manual: conventions, rails, repo map, status | Claude Code / builder | How to work in the repo |
 | **`../HANDOFF.md`** | Current status + tech stack + how to run | New contributor | Onboarding / run instructions |
+| **`NOAH_BRIEF.md`** | Project context: why, who, real capital, open questions | Outside reviewer, founder | The "why & who" |
 | **`NOAH_CONSTITUTION.md`** | The rules in prose: Sharia, risk, phase gates | Founder, Sharia scholar, lawyer | The non-negotiable rules |
 | **`NOAH_ROADMAP.md`** | Full sprint plan S1–S12 + open decisions | Builder, founder | The build roadmap |
 | **`NOAH_DATA_CONTRACTS.md`** | 7-DB schemas, point-in-time discipline, data quality | Builder | Data model + contracts |
@@ -39,7 +40,12 @@ code enforces.
 
 ## Reading order
 
-- **New here?** → `../HANDOFF.md`, then this index, then `NOAH_ROADMAP.md`.
+- **New here?** → `NOAH_BRIEF.md` (why/who), then `../HANDOFF.md` (status/run), then `NOAH_ROADMAP.md`.
 - **Building a sprint?** → `../Noah_CLAUDE.md` (conventions + rails) + the sprint in `NOAH_ROADMAP.md`.
 - **Reviewing safety/compliance?** → `NOAH_CONSTITUTION.md`.
 - **About to go live?** → `NOAH_LIVE_READINESS.md`.
+
+## Archive
+
+`source-materials/` holds the original PRDs, specs, and the StockSense playbook/dashboard —
+provenance only, superseded by the docs above.
