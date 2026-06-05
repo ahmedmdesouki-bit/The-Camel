@@ -370,6 +370,8 @@ Constitution's "Noah cannot change its own rules" constraint.
 #### Strategy Registry (`strategies/`)
 
 Every strategy is a module that implements `BaseStrategy`:
+- `name: str` — unique identifier used in the registry, logs, and Learning Ledger
+- `description: str` — plain-English summary of the strategy's logic and intent
 - `signal(observations) → List[SignalCandidate]` — what to look at
 - `entry_logic(signal) → EntryPlan` — how to enter (single, ladder, scaled)
 - `exit_logic(position) → ExitPlan` — fixed, trailing floor, or time-based
