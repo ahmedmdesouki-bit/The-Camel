@@ -1,0 +1,3 @@
+pyyaml>=6.0
+pytest>=8.0
+# added in later sprints: alpaca-py, supabase, python-dotenv, requests

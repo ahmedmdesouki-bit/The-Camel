@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockSense v11 — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1c232c; --line:#2a313c;
+  --txt:#e6edf3; --mut:#8b949e; --accent:#3b82f6; --good:#3fb950; --bad:#f85149;
+  --warn:#d29922; --gold:#e3b341; --halal:#2ea043; --haram:#da3633;
+  --r:14px; --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--font);line-height:1.5;padding:28px;max-width:1280px;margin:0 auto}
+h1{font-size:24px;font-weight:650;letter-spacing:-.4px}
+h2{font-size:15px;font-weight:600;margin-bottom:14px;letter-spacing:-.2px;color:var(--txt)}
+.sub{color:var(--mut);font-size:13px;margin-top:3px}
+.muted{color:var(--mut)}
+header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:22px}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--panel2);border:1px solid var(--line);color:var(--mut)}
+.banner{background:linear-gradient(90deg,rgba(218,54,51,.16),rgba(218,54,51,.04));border:1px solid rgba(218,54,51,.4);border-radius:var(--r);padding:13px 16px;margin-bottom:22px;font-size:13.5px;display:flex;gap:10px;align-items:flex-start}
+.banner b{color:#ff9b94}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.kpi .label{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:26px;font-weight:650;margin-top:6px;letter-spacing:-.5px}
+.kpi .delta{font-size:12.5px;margin-top:3px}
+.cols{grid-template-columns:1.55fr 1fr;align-items:start}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:right;color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:8px 8px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right}
+tr:last-child td{border-bottom:none}
+input.px{width:74px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--txt);padding:5px 7px;text-align:right;font-family:var(--font);font-size:13px}
+input.px:focus{outline:none;border-color:var(--accent)}
+.pill{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px}
+.halal{background:rgba(46,160,67,.18);color:#3fb950}
+.haram{background:rgba(218,54,51,.18);color:#ff7b72}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.flagrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.flagrow:last-child{border-bottom:none}
+.bar{height:9px;background:var(--panel2);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar>span{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#2ea043,#3fb950)}
+.bar.warn>span{background:linear-gradient(90deg,#bb8009,#d29922)}
+.chartwrap{position:relative;height:230px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:880px){.row2{grid-template-columns:1fr}}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:7px 13px;font-size:12.5px;cursor:pointer;font-family:var(--font)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:11.5px;color:var(--mut);margin-top:10px;font-style:italic}
+.sector{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0}
+.tag{font-size:11px;color:var(--mut)}
+.afford{font-size:11px}
+footer{margin-top:26px;color:var(--mut);font-size:11.5px;text-align:center;line-height:1.7}
+.cmd{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:11px;margin:2px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>📊 StockSense v11 <span class="badge">Hybrid</span></h1>
+    <div class="sub">Chiko · Riyadh · Sharia-compliant only · Sahm (whole shares) · base currency SAR (pegged)</div>
+  </div>
+  <div style="text-align:right">
+    <div class="badge" id="stamp">—</div>
+    <div class="toolbar" style="justify-content:flex-end">
+      <button class="btn" onclick="resetAll()">Reset prices</button>
+      <button class="btn primary" onclick="saveState()">Save</button>
+    </div>
+  </div>
+</header>
+
+<div class="banner">
+  <span>🔴</span>
+  <div><b>Sharia flag (hard wall):</b> SCHD &amp; SCHX are <b>not Sharia-compliant</b> (conventional ETFs). Compliant whole-share swaps: <b>SPUS</b> · HLAL · MNZL. Pivot on your timing. <span class="muted">⚠️ Not advice — verify on Musaffa/Zoya before trading.</span></div>
+</div>
+
+<div class="grid kpis" id="kpis"></div>
+
+<div class="grid cols">
+  <div class="card">
+    <h2>Holdings — Live P&amp;L <span class="tag">edit the “Live” column</span></h2>
+    <table id="holdings">
+      <thead><tr><th>Ticker</th><th>Sharia</th><th>Shares</th><th>Buy</th><th>Live</th><th>Mkt Val</th><th>P&amp;L $</th><th>P&amp;L %</th><th>Wt</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="note">Live price defaults to your buy price until you update it. USD book carries ~no FX risk for you (SAR is pegged).</div>
+  </div>
+  <div class="card">
+    <h2>Allocation</h2>
+    <div class="chartwrap"><canvas id="alloc"></canvas></div>
+  </div>
+</div>
+
+<div class="grid row2" style="margin-top:16px">
+  <div class="card">
+    <h2>Sector Radar <span class="tag">🚨 flag &gt; 40%</span></h2>
+    <div id="sectors"></div>
+    <div class="note">Single names later will sharpen this. ETFs count as “Diversified.”</div>
+  </div>
+  <div class="card">
+    <h2>Milestone &amp; Cash</h2>
+    <div id="milestone"></div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h2>Watchlist — compliant core (staged) + names to analyze</h2>
+  <table id="watch">
+    <thead><tr><th>Ticker</th><th>Type</th><th>Sharia</th><th>~Price</th><th>Buy now?</th><th>Buy w/ 1 deposit?</th><th>Note</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div class="note">Affordability uses your cash + $100 deposit. Run “Analyze [ticker]” before any buy.</div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h2>Command reference</h2>
+  <div>
+    <span class="cmd">SHOW DASHBOARD</span><span class="cmd">UPDATE PRICES</span><span class="cmd">UPDATE FROM SCREENSHOT</span><span class="cmd">SHARIA SCAN</span><span class="cmd">BASE RATE</span><span class="cmd">GEO SCAN</span><span class="cmd">SECTOR RADAR</span><span class="cmd">MACRO BRIEFING</span><span class="cmd">RED ALERT</span><span class="cmd">BOARDROOM: [topic]</span><span class="cmd">EARNINGS CHECK: [ticker]</span><span class="cmd">Analyze [ticker]</span>
+  </div>
+  <div class="note">Compliant geopolitical lanes only: energy · commodities/minerals · gold · shipping/logistics · reconstruction/infra · agriculture. Defense/weapons = haram.</div>
+</div>
+
+<footer>
+  StockSense v11 · Unified Sharia-compliant system · Educational decision support only — not financial advice.<br>
+  Prices you enter are stored locally in your browser on this device only.
+</footer>
+
+<script>
+const DEPOSIT=100, CASH=27.82, SECLIMIT=0.40, DRAGFLAG=100;
+const holdings=[
+  {tk:'SCHD',name:'Schwab US Dividend Equity',shares:3,buy:32.28,sector:'Diversified',halal:false},
+  {tk:'SCHX',name:'Schwab US Large-Cap',shares:1,buy:29.76,sector:'Diversified',halal:false},
+];
+const watch=[
+  {tk:'SPUS',type:'Compliant ETF',halal:true,px:59.00,note:'Cleanest 1:1 swap · liquid · monthly dividend'},
+  {tk:'HLAL',type:'Compliant ETF',halal:true,px:71.11,note:'Broader large+mid · ~$892M AUM'},
+  {tk:'MNZL',type:'Compliant ETF',halal:true,px:60.29,note:'Cheapest fee 0.40% · new/thin spreads'},
+  {tk:'AAPL',type:'Single name',halal:null,px:null,note:'Pending analysis'},
+  {tk:'AMD',type:'Single name',halal:null,px:null,note:'Pending analysis'},
+  {tk:'ORCL',type:'Single name',halal:null,px:null,note:'Pending analysis'},
+  {tk:'DDOG',type:'Single name',halal:null,px:null,note:'Pending analysis'},
+];
+let live={};
+try{const s=JSON.parse(localStorage.getItem('ss11_live')||'{}');live=s;}catch(e){live={}}
+holdings.forEach(h=>{if(live[h.tk]==null)live[h.tk]=h.buy;});
+
+const f$=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fp=v=>(v>=0?'+':'')+v.toFixed(1)+'%';
+let allocChart;
+
+function compute(){
+  let cost=0,mv=0;
+  holdings.forEach(h=>{const lp=live[h.tk];h._cost=h.shares*h.buy;h._mv=h.shares*lp;cost+=h._cost;mv+=h._mv;});
+  holdings.forEach(h=>{h._pnl=h._mv-h._cost;h._pct=h._cost?h._pnl/h._cost*100:0;h._wt=mv?h._mv/mv*100:0;});
+  return {cost,mv,pnl:mv-cost,book:mv+CASH};
+}
+
+function renderKPIs(t){
+  const drag=t.book?CASH/t.book*100:0;
+  const dragFlag=CASH>DRAGFLAG;
+  const cards=[
+    {label:'Deployed',val:f$(t.cost),delta:'cost basis',cls:''},
+    {label:'Market Value',val:f$(t.mv),delta:'live',cls:''},
+    {label:'Total P&L',val:(t.pnl>=0?'+':'')+f$(t.pnl).replace('$','$'),delta:fp(t.cost?t.pnl/t.cost*100:0),cls:t.pnl>=0?'pos':'neg'},
+    {label:'Cash',val:f$(CASH),delta:'idle',cls:''},
+    {label:'Book Value',val:f$(t.book),delta:'incl. cash',cls:''},
+    {label:'Cash Drag',val:drag.toFixed(1)+'%',delta:dragFlag?'🚨 deploy':'✅ ok',cls:dragFlag?'neg':'pos'},
+  ];
+  document.getElementById('kpis').innerHTML=cards.map(c=>`
+    <div class="card kpi"><div class="label">${c.label}</div>
+    <div class="val ${c.cls}">${c.val}</div><div class="delta ${c.cls}">${c.delta}</div></div>`).join('');
+}
+
+function renderHoldings(){
+  const tb=document.querySelector('#holdings tbody');
+  tb.innerHTML=holdings.map(h=>`
+    <tr>
+      <td><b>${h.tk}</b><div class="tag">${h.name}</div></td>
+      <td><span class="pill ${h.halal?'halal':'haram'}">${h.halal?'✅ Halal':'❌ No'}</span></td>
+      <td>${h.shares}</td>
+      <td>${f$(h.buy)}</td>
+      <td><input class="px" type="number" step="0.01" value="${live[h.tk].toFixed(2)}" oninput="setLive('${h.tk}',this.value)"></td>
+      <td>${f$(h._mv)}</td>
+      <td class="${h._pnl>=0?'pos':'neg'}">${(h._pnl>=0?'+':'')+f$(h._pnl)}</td>
+      <td class="${h._pnl>=0?'pos':'neg'}">${fp(h._pct)}</td>
+      <td>${h._wt.toFixed(1)}%</td>
+    </tr>`).join('');
+}
+
+function renderSectors(t){
+  const map={};
+  holdings.forEach(h=>{map[h.sector]=(map[h.sector]||0)+h._mv;});
+  const el=document.getElementById('sectors');
+  el.innerHTML=Object.entries(map).map(([s,v])=>{
+    const w=t.mv?v/t.mv:0;const over=w>SECLIMIT;
+    return `<div><div class="sector"><span>${s} ${over?'🚨':''}</span><span>${(w*100).toFixed(1)}%</span></div>
+    <div class="bar ${over?'warn':''}"><span style="width:${(w*100).toFixed(1)}%"></span></div></div>`;
+  }).join('');
+}
+
+function renderMilestone(t){
+  const target=watch[0].px; // SPUS share
+  const have=CASH;const pct=Math.min(100,have/target*100);
+  const gap=Math.max(0,target-have);
+  document.getElementById('milestone').innerHTML=`
+    <div class="flagrow"><span>🎯 Next compliant share (SPUS ~${f$(target)})</span><b>${pct.toFixed(0)}%</b></div>
+    <div class="bar"><span style="width:${pct.toFixed(0)}%"></span></div>
+    <div class="note">Cash ${f$(have)} · gap ${f$(gap)} → one $100 deposit clears it.</div>
+    <div class="flagrow" style="margin-top:8px"><span>Cash-drag flag</span><span class="${CASH>DRAGFLAG?'neg':'pos'}">${CASH>DRAGFLAG?'🚨 idle cash high':'✅ within limit'}</span></div>
+    <div class="flagrow"><span>Monthly DCA</span><span>${f$(DEPOSIT)}</span></div>`;
+}
+
+function renderWatch(){
+  const tb=document.querySelector('#watch tbody');
+  tb.innerHTML=watch.map(w=>{
+    const now=w.px?Math.floor(CASH/w.px):'—';
+    const dep=w.px?Math.floor((CASH+DEPOSIT)/w.px):'—';
+    const sh=w.halal===true?'<span class="pill halal">✅</span>':w.halal===false?'<span class="pill haram">❌</span>':'<span class="tag">⏳</span>';
+    return `<tr><td><b>${w.tk}</b></td><td class="tag" style="text-align:left">${w.type}</td><td>${sh}</td>
+    <td>${w.px?f$(w.px):'—'}</td><td class="afford">${now}</td><td class="afford">${dep}</td>
+    <td class="tag" style="text-align:left">${w.note}</td></tr>`;
+  }).join('');
+}
+
+function renderAlloc(t){
+  const ctx=document.getElementById('alloc');
+  const data={labels:holdings.map(h=>h.tk),datasets:[{data:holdings.map(h=>h._mv),
+    backgroundColor:['#f85149','#d29922','#3b82f6','#2ea043','#a371f7'],borderColor:'#161b22',borderWidth:3}]};
+  if(allocChart){allocChart.data=data;allocChart.update();return;}
+  allocChart=new Chart(ctx,{type:'doughnut',data,options:{cutout:'62%',plugins:{legend:{position:'bottom',
+    labels:{color:'#8b949e',padding:14,font:{size:12}}}}}});
+}
+
+function refresh(){
+  const t=compute();
+  renderKPIs(t);renderHoldings();renderSectors(t);renderMilestone(t);renderWatch();renderAlloc(t);
+  document.getElementById('stamp').textContent='Updated '+new Date().toLocaleString();
+}
+function setLive(tk,v){const n=parseFloat(v);if(!isNaN(n))live[tk]=n;saveState(true);refresh();}
+function saveState(silent){localStorage.setItem('ss11_live',JSON.stringify(live));if(!silent){const b=event.target;const o=b.textContent;b.textContent='Saved ✓';setTimeout(()=>b.textContent=o,1200);}}
+function resetAll(){holdings.forEach(h=>live[h.tk]=h.buy);saveState(true);refresh();}
+refresh();
+</script>
+</body>
+</html>

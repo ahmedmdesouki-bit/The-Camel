@@ -1,0 +1,18 @@
+# ADAM Guardrail limits — FOUNDER-OWNED.
+# The agent process must NOT have write access to this file.
+# Changing autonomy = changing these numbers, deliberately, by you.
+
+phase: 0                      # 0 paper | 1 micro-live | 2 auto | 3 scale
+allow_leverage: false
+require_approval_live: true
+
+max_position_pct: 0.20        # max single position as % of fund
+max_sector_pct: 0.40          # max single sector as % of fund
+daily_loss_stop_pct: -0.05    # halt new trades if day P&L <= -5%
+weekly_drawdown_stop_pct: -0.10
+per_order_envelope_usd: 50    # auto-execute cap (phase >= 2); larger needs approval
+
+cash_tiers:                   # tiered minimum cash buffer by fund size
+  - {max_fund: 1000,   min_cash_pct: 0.0}
+  - {max_fund: 10000,  min_cash_pct: 0.10}
+  - {max_fund: 1.0e12, min_cash_pct: 0.10}
