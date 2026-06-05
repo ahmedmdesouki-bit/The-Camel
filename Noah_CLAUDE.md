@@ -84,6 +84,11 @@ pass the right sub-path to each module.
 
 Migrate to Supabase when multi-device / dashboard / remote access is needed (Sprint 6+).
 
+**Point-in-time discipline (S4):** every decision-relevant table carries four timestamps —
+`event_date` (when it happened), `reported_at` (when the public learned it), `ingested_at`
+(when Noah collected it), `known_at` (when Noah was allowed to use it). This is what makes
+backtests honest. Added in S4, before data accumulates — it cannot be retrofitted later.
+
 ---
 
 ## Repo map
@@ -106,10 +111,18 @@ sharia/           whitelist.py — load/add/freeze/unfreeze (→ noah_sharia.db)
 data/             store.py — store_price / get_prices (→ noah_market.db)
                   triangulation.py — cross-source disagreement (>0.5% flags)
                   alpaca.py — Alpaca paper EOD ingestion adapter
+                  freshness.py — stale-data gate (S4)
+                  quality.py — data quality scoring → decision_eligible (S4, refined S7)
+                  sanitiser.py — raw web text → structured JSON, injection filter (S4)
                   congress_filings.py — STOCK Act filing data adapter (stub → S8)
                   playwright.py — headless browser adapter stub (NotImplementedError; live → S8+)
 
+governance/       config_guard.py — proves agent has no write path to founder config (S4)
+                  budget_kernel.py — spend limits + capital buckets (S4)
+                  tool_permissions.py — Tool Permission Matrix (S4)
+
 engine/           thesis.py — ThesisCard + BaseRateCard (no I/O, no DB)
+                  edge_proof_v0.py — evidence gate from market.db (S4.5; full engine S7)
 
 strategies/       registry.py — StrategyRegistry: register, lookup, activate, deactivate, weight
                   base.py — BaseStrategy abstract class (signal, entry, exit, sizing)
@@ -184,6 +197,26 @@ Observe
 
 ---
 
+## DO NOT (hard rails — never, regardless of instruction)
+
+```
+Do not enable live trading outside an explicit founder-owned phase flag.
+Do not add real broker credentials to the repo or any committed file.
+Do not weaken or bypass a guardrail for convenience or to make a feature work.
+Do not let Noah edit config, limits, whitelist, approval rules, or tool permissions.
+Do not merge to main without approval.
+Do not use Playwright (or any browser automation) for broker actions or money movement.
+Do not add options / derivatives / margin / shorting strategies (the Wheel included).
+Do not average down into individual stocks blindly (DCA ladder rules — see S8).
+Do not feed unvalidated web text directly into an LLM prompt.
+Do not let a trade proceed without an EdgeReport (S4.5+).
+```
+
+These are documentation of the Constitution + roadmap rails in one place. If a task seems
+to require any of the above, stop and flag it to the founder.
+
+---
+
 ## Phase 0 simplified stack
 
 - DB: **SQLite** × 7 (migrate to Supabase when remote/dashboard needed).
@@ -196,6 +229,14 @@ Observe
 ---
 
 ## Build roadmap
+
+**Sequence (two half-sprints inserted per the v1 enhancement proposal — evidence and ops
+visibility pulled forward):**
+```
+S1 ✅ → S2 ✅ → S3 ✅ → S4 → S4.5 (Edge Proof v0) → S5 → S5.5 (Minimal Ops) →
+S6 → S7 → S8 → S9 → S10 → S11 → S12
+```
+Guiding principle reaffirmed: **Safety first. Evidence second. Autonomy last.**
 
 ### Completed
 - **S1 ✅** Guardrail Service + schema + tests. Gate: 28 rogue-action tests green.
@@ -244,6 +285,57 @@ Observe
 - `orders`: +`client_order_id` (UUID, idempotency) ✅
 - `broker/paper.py`: `pre_flight_execution_check()` — raises `DuplicateOrderException`.
 
+*Point-in-time timestamp columns (do this NOW, before data accumulates — retrofitting
+historical rows is impossible):*
+- Add to `prices`, and to all future macro/fundamentals/news tables, four distinct timestamps:
+  - `event_date` — when the thing actually happened
+  - `reported_at` — when the market/public learned it
+  - `ingested_at` — when Noah collected it (exists today)
+  - `known_at` — when Noah was *allowed* to use it
+- This is the foundation of honest backtesting (S10). Without it, look-ahead bias is
+  baked in and every backtest lies. Cheap now; impossible to add retroactively.
+
+*Config immutability — prove the rules cannot be edited:*
+- `governance/config_guard.py` — verifies at startup that the agent process has no write
+  path to `config/limits.yaml`, the whitelist, tool-permission config, budget config, or
+  approval thresholds. On Windows, enforced via file ACL check + a runtime write-attempt test.
+- Test asserts: an agent-initiated write to any founder-owned config **raises and is logged**.
+  This makes Constitution rule #7 ("Noah cannot change its own rules") a *proven* invariant,
+  not an asserted one.
+
+*Kill-switch hardening:*
+- Move the `is_halted()` check **inside `Constitution.evaluate()`** so it gates EVERY
+  consequential action (trade, spend, deploy), not just the loop start. A halted system
+  rejects all consequential actions structurally — there is no path around it.
+
+*Paper execution realism marker:*
+- `broker/paper.py` stamps every simulated fill with an honesty flag so performance data is
+  never mistaken for real:
+  ```json
+  {"execution_quality": "simulated_unrealistic", "fill_model": "last_close",
+   "performance_valid_for": "loop_testing_only"}
+  ```
+  Real fill modelling (spread, slippage, partial fills) comes with LiveBroker / Edge Lab.
+
+*Data quality scoring (v1 here, refined in S7):*
+- `data/quality.py` — `score(symbol, date) → dict` combining source_count, freshness_hours,
+  source_agreement (from triangulation), source_reputation (from allowlist). Emits
+  `quality_score` and `decision_eligible`. Stale or single-source low-quality data →
+  `decision_eligible=false` → blocks action.
+
+*Secrets-leak tests (cheap, high-value):*
+- Tests that FAIL if: `.env` is tracked by git · an API key pattern appears in any log file ·
+  a key appears in a DB row · a key appears in an exception trace. (Plaintext-secrets startup
+  refusal lands in S6 with the secrets manager.)
+
+*Adversarial test suite — established here, extended through S10:*
+S4 cases: (1) agent edits config → blocked; (2) trade frozen symbol → blocked; (3) act on
+stale data → blocked; (4) duplicate order → blocked; (5) bypass tool permissions → blocked;
+(6) Playwright broker action → blocked; (7) budget breach → blocked; (8) kill switch blocks
+action mid-loop. Remaining cases (prompt-injection override, broker mismatch, ledger tamper,
+no-EdgeProof signal, DCA into deteriorating name, model disagreement, backtest future data)
+land in S4.5 / S5 / S7 / S8 / S10 as those modules arrive.
+
 *ThesisCard extension — full standardised template (§5.6):*
 - `company` (display name), `regime`, `theme`, `sharia_status`, `time_horizon`
 - `signal_summary`, `why_now`, `already_priced_in`
@@ -251,10 +343,59 @@ Observe
 - `valuation_view`, `liquidity_view`, `portfolio_fit`
 - `price_invalidation`, `fundamental_invalidation`, `sharia_invalidation`, `time_stop`
 - `order_type` (limit by default), `approval_status`, `final_decision`
+- **`opportunity_cost_justification`** (required) — must answer: *"Why is this better than
+  simply buying more SPUS/HLAL?"* If it cannot answer, the thesis is rejected. This is the
+  default skeptic gate against narrative-driven trades.
 - Output format: `probability + expected_return + downside_risk + confidence + invalidation + approval_status`
 
 **Gate:** Constitution ≥ 40 tests; stale data blocks action; budget limits enforced;
-no duplicate orders possible.
+no duplicate orders possible; config write attempt by agent is blocked + logged; kill
+switch blocks action mid-loop; point-in-time columns present on `prices`; paper fills
+carry the realism marker; secrets-leak tests pass.
+
+---
+
+### S4.5 — Edge Proof v0  (evidence gate, pulled forward)
+
+*Rationale: the paper loop starts running in S5–S6, but the full Edge Proof Engine isn't
+ready until S7. Without a v0 gate, Noah would make trade decisions on narrative alone for
+two+ sprints — exactly the failure mode the project exists to prevent. v0 closes that window
+using only the `market.db` price data we already have. No macro/fundamentals/news needed.*
+
+`engine/edge_proof_v0.py` (moves to `trader/edge_proof_v0.py` in S12 restructure):
+- `EdgeReport` dataclass
+- Simple historical hit-rate + forward-return calculator from `noah_market.db`
+- Benchmark comparator (vs SPUS DCA by default)
+- Basic confidence score
+- `trade_allowed` boolean output
+
+Minimum report:
+```json
+{
+  "symbol": "SPUS", "signal": "core_etf_dca",
+  "sample_size": 36, "hit_rate": 0.58,
+  "median_forward_return": 0.041, "worst_forward_return": -0.14,
+  "max_drawdown": -0.18, "benchmark": "SPUS_DCA",
+  "benchmark_excess_return": 0.006, "confidence": 0.52,
+  "trade_allowed": false,
+  "reason": "Evidence too weak versus benchmark after estimated cost."
+}
+```
+
+Hard rules — all default to `trade_allowed=false`:
+- No EdgeReport attached → trade rejected by the allocator
+- Missing sample size → rejected
+- Missing benchmark → rejected
+- Weak evidence (excess return not positive after estimated cost) → rejected
+- Every v0 decision logged to `noah_learning.db`
+
+The full 13-check Edge Proof Engine (S7) is built *on top of* v0 — v0 is never removed,
+it becomes the cheapest first filter.
+
+**Gate:** No trade candidate proceeds without an EdgeReport; missing/weak/stale inputs all
+return `trade_allowed=false`; `trade_allowed=false` blocks the allocator; tests cover allow,
+reject, missing-sample, weak-benchmark, weak-evidence, stale-input. Adversarial case added:
+strategy produces a signal without Edge Proof → blocked.
 
 ---
 
@@ -271,6 +412,15 @@ no duplicate orders possible.
   Sharia/compliance clarity 15% · Capital required 10% · Time required 10% ·
   Strategic learning value 5%.
   Output: `{recommended_path, reason, confidence, capital_required, approval_required}`.
+  **Conservative routing rules (the router must lean toward inaction):**
+  ```
+  if no edge proof              → Wait
+  if safety module incomplete   → System improvement
+  if data missing               → Research
+  if product evidence missing   → Research
+  if capital budget unavailable → Wait
+  ```
+  The router can NOT recommend the Trader path without a passing Edge Proof v0.
 - `operator/task_queue.py` — persistent task queue; every planned action is enqueued before
   execution, enabling pause/resume and auditing of intent vs outcome.
 - `operator/learning_ledger.py` — writes to `noah_learning.db`:
@@ -284,21 +434,47 @@ no duplicate orders possible.
   **secrets availability (without exposing secrets)** · last heartbeat ·
   guardrail service status · current mode (paper/micro-live/paused/killed).
 
-**Gate:** State machine prevents state jumps; Opportunity Router returns "Wait" when no
-edge proven; Learning Ledger records every decision outcome; task queue persists intent.
+**Gate:** State machine prevents state jumps; Opportunity Router returns "Wait" when all
+scores are weak and "System improvement" when safety gaps are open; router cannot recommend
+Trader without Edge Proof v0; Learning Ledger records every decision outcome; task queue
+persists intent.
+
+---
+
+### S5.5 — Minimal Ops Visibility  (operational safety, pulled forward from S6)
+
+*Rationale: operational visibility IS safety. Don't run an autonomous loop for sprints with
+no way to see its health or recover it. These are the cheapest, highest-leverage ops items
+from S6, brought forward so the loop is observable as soon as it's running.*
+
+- Daily health report (text/console first; Telegram delivery in S6).
+- Kill-switch test — confirm halt stops the next tick, resume restores.
+- Secrets exposure check — startup scan; warn if any secret is in plaintext env.
+- Backup/restore test — manual backup of all seven DBs + a verified restore.
+- **Status classifier** (used by the health report and the Opportunity Router):
+  ```
+  GREEN  = safe to run paper loop
+  YELLOW = run research only (a safety/data gap is open)
+  RED    = halt all consequential actions (loss-stop, reconciliation diff, stale data)
+  BLACK  = kill switch / manual founder intervention required
+  ```
+
+**Gate:** Health report emits a GREEN/YELLOW/RED/BLACK status; kill-switch test passes;
+backup restore verified; no plaintext secret goes undetected.
 
 ---
 
 ### S6 — Dashboard + Monitoring + Kill Switch over Tailscale + Ops Hardening
-*(Was original S4)*
+*(Was original S4; minimal ops now live from S5.5 — S6 is the full build-out)*
 - Dashboard reading live SQLite state (positions, P&L, ledger, guardrail events, Sharia flags).
 - Daily Telegram health report — exact format (§11.8):
   ```
   Noah Daily Health Report
-  Status: Running | Mode: Paper | Broker: Connected | DB: Connected
+  System status: GREEN | Mode: Paper | Broker: Connected | DB: Connected
   Guardrail Service: Passed | Open thesis cards: N | Open paper positions: N
   Live capital at risk: $0 | Paper capital at risk: $N | Issues: None
   ```
+  (System status = the GREEN/YELLOW/RED/BLACK classifier from S5.5; now delivered over Telegram.)
 - Kill switch reachable over Tailscale.
 - Machine heartbeat + uptime monitor.
 - Full reconciliation report (ledger vs broker paper statement).
@@ -343,16 +519,28 @@ Additional guardrail wired here: **model disagreement rule** — when BOARDROOM 
 (Bull, Bear, Sharia Auditor) conflict materially, `generate_edge_report()` sets
 `trade_allowed=false` and routes to Human Approval Gate instead of auto-proceeding.
 
-Minimum edge report:
+Statistical controls (the contents of `calculate_base_rate` + `generate_edge_report`,
+enriching the v0 report): minimum sample-size threshold · confidence interval · median AND
+mean forward return · worst forward return · max drawdown · Sharpe-like risk-adjusted score ·
+benchmark excess return · transaction-cost adjustment · slippage adjustment · regime-specific
+base rate · signal-decay check · false-positive rate · outlier-sensitivity check.
+
+Full edge report (extends the S4.5 v0 report; reject if confidence interval crosses zero):
 ```json
 {
-  "signal": "...", "sample_size": 42, "hit_rate": 0.61,
-  "median_forward_return": 0.084, "worst_forward_return": -0.21,
-  "max_drawdown": -0.18, "benchmark_excess_return": 0.032,
-  "confidence": 0.66, "trade_allowed": false,
-  "reason": "Sample size acceptable but excess return not strong after costs."
+  "trade_allowed": false, "decision_class": "REJECT_WEAK_EDGE",
+  "sample_size": 42, "hit_rate": 0.61,
+  "median_forward_return": 0.084, "mean_forward_return": 0.071,
+  "worst_forward_return": -0.21, "max_drawdown": -0.18,
+  "benchmark_excess_return": 0.032, "estimated_cost": 0.006,
+  "net_expected_return": 0.026, "confidence_interval": [-0.04, 0.09],
+  "confidence": 0.66,
+  "reason": "Excess return positive but confidence interval crosses zero."
 }
 ```
+
+Data quality scoring is refined here (full version of the `data/quality.py` v1 from S4):
+multi-source agreement, reputation, freshness, provenance — feeding `decision_eligible`.
 
 Observe-step structure follows: Regime → Theme → Asset Class → Sector → Company → Candidate.
 
@@ -393,6 +581,27 @@ before a position is proposed. Strategies generate candidates; Edge Proof valida
 | `etf_rotation.py` | Regime logic | Rotate between SPUS / HLAL / MNZL based on macro regime classification. |
 | `momentum.py` | Price action | Trend-following on compliant single names and ETFs. |
 | `mean_reversion.py` | Price action | Quality-dip accumulation when a compliant name pulls back to key support. |
+
+**Phased rollout within S8 (validate few before adding many):**
+- **First trio** — `momentum.py`, `mean_reversion.py`, `dca_ladder.py`. These are
+  self-contained: computable from `noah_market.db` price data alone, no external deps.
+- **Then** — `etf_rotation.py` (needs regime classification → depends on the S7 macro DB,
+  so it follows, not leads).
+- **Delayed** — `congress_signal.py` (delayed, noisy disclosures; easily narrative-driven —
+  keep as a research signal, revisit after S10), `mean_reversion`→full `StrategyMixer`
+  complexity, and any intraday automation beyond monitoring.
+- Founder decision pending: whether `congress_signal` is delayed until after S10.
+
+**DCA ladder safety guardrails (mandatory — no blind averaging down):**
+- Allowed only for: (a) approved core Sharia ETFs, or (b) individual equities with a passing
+  Edge Proof AND no fundamental deterioration.
+- **No DCA** if Sharia status is frozen/watch.
+- **No DCA** if latest fundamentals deteriorated.
+- **No DCA** if the drawdown is driven by fraud, litigation, delisting, regulatory shock, or
+  a failed Sharia re-screen.
+- DCA total exposure must stay inside position + sector caps.
+- **DCA must have a final stop condition — no infinite averaging down.**
+- Default (ETFs only at first) is a founder decision: ladder on individual stocks vs ETFs only.
 
 **Wheel Strategy (Video Level 3) — permanently excluded.**
 Cash Secured Puts and Covered Calls are options (derivatives). Haram + Constitution rule #1.
@@ -466,6 +675,9 @@ congress_signal feeds observe step from Capital Trades without bypassing proof;
 intraday monitor runs every 5 min during market hours and correctly updates floors without
 opening new positions; base-rate updater records every resolved trade; auto weight
 adjustment stays within founder-set band; improvement proposals land in Learning Ledger.
+Starter trio (momentum / mean_reversion / dca_ladder) validated before any others are
+activated. Adversarial case added: DCA attempts to average down into a deteriorating /
+frozen / litigated name → blocked.
 
 ---
 
@@ -484,10 +696,22 @@ adjustment stays within founder-set band; improvement proposals land in Learning
   9. Sharia / compliance check
   10. Data / privacy check
   11. Success metric
+  12. Distribution channel
+  13. First 10 target customers
+  14. Willingness-to-pay evidence
+  15. Compliance risk rating
+  16. Data retention policy
+  17. Human-review requirement for generated outputs
 - Build pipeline: product_thesis → PRD → build plan → GitHub issues → MVP → tests →
   staging → human approval → production → outcome measurement.
   No direct production deploy without tests + founder approval.
-- Entrepreneur Constitution (separate from Trader constitution).
+- Entrepreneur Constitution (separate from Trader constitution). Hard guardrails:
+  - No legal / financial / medical claims without human approval.
+  - No collection of sensitive data without explicit privacy review.
+  - No use of copyrighted templates/assets without a rights check.
+  - No production launch without founder approval.
+  - No paid ads without Budget Kernel approval.
+  - No customer-facing "official compliance guarantee" wording.
   Risk areas: wasted money, legally risky claims, customer data mishandling, copyrighted
   assets, non-compliant products, reputational damage — all gated.
 - Ship one compliant AI product (Stripe test mode acceptable for Phase 0).
@@ -517,9 +741,28 @@ live URL; payment-capable.
   and as a mixed portfolio. StrategyMixer blends are tested across regimes.
 - Strategy leaderboard: rank all strategies by risk-adjusted return after costs.
 
-**Gate:** Every strategy tested out-of-sample; delisted companies handled; all four
-benchmarks compared; weak signals rejected; each strategy has a published base-rate record;
-StrategyMixer blend tested; Noah beats simple DCA before any live execution.
+**Benchmark hierarchy (compare against all, in order):**
+1. Cash · 2. Simple monthly DCA into SPUS · 3. SPUS buy-and-hold · 4. HLAL buy-and-hold ·
+5. MNZL where relevant · 6. Equal-weight Sharia ETF basket · 7. Noah active strategy.
+If Noah does not beat simple DCA on risk-adjusted terms after costs, Noah does not trade actively.
+
+**Strategy kill criteria — disable or move to research-only if ANY hold:**
+```
+Out-of-sample return < benchmark
+Max drawdown > allowed threshold
+Hit rate materially below base rate
+Performance depends on a single outlier
+Transaction costs erase the edge
+Signal works only in one cherry-picked regime
+Sample size too small
+```
+A killed strategy is deactivated in the registry (Level 3 — logged, founder notified).
+
+**Gate:** Every strategy tested out-of-sample; delisted companies handled; full benchmark
+hierarchy compared; weak signals rejected; each strategy has a published base-rate record;
+StrategyMixer blend tested; kill criteria enforced; Noah beats simple DCA before any live
+execution. Adversarial case added: backtest attempts to use future / restated data → blocked
+by point-in-time `known_at` discipline.
 
 ---
 
@@ -534,6 +777,11 @@ StrategyMixer blend tested; Noah beats simple DCA before any live execution.
 - Broker API key scoped trade-only, withdrawals disabled.
 - Edge Proof Engine has approved at least one signal.
 - Approval flow end-to-end tested.
+- Margin disabled · options disabled · API key scoped to minimum required permissions.
+- Manual dry-run completed.
+- One **rejected** trade test completed in the live environment (no order placed).
+- One **approved** micro trade completed manually before any automation.
+- Emergency broker login tested.
 
 *Deliverables:*
 - Approval Channel (Telegram one-tap approve / veto with timeout = veto).
@@ -619,10 +867,15 @@ alerts/
 
 1. Live broker for Phase 1: Alpaca vs IBKR.
 2. Notification channel: Telegram (default) vs Pushover.
-3. First Entrepreneur product to ship.
-4. Canonical Sharia screener: Musaffa vs Zoya.
-5. Starting limit values in `config/limits.yaml`.
+3. First Entrepreneur product to ship. *(Note: the v1 proposal suggested an Arabic
+   travel/hospitality SLA assistant, but that assumed a founder background we have no record
+   of — treat as an example, not a recommendation. Founder to decide from actual domain.)*
+4. Canonical Sharia screener: Musaffa vs Zoya (use one canonical, the other as cross-check).
+5. Starting limit values in `config/limits.yaml` (start very low; approval for all paid spend).
 6. Capital bucket percentages (defaults in S4 Budget Kernel).
+7. DCA ladder: ETFs only at first, or also individual equities with Edge Proof?
+8. `congress_signal`: delay until after S10, or build in S8?
+9. Default benchmark: SPUS primary, HLAL secondary, Cash + DCA as controls — confirm?
 
 ---
 
@@ -631,16 +884,22 @@ alerts/
 All of the following must be true before Phase 1 (live money) is unlocked:
 
 - All tests green (target ≥ 200 tests by S8).
-- Agent cannot modify its own constitution / config.
+- Agent cannot modify its own constitution / config — **proven by config-immutability test**, not asserted.
 - Tool permissions enforced before every tool action.
 - Budget limits enforced before every money/spend action.
-- Data freshness checked before every trade decision.
+- Data freshness checked before every trade decision; stale/single-source data is decision-ineligible.
+- Point-in-time timestamps present on all decision-relevant tables (no look-ahead bias).
 - Broker/account reconciliation clean.
+- Kill switch checked inside `Constitution.evaluate()` — gates every consequential action.
 - State machine prevents skipped steps.
-- ThesisCard required before any paper trade.
+- ThesisCard required before any paper trade, including the opportunity-cost justification.
 - Invalidation required before any paper trade (fixed or trailing floor).
 - Every action logged.
+- **No trade proceeds without an EdgeReport** (v0 from S4.5; full engine from S7).
 - Edge Proof Engine approved at least one signal.
+- Adversarial test suite green (config edit, frozen symbol, stale data, duplicate order,
+  permission bypass, Playwright broker action, injection override, broker mismatch, ledger
+  tamper, no-EdgeProof signal, DCA into deteriorating name, model disagreement, future-data backtest).
 - Strategy Registry has ≥ 3 active strategies with live base-rates.
 - Learning Engine updating base-rates autonomously after resolved trades.
 - Improvement proposals landing in Learning Ledger (Level 3 — not auto-applied).
