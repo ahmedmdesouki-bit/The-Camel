@@ -7,6 +7,22 @@
 
 ## 2026-06-06
 
+**Sprint 5 (Operator OS) COMPLETE — 217 → 253 tests green.**
+New `operator_os/` package — **named `operator_os` not `operator` to avoid shadowing the
+Python stdlib `operator` module** (a real collision that would break dependencies). Contents:
+- `state_machine.py` — 11 states with enforced transitions (can't jump FORMING_THESIS→ACTING;
+  ACTING only from AWAITING_APPROVAL; leaving PAUSED needs founder approval; KILLED terminal).
+- `opportunity_router.py` — 5 paths; conservative gates (safety→System improvement, missing
+  data→Research, no capital→Wait); cannot recommend Trader without a passing Edge Proof.
+- `task_queue.py`, `learning_ledger.py`, `op_log.py` — persistent intent, shared learning
+  memory (both arms), append-only operator log. New `tasks` + `op_log` tables in db/portfolio.py.
+- `ops/health_monitor.py` — real DB/disk/kill-switch checks + GREEN/YELLOW/RED/BLACK status
+  classifier and the daily-report text (the classifier is an S5.5 item, landed early here).
+
+---
+
+## 2026-06-06
+
 **Sprint 4.5 (Edge Proof v0) COMPLETE — 197 → 217 tests green.**
 `engine/edge_proof_v0.py`: forward-return distribution + hit rate + benchmark excess from
 `noah_market.db`; every missing/weak/stale input defaults to `trade_allowed=false`. `gate()`

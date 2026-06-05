@@ -227,6 +227,11 @@ scores are weak and "System improvement" when safety gaps are open; router canno
 Trader without Edge Proof v0; Learning Ledger records every decision outcome; task queue
 persists intent.
 
+**STATUS: COMPLETE** (253 tests). Package is **`operator_os/`** — *not* `operator/` as the
+§14.5 target names it, because `operator` is a Python stdlib module and would shadow it.
+S12 restructure should use `operator_os/`. The GREEN/YELLOW/RED/BLACK status classifier and
+daily-report text (an S5.5 item) landed early in `ops/health_monitor.py`.
+
 ---
 
 ### S5.5 — Minimal Ops Visibility  (operational safety, pulled forward from S6)
