@@ -7,6 +7,16 @@ if str(ROOT) not in sys.path:
 
 import pytest
 from db.paths import NoahDbs, init_all
+from ops.kill_switch import resume
+
+
+@pytest.fixture(autouse=True)
+def _kill_switch_off():
+    """Constitution.evaluate() checks is_halted() (S4), so ensure the kill switch is OFF
+    for every test unless a test explicitly halt()s it. Prevents cross-test pollution."""
+    resume()
+    yield
+    resume()
 
 
 @pytest.fixture

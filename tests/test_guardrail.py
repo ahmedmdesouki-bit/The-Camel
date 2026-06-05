@@ -11,6 +11,7 @@ import pytest
 from guardrail import (
     Constitution, Action, ActionType, Thesis, Instrument, PortfolioState,
 )
+from ops.kill_switch import halt, resume
 
 def good_thesis():
     return Thesis(invalidation="close < 50d MA", profit_take="+15%", time_stop="6 months")
@@ -129,3 +130,79 @@ def test_small_fund_no_buffer(C):
     s = PortfolioState(fund_usd=500, cash_usd=120,
                        whitelist={"SPUS": Instrument("SPUS","Diversified","compliant",False,True)})
     assert C.evaluate(buy(notional_usd=100), s).allow
+
+
+# ==================== S4 — HARDENING ADDITIONS ====================
+
+# ---------------- kill switch inside evaluate ----------------
+def test_kill_switch_blocks_every_action(C):
+    halt()
+    try:
+        d = C.evaluate(buy(), base_state())
+        assert not d.allow and d.limit_hit == "kill_switch"
+        # blocks non-trade types too
+        assert not C.evaluate(
+            Action(type=ActionType.DEPLOY, business_model="halal ai tool"), base_state()
+        ).allow
+    finally:
+        resume()
+
+def test_resume_restores_normal_evaluation(C):
+    halt(); resume()
+    assert C.evaluate(buy(), base_state()).allow
+
+# ---------------- rolling velocity stops ----------------
+def test_rolling_5d_stop_rejects(C):
+    d = C.evaluate(buy(), base_state(rolling_5d_pnl_pct=-0.08))
+    assert not d.allow and d.limit_hit == "rolling_5d_stop"
+
+def test_rolling_5d_stop_boundary(C):
+    assert C.evaluate(buy(), base_state(rolling_5d_pnl_pct=-0.0799)).allow
+    assert not C.evaluate(buy(), base_state(rolling_5d_pnl_pct=-0.08)).allow
+
+def test_rolling_14d_stop_rejects(C):
+    d = C.evaluate(buy(), base_state(rolling_14d_pnl_pct=-0.12))
+    assert not d.allow and d.limit_hit == "rolling_14d_stop"
+
+def test_rolling_14d_stop_boundary(C):
+    assert C.evaluate(buy(), base_state(rolling_14d_pnl_pct=-0.1199)).allow
+    assert not C.evaluate(buy(), base_state(rolling_14d_pnl_pct=-0.12)).allow
+
+def test_cooldown_blocks_trading(C):
+    d = C.evaluate(buy(), base_state(cooldown_active=True))
+    assert not d.allow and d.limit_hit == "cooldown"
+
+# ---------------- orders-per-day cap ----------------
+def test_max_orders_per_day_rejects(C):
+    d = C.evaluate(buy(), base_state(orders_today=10))
+    assert not d.allow and d.limit_hit == "max_orders_per_day"
+
+def test_orders_per_day_boundary(C):
+    assert C.evaluate(buy(), base_state(orders_today=9)).allow
+    assert not C.evaluate(buy(), base_state(orders_today=10)).allow
+
+# ---------------- illiquidity / slippage gate ----------------
+def test_wide_spread_rejects(C):
+    d = C.evaluate(buy(bid_ask_spread_pct=0.0051), base_state())
+    assert not d.allow and d.limit_hit == "wide_spread"
+
+def test_spread_boundary(C):
+    assert C.evaluate(buy(bid_ask_spread_pct=0.005), base_state()).allow     # exactly 0.5%
+    assert not C.evaluate(buy(bid_ask_spread_pct=0.0051), base_state()).allow
+
+def test_illiquid_order_size_rejects(C):
+    # ADV 1000 shares -> 1% cap = 10 shares; 11 rejected
+    d = C.evaluate(buy(avg_daily_volume=1000, order_shares=11), base_state())
+    assert not d.allow and d.limit_hit == "illiquid_size"
+
+def test_adv_participation_boundary(C):
+    assert C.evaluate(buy(avg_daily_volume=1000, order_shares=10), base_state()).allow
+    assert not C.evaluate(buy(avg_daily_volume=1000, order_shares=10.01), base_state()).allow
+
+def test_illiquidity_skips_when_data_absent(C):
+    # no spread / ADV on the action -> gate is skipped gracefully (IEX free tier)
+    assert C.evaluate(buy(), base_state()).allow
+
+def test_spread_skips_when_only_volume_present(C):
+    # partial data: ADV present but tiny order, no spread -> allowed
+    assert C.evaluate(buy(avg_daily_volume=1_000_000, order_shares=5), base_state()).allow

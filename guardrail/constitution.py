@@ -5,13 +5,17 @@ A deterministic gate between ADAM's intent and any consequential action.
 ADAM proposes; this disposes. There is no agent-callable override path:
 limits come from founder-owned config, not from the agent.
 
-Pure logic, no I/O, no DB — so it is fully unit-testable. The DB/RLS layer
+Deterministic logic; the only I/O is the kill-switch file check (S4), which is
+deliberate — the gate itself must see the halt so there is no path around it.
+Otherwise no DB and no network, so it stays fully unit-testable. The DB/RLS layer
 (see db/schema.sql) is the second wall; this is the first.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Dict
+
+from ops.kill_switch import is_halted
 
 
 class ActionType(str, Enum):
@@ -73,6 +77,10 @@ class Action:
     business_model: Optional[str] = None   # DEPLOY / SPEND
     approved_by: Optional[str] = None      # ADD_WHITELIST (founder)
     scan_id: Optional[str] = None          # ADD_WHITELIST (logged SHARIA SCAN)
+    # illiquidity / slippage gate inputs (S4) — None = unavailable, check skipped
+    bid_ask_spread_pct: Optional[float] = None   # (ask-bid)/bid
+    avg_daily_volume: Optional[float] = None     # 30-day ADV, shares
+    order_shares: Optional[float] = None         # this order's size, shares
 
 
 @dataclass
@@ -84,6 +92,11 @@ class PortfolioState:
     whitelist: Dict[str, Instrument] = field(default_factory=dict)  # symbol -> Instrument
     day_pnl_pct: float = 0.0
     week_pnl_pct: float = 0.0
+    # rolling velocity stop inputs (S4)
+    rolling_5d_pnl_pct: float = 0.0
+    rolling_14d_pnl_pct: float = 0.0
+    cooldown_active: bool = False          # set by the risk monitor during a 48h freeze
+    orders_today: int = 0                  # count of orders already placed today
     entrepreneur_budget_remaining_usd: float = 0.0
 
 
@@ -99,6 +112,13 @@ DEFAULT_LIMITS = {
     "max_sector_pct": 0.40,
     "daily_loss_stop_pct": -0.05,
     "weekly_drawdown_stop_pct": -0.10,
+    # rolling velocity stops (S4) — anti-bleeding over a sliding window
+    "rolling_5d_stop_pct": -0.08,     # 5-day rolling P&L <= -8% -> reject (48h cooldown)
+    "rolling_14d_stop_pct": -0.12,    # 14-day rolling P&L <= -12% -> reject (halt)
+    # illiquidity / slippage gate (S4) — skipped gracefully when data absent
+    "max_bid_ask_spread_pct": 0.005,  # reject if spread > 0.5%
+    "max_adv_participation": 0.01,    # reject if order > 1% of 30-day ADV
+    "max_orders_per_day": 10,         # runaway-loop backstop
     "allow_leverage": False,
     "phase": 0,                       # 0 paper, 1 micro-live, 2 auto, 3 scale
     "per_order_envelope_usd": 50.0,   # auto-execute cap (phase >= 2)
@@ -136,6 +156,11 @@ class Constitution:
 
     # ---- main gate ----
     def evaluate(self, a: Action, s: PortfolioState) -> Decision:
+        # Kill switch (S4): if halted, NO action proceeds. Checked inside the gate itself
+        # so there is no path around it — not merely at the loop entry point.
+        if is_halted():
+            return Decision(False, "Kill switch active — all actions halted.", "kill_switch")
+
         try:
             t = ActionType(a.type)
         except ValueError:
@@ -189,6 +214,26 @@ class Constitution:
                 return Decision(False, "Daily loss stop hit — trading halted.", "daily_loss_stop")
             if s.week_pnl_pct <= L["weekly_drawdown_stop_pct"]:
                 return Decision(False, "Weekly drawdown stop hit — trading frozen.", "weekly_drawdown_stop")
+
+            # 4b. rolling velocity stops + cooldown (S4) — anti-bleeding
+            if s.cooldown_active:
+                return Decision(False, "In post-breach cooldown — trading frozen.", "cooldown")
+            if s.rolling_5d_pnl_pct <= L["rolling_5d_stop_pct"]:
+                return Decision(False, "5-day rolling drawdown stop hit.", "rolling_5d_stop")
+            if s.rolling_14d_pnl_pct <= L["rolling_14d_stop_pct"]:
+                return Decision(False, "14-day rolling drawdown stop hit.", "rolling_14d_stop")
+
+            # 4c. orders-per-day cap (S4) — runaway-loop backstop
+            if s.orders_today >= L["max_orders_per_day"]:
+                return Decision(False, "Max orders per day reached.", "max_orders_per_day")
+
+            # 4d. illiquidity / slippage gate (S4) — skips gracefully when data is absent
+            if (a.bid_ask_spread_pct is not None
+                    and a.bid_ask_spread_pct > L["max_bid_ask_spread_pct"]):
+                return Decision(False, "Bid-ask spread too wide for safe execution.", "wide_spread")
+            if (a.avg_daily_volume and a.order_shares is not None
+                    and a.order_shares > L["max_adv_participation"] * a.avg_daily_volume + 1e-9):
+                return Decision(False, "Order exceeds ADV participation cap.", "illiquid_size")
 
             # 5. per-order envelope (auto execution cap)
             env = L["per_order_envelope_usd"]
