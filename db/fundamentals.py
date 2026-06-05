@@ -3,7 +3,7 @@ Fundamentals DB — noah_fundamentals.db  [Sprint 7 stub]
 Stores: revenue, margins, EPS, FCF, debt, cash, capex,
 guidance, valuation multiples, filing dates, risk factor changes.
 """
-import sqlite3
+from db.sqlite import connection
 
 DDL = """
 CREATE TABLE IF NOT EXISTS fundamentals (
@@ -37,5 +37,5 @@ CREATE TABLE IF NOT EXISTS valuation_snapshots (
 
 
 def init_fundamentals_db(path: str) -> None:
-    with sqlite3.connect(path) as conn:
+    with connection(path) as conn:
         conn.executescript(DDL)

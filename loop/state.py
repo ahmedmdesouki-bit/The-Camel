@@ -4,10 +4,11 @@ Every step is recorded so the loop can resume cleanly after a crash.
 """
 from __future__ import annotations
 import json
-import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, List, Optional
+
+from db.sqlite import connection
 
 STEPS = ("observe", "thesis", "choose", "act", "measure", "learn")
 
@@ -52,7 +53,9 @@ class RunState:
 
 
 def _ensure_table(db_path: str) -> None:
-    with sqlite3.connect(db_path) as conn:
+    # Canonical schema for `runs` lives in db/portfolio.py; this defensive
+    # CREATE IF NOT EXISTS only lets the loop run before init_all() has been called.
+    with connection(db_path) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS runs (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,7 +72,7 @@ def begin_run(db_path: str, phase: int = 0) -> RunState:
     _ensure_table(db_path)
     now = datetime.now(timezone.utc).isoformat()
     state = RunState(phase=phase, started_at=now)
-    with sqlite3.connect(db_path) as conn:
+    with connection(db_path) as conn:
         cur = conn.execute(
             "INSERT INTO runs (started_at, phase, steps_json, outcome) VALUES (?,?,?,?)",
             (now, phase, state.to_steps_json(), "running"),
@@ -79,7 +82,7 @@ def begin_run(db_path: str, phase: int = 0) -> RunState:
 
 
 def update_run(db_path: str, state: RunState) -> None:
-    with sqlite3.connect(db_path) as conn:
+    with connection(db_path) as conn:
         conn.execute(
             "UPDATE runs SET steps_json=?, outcome=? WHERE id=?",
             (state.to_steps_json(), state.outcome, state.run_id),
@@ -88,7 +91,7 @@ def update_run(db_path: str, state: RunState) -> None:
 
 def finish_run(db_path: str, state: RunState, outcome: str = "complete") -> None:
     state.outcome = outcome
-    with sqlite3.connect(db_path) as conn:
+    with connection(db_path) as conn:
         conn.execute(
             "UPDATE runs SET ended_at=?, steps_json=?, outcome=? WHERE id=?",
             (datetime.now(timezone.utc).isoformat(),

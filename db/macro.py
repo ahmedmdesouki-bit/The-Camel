@@ -4,7 +4,7 @@ Stores: rates, inflation, GDP, PMIs, yield curve, credit spreads, USD index,
 commodity proxies, recession indicators.
 Point-in-time snapshots to avoid look-ahead bias in backtesting.
 """
-import sqlite3
+from db.sqlite import connection
 
 DDL = """
 CREATE TABLE IF NOT EXISTS macro_snapshots (
@@ -20,5 +20,5 @@ CREATE TABLE IF NOT EXISTS macro_snapshots (
 
 
 def init_macro_db(path: str) -> None:
-    with sqlite3.connect(path) as conn:
+    with connection(path) as conn:
         conn.executescript(DDL)

@@ -2,7 +2,7 @@
 Market Data DB — noah_market.db
 Stores: prices, (future) dividends, splits, ETF holdings, market cap.
 """
-import sqlite3
+from db.sqlite import connection
 
 DDL = """
 CREATE TABLE IF NOT EXISTS prices (
@@ -38,5 +38,5 @@ CREATE TABLE IF NOT EXISTS splits (
 
 
 def init_market_db(path: str) -> None:
-    with sqlite3.connect(path) as conn:
+    with connection(path) as conn:
         conn.executescript(DDL)

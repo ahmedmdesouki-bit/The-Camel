@@ -1,110 +1,35 @@
 """
-SQLite schema initialiser — Phase 0 local DB.
-Single init_db(path) call creates all tables needed by sharia/ and data/.
-Mirrors the Postgres schema in db/schema.sql but speaks SQLite.
+SQLite connection helper — Phase 0.
+
+Schema DDL lives in the per-domain modules (db/market.py, db/sharia.py,
+db/portfolio.py, db/learning.py, db/macro.py, db/fundamentals.py, db/news.py),
+all created via db.paths.init_all(). This module is ONLY the connection helper —
+there is no schema here, so there is no second source of truth for the schema.
 """
 import sqlite3
+from contextlib import contextmanager
+from typing import Iterator
 
 
-DDL = """
-CREATE TABLE IF NOT EXISTS whitelist (
-    symbol       TEXT PRIMARY KEY,
-    asset_type   TEXT DEFAULT 'etf',
-    sharia_status TEXT DEFAULT 'unknown',
-    frozen       INTEGER DEFAULT 0,
-    approved_by  TEXT,
-    scanned_at   TEXT,
-    scan_id      TEXT,
-    source       TEXT
-);
+@contextmanager
+def connection(path: str) -> Iterator[sqlite3.Connection]:
+    """
+    Open a SQLite connection with a Row factory; commit on success, roll back on
+    error, and ALWAYS close. Use:
 
-CREATE TABLE IF NOT EXISTS sharia_events (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts         TEXT DEFAULT (datetime('now')),
-    event_type TEXT,
-    symbol     TEXT,
-    reason     TEXT,
-    detail     TEXT
-);
+        with connection(path) as conn:
+            conn.execute(...)
 
-CREATE TABLE IF NOT EXISTS prices (
-    symbol      TEXT,
-    date        TEXT,
-    open        REAL,
-    high        REAL,
-    low         REAL,
-    close       REAL,
-    volume      INTEGER,
-    adj_close   REAL,
-    source      TEXT,
-    ingested_at TEXT DEFAULT (datetime('now')),
-    PRIMARY KEY (symbol, date, source)
-);
-
-CREATE TABLE IF NOT EXISTS guardrail_events (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts          TEXT DEFAULT (datetime('now')),
-    action_json TEXT,
-    decision    INTEGER,
-    reason      TEXT,
-    limit_hit   TEXT
-);
-
-CREATE TABLE IF NOT EXISTS orders (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    symbol      TEXT,
-    side        TEXT,
-    qty         REAL,
-    type        TEXT DEFAULT 'market',
-    limit_price REAL,
-    status      TEXT,
-    broker      TEXT DEFAULT 'paper',
-    mode        TEXT DEFAULT 'paper',
-    approval_id TEXT,
-    thesis_id   TEXT,
-    created_at  TEXT,
-    filled_at   TEXT,
-    fill_price  REAL
-);
-
-CREATE TABLE IF NOT EXISTS ledger (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts            TEXT,
-    type          TEXT,
-    symbol        TEXT,
-    amount        REAL,
-    balance_after REAL,
-    ref           TEXT,
-    hash          TEXT
-);
-
-CREATE TABLE IF NOT EXISTS runs (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    started_at  TEXT,
-    ended_at    TEXT,
-    phase       INTEGER,
-    steps_json  TEXT,
-    outcome     TEXT
-);
-
-CREATE TABLE IF NOT EXISTS positions (
-    symbol        TEXT PRIMARY KEY,
-    qty           REAL,
-    avg_cost      REAL,
-    market_value  REAL,
-    unrealized_pnl REAL,
-    updated_at    TEXT DEFAULT (datetime('now'))
-);
-"""
-
-
-def init_db(path: str) -> None:
-    """Create all Phase-0 tables. Safe to call on an existing DB."""
-    with sqlite3.connect(path) as conn:
-        conn.executescript(DDL)
-
-
-def connect(path: str) -> sqlite3.Connection:
+    Unlike `with sqlite3.connect(path) as conn:` (which commits but never closes),
+    this guarantees the handle is closed — no connection leak over a long-running loop.
+    """
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()

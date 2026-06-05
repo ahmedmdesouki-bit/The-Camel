@@ -7,19 +7,24 @@ Takes two DB paths:
 
 Fills at the last known close price (fallback $1 when no price data).
 Every fill writes to orders + ledger; no real money moves.
+
+Cash convention (matches ledger/writer.py): a BUY records a NEGATIVE ledger amount
+(cash leaves the fund to buy shares); a SELL records a POSITIVE amount (cash returns).
+This keeps the ledger's running `balance_after` a true cash balance that reconciles
+against a broker cash statement.
 """
 from __future__ import annotations
-import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
+from db.sqlite import connection
 from guardrail.constitution import Action, Decision
 from ledger.writer import append_entry
 
 
 def _last_close(market_db: str, symbol: str) -> Optional[float]:
-    with sqlite3.connect(market_db) as conn:
+    with connection(market_db) as conn:
         row = conn.execute(
             "SELECT close FROM prices WHERE symbol=? ORDER BY date DESC LIMIT 1",
             (symbol,),
@@ -28,7 +33,9 @@ def _last_close(market_db: str, symbol: str) -> Optional[float]:
 
 
 def _ensure_orders_table(portfolio_db: str) -> None:
-    with sqlite3.connect(portfolio_db) as conn:
+    # Canonical schema for `orders` lives in db/portfolio.py; this defensive
+    # CREATE IF NOT EXISTS only lets the broker run before init_all() has been called.
+    with connection(portfolio_db) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS orders (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,6 +65,9 @@ class Fill:
     qty: float
     fill_price: float
     notional: float
+    # Phase-0 fills are simulated at last close — never mistake this for real execution.
+    execution_quality: str = "simulated_unrealistic"
+    fill_model: str = "last_close"
 
 
 class PaperBroker:
@@ -71,7 +81,7 @@ class PaperBroker:
     def submit(self, action: Action, decision: Decision) -> Fill:
         """
         Simulate a fill.  Constitution decision must be allow=True.
-        Returns a Fill; writes to orders + ledger.
+        Returns a Fill; writes to orders + ledger (BUY = cash out, SELL = cash in).
         """
         if not decision.allow:
             raise ValueError(f"Order blocked by Constitution: {decision.reason}")
@@ -82,7 +92,7 @@ class PaperBroker:
         qty = notional / fill_price if fill_price else 0.0
         now = datetime.now(timezone.utc).isoformat()
 
-        with sqlite3.connect(self.portfolio_db) as conn:
+        with connection(self.portfolio_db) as conn:
             cur = conn.execute(
                 "INSERT INTO orders "
                 "(symbol, side, qty, status, mode, created_at, filled_at, fill_price) "
@@ -91,8 +101,9 @@ class PaperBroker:
             )
             order_id = cur.lastrowid
 
-        ledger_type = "BUY" if action.side.lower() == "buy" else "SELL"
-        signed = notional if action.side.lower() == "buy" else -notional
+        is_buy = action.side.lower() == "buy"
+        ledger_type = "BUY" if is_buy else "SELL"
+        signed = -notional if is_buy else notional   # BUY = cash out, SELL = cash in
         append_entry(self.portfolio_db, ledger_type, symbol,
                      signed, ref=f"order_{order_id}")
 
@@ -102,7 +113,8 @@ class PaperBroker:
         )
 
     def paper_balance(self) -> float:
-        with sqlite3.connect(self.portfolio_db) as conn:
+        """Running ledger cash balance (DEPOSIT/SELL add, BUY subtracts)."""
+        with connection(self.portfolio_db) as conn:
             row = conn.execute(
                 "SELECT balance_after FROM ledger ORDER BY id DESC LIMIT 1"
             ).fetchone()

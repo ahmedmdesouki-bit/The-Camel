@@ -6,10 +6,10 @@ Optionally compares the running ledger balance against a broker statement.
 For Phase 0 (paper) the "broker balance" can be derived from simulated fills.
 """
 from __future__ import annotations
-import sqlite3
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from db.sqlite import connection
 from ledger.writer import _ensure_table, _make_hash
 
 
@@ -23,7 +23,7 @@ class ReconcileResult:
 
 def get_ledger_balance(db_path: str) -> float:
     _ensure_table(db_path)
-    with sqlite3.connect(db_path) as conn:
+    with connection(db_path) as conn:
         row = conn.execute(
             "SELECT balance_after FROM ledger ORDER BY id DESC LIMIT 1"
         ).fetchone()
@@ -36,7 +36,7 @@ def verify_hash_chain(db_path: str) -> List[str]:
     Returns a list of anomaly descriptions; empty list = chain intact.
     """
     _ensure_table(db_path)
-    with sqlite3.connect(db_path) as conn:
+    with connection(db_path) as conn:
         rows = conn.execute(
             "SELECT id, ts, type, symbol, amount, balance_after, ref, hash "
             "FROM ledger ORDER BY id"

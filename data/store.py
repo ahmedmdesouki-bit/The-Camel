@@ -6,7 +6,7 @@ import datetime
 from datetime import timezone
 from typing import Dict, List
 
-from db.sqlite import connect
+from db.sqlite import connection
 
 
 def store_price(db_path: str, record: Dict, source: str = "unknown") -> None:
@@ -14,7 +14,7 @@ def store_price(db_path: str, record: Dict, source: str = "unknown") -> None:
     Upsert a single OHLCV record into prices.
     record keys: symbol, date, open, high, low, close, volume, adj_close
     """
-    with connect(db_path) as conn:
+    with connection(db_path) as conn:
         conn.execute(
             """
             INSERT INTO prices
@@ -43,7 +43,7 @@ def store_price(db_path: str, record: Dict, source: str = "unknown") -> None:
 
 def get_prices(db_path: str, symbol: str, date: str) -> List[Dict]:
     """Return all price records for a (symbol, date) across all sources."""
-    with connect(db_path) as conn:
+    with connection(db_path) as conn:
         rows = conn.execute(
             "SELECT * FROM prices WHERE symbol=? AND date=?", (symbol, date)
         ).fetchall()

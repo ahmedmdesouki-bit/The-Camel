@@ -4,7 +4,7 @@ Stores: every Noah decision with its expected + actual outcome,
 mistake classification, lesson, and reusable pattern.
 This is the shared learning ledger for Trader and Entrepreneur arms.
 """
-import sqlite3
+from db.sqlite import connection
 
 DDL = """
 CREATE TABLE IF NOT EXISTS learning_ledger (
@@ -25,5 +25,5 @@ CREATE TABLE IF NOT EXISTS learning_ledger (
 
 
 def init_learning_db(path: str) -> None:
-    with sqlite3.connect(path) as conn:
+    with connection(path) as conn:
         conn.executescript(DDL)

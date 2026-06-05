@@ -4,7 +4,7 @@ Stores: orders (with client_order_id), positions, ledger, runs,
 guardrail_events, approvals.
 Extended schema per Feedback 1: client_order_id on orders.
 """
-import sqlite3
+from db.sqlite import connection
 
 DDL = """
 CREATE TABLE IF NOT EXISTS orders (
@@ -76,5 +76,5 @@ CREATE TABLE IF NOT EXISTS approvals (
 
 
 def init_portfolio_db(path: str) -> None:
-    with sqlite3.connect(path) as conn:
+    with connection(path) as conn:
         conn.executescript(DDL)

@@ -3,7 +3,7 @@ News/Events DB — noah_news.db  [Sprint 7 stub]
 Stores structured event objects — never raw web text.
 Raw strings are sanitised to JSON via data/sanitiser.py before landing here.
 """
-import sqlite3
+from db.sqlite import connection
 
 DDL = """
 CREATE TABLE IF NOT EXISTS news_events (
@@ -24,5 +24,5 @@ CREATE TABLE IF NOT EXISTS news_events (
 
 
 def init_news_db(path: str) -> None:
-    with sqlite3.connect(path) as conn:
+    with connection(path) as conn:
         conn.executescript(DDL)

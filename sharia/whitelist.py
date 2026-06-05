@@ -9,7 +9,7 @@ import datetime
 from datetime import timezone
 from typing import Dict, Optional
 
-from db.sqlite import connect
+from db.sqlite import connection
 from guardrail.constitution import Instrument
 
 
@@ -18,7 +18,7 @@ def load_whitelist(db_path: str) -> Dict[str, Instrument]:
     Load all non-frozen and frozen whitelist entries as {symbol: Instrument}.
     This is the dict that PortfolioState.whitelist expects.
     """
-    with connect(db_path) as conn:
+    with connection(db_path) as conn:
         rows = conn.execute("SELECT * FROM whitelist").fetchall()
     result: Dict[str, Instrument] = {}
     for r in rows:
@@ -46,7 +46,7 @@ def add_instrument(
     Upserts on conflict so re-adding a cleared name refreshes metadata.
     """
     now = datetime.datetime.now(timezone.utc).isoformat()
-    with connect(db_path) as conn:
+    with connection(db_path) as conn:
         conn.execute(
             """
             INSERT INTO whitelist
@@ -74,7 +74,7 @@ def freeze_instrument(db_path: str, symbol: str, reason: str) -> bool:
     Mark an instrument frozen (compliance drift detected by re-screen).
     Returns True if the symbol existed.
     """
-    with connect(db_path) as conn:
+    with connection(db_path) as conn:
         c = conn.execute(
             "UPDATE whitelist SET frozen=1 WHERE symbol=?", (symbol,)
         )
@@ -92,7 +92,7 @@ def unfreeze_instrument(db_path: str, symbol: str) -> bool:
     Unfreeze after a re-screen clears the instrument.
     Returns True if the symbol existed.
     """
-    with connect(db_path) as conn:
+    with connection(db_path) as conn:
         c = conn.execute(
             "UPDATE whitelist SET frozen=0, sharia_status='compliant' WHERE symbol=?",
             (symbol,),
@@ -108,7 +108,7 @@ def unfreeze_instrument(db_path: str, symbol: str) -> bool:
 
 def get_instrument(db_path: str, symbol: str) -> Optional[Dict]:
     """Return the raw row dict for a symbol, or None if not found."""
-    with connect(db_path) as conn:
+    with connection(db_path) as conn:
         row = conn.execute(
             "SELECT * FROM whitelist WHERE symbol=?", (symbol,)
         ).fetchone()

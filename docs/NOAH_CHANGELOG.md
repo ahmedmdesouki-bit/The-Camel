@@ -7,6 +7,25 @@
 
 ## 2026-06-06
 
+**QA/QC pass — fixed 4 findings + the minors. 110 tests green.**
+- **Ledger sign convention (real bug):** PaperBroker recorded BUY as positive (deployed)
+  while the ledger is a cash account (DEPOSIT positive). Fixed to BUY = cash out (negative),
+  SELL = cash in (positive) so the ledger reconciles against a broker cash statement. Updated
+  the two test_broker assertions to match.
+- **Dead/divergent schema:** removed the unused `init_db` + stale DDL from `db/sqlite.py`
+  (it lacked the extended columns). Schema now has one home: the per-domain `db/*.py` modules.
+- **append_entry docstring** corrected (it claimed a RuntimeError it never raised).
+- **Duplicated DDL:** added "canonical: db/portfolio.py" comments to the defensive
+  `_ensure_table` helpers in writer/state/broker.
+- **Minors:** unified all DB access on a single closing, Row-factory `connection()` context
+  manager (was a mix of a non-closing helper and raw `sqlite3.connect` — fixes both the
+  connection leak and the helper inconsistency). Added a `simulated_unrealistic` execution
+  marker to paper fills.
+
+---
+
+## 2026-06-06
+
 **Consolidation: one source of truth, clean repo.**
 Folded `Noah_Project_Brief.md` → `docs/NOAH_BRIEF.md` (canonical "why/who" doc: founder
 constraints, real capital ~$126 + $100/mo, $10K target, origin, open questions). Added a

@@ -4,7 +4,7 @@ Stores: versioned whitelist, sharia_events audit log.
 Extended schema per Feedback 1: historical_drift_count, purification_ratio,
 trigger_period, reasoning_summary.
 """
-import sqlite3
+from db.sqlite import connection
 
 DDL = """
 CREATE TABLE IF NOT EXISTS whitelist (
@@ -34,5 +34,5 @@ CREATE TABLE IF NOT EXISTS sharia_events (
 
 
 def init_sharia_db(path: str) -> None:
-    with sqlite3.connect(path) as conn:
+    with connection(path) as conn:
         conn.executescript(DDL)

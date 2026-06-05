@@ -65,18 +65,20 @@ def test_paper_broker_writes_to_orders(broker, portfolio_db):
     assert row == ("SPUS", "buy", "filled")
 
 def test_paper_broker_writes_to_ledger(broker, portfolio_db):
+    # BUY is cash OUT → negative ledger amount (cash convention).
     broker.submit(buy_action(notional=300.0), good_decision())
     with sqlite3.connect(portfolio_db) as conn:
         row = conn.execute(
             "SELECT type, amount FROM ledger ORDER BY id DESC LIMIT 1"
         ).fetchone()
-    assert row[0] == "BUY" and row[1] == pytest.approx(300.0)
+    assert row[0] == "BUY" and row[1] == pytest.approx(-300.0)
 
 def test_paper_broker_rejects_blocked_decision(broker):
     with pytest.raises(ValueError, match="blocked"):
         broker.submit(buy_action(), bad_decision())
 
-def test_paper_broker_sell_writes_negative_to_ledger(broker, portfolio_db):
+def test_paper_broker_sell_writes_positive_to_ledger(broker, portfolio_db):
+    # SELL is cash IN → positive ledger amount (cash convention).
     sell = Action(type=ActionType.TRADE, symbol="SPUS", side="sell",
                   notional_usd=200.0, instrument_type="etf", mode="paper")
     broker.submit(sell, good_decision())
@@ -84,7 +86,7 @@ def test_paper_broker_sell_writes_negative_to_ledger(broker, portfolio_db):
         row = conn.execute(
             "SELECT type, amount FROM ledger ORDER BY id DESC LIMIT 1"
         ).fetchone()
-    assert row[0] == "SELL" and row[1] == pytest.approx(-200.0)
+    assert row[0] == "SELL" and row[1] == pytest.approx(200.0)
 
 def test_paper_broker_sequential_orders(broker, portfolio_db):
     broker.submit(buy_action(notional=100.0), good_decision())

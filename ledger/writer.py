@@ -4,6 +4,10 @@ Append-only ledger writer with SHA-256 hash chain.
 Every entry's hash covers its own fields plus the previous entry's hash,
 making any post-hoc tampering detectable during reconciliation.
 The agent role has INSERT-only on this table (per db/schema.sql RLS sketch).
+
+Cash-account convention: amounts are signed from the fund's cash perspective —
+DEPOSIT and SELL are positive (cash in), BUY is negative (cash out). `balance_after`
+is the running cash balance, which is what reconciliation compares against the broker.
 """
 from __future__ import annotations
 import hashlib
@@ -12,9 +16,13 @@ import sqlite3
 from datetime import datetime, timezone
 from typing import Optional
 
+from db.sqlite import connection
+
 
 def _ensure_table(db_path: str) -> None:
-    with sqlite3.connect(db_path) as conn:
+    # Canonical schema for `ledger` lives in db/portfolio.py; this defensive
+    # CREATE IF NOT EXISTS only lets the writer run before init_all() has been called.
+    with connection(db_path) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS ledger (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,14 +66,17 @@ def append_entry(
     ref: str = "",
 ) -> int:
     """
-    Append one ledger entry.  Returns the new row id.
-    balance_after = running sum across all entries.
-    Raises RuntimeError on any write failure (never silently drops).
+    Append one ledger entry and return the new row id.
+
+    `amount` is signed from the cash perspective (DEPOSIT/SELL positive, BUY negative).
+    `balance_after` = previous balance + amount (running cash balance). The hash chains
+    to the previous row, so any later edit is detectable by verify_hash_chain().
+    A failed write propagates the sqlite error (the entry is never silently dropped).
     """
     _ensure_table(db_path)
     now = datetime.now(timezone.utc).isoformat()
 
-    with sqlite3.connect(db_path) as conn:
+    with connection(db_path) as conn:
         last = _last_row(conn)
         prev_balance = last["balance_after"] if last else 0.0
         prev_hash = last["hash"] if last else ""
