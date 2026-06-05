@@ -72,6 +72,22 @@ CREATE TABLE IF NOT EXISTS approvals (
     decided_by  TEXT,
     channel     TEXT
 );
+
+CREATE TABLE IF NOT EXISTS tasks (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_type   TEXT,
+    payload     TEXT,                              -- JSON
+    status      TEXT DEFAULT 'pending',            -- pending | running | done | failed
+    created_at  TEXT DEFAULT (datetime('now')),
+    updated_at  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS op_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts          TEXT DEFAULT (datetime('now')),
+    event_type  TEXT,                              -- STATE_TRANSITION | TOOL_CALL | ROUTER | ...
+    detail      TEXT
+);
 """
 
 
