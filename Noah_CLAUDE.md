@@ -74,6 +74,12 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   forward-return vs benchmark from `noah_market.db`; `gate()` wired into the allocator — no
   trade proceeds without a passing `EdgeReport`; missing/weak/stale → `trade_allowed=false`.
   → **217 passed**.
+- **Sprint 5 COMPLETE.** Operator OS in `operator_os/` (named to avoid the stdlib `operator`
+  module): 11-state machine (can't jump FORMING_THESIS→ACTING; ACTING only from
+  AWAITING_APPROVAL; PAUSED needs founder approval; KILLED terminal), Opportunity Router
+  (5 paths, leans to Wait, no Trader without Edge Proof), persistent task queue, Learning
+  Ledger, append-only op log, and a health monitor with the GREEN/YELLOW/RED/BLACK classifier.
+  → **253 passed**.
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `NoahDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -273,7 +279,7 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 Sequence:
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 <- NEXT -> S5.5 (Minimal Ops)
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 (Minimal Ops) <- NEXT
 -> S6 -> S7 -> S8 -> S9 -> S10 -> S11 -> S12
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
@@ -285,7 +291,7 @@ Guiding principle: **Safety first. Evidence second. Autonomy last.**
 | S3 OK | Loop + broker + ledger + allocator | full paper loop runs; ledger reconciles (110 tests) |
 | S4 OK | Hardening + Budget Kernel + freshness | config-immutability proven; stale data blocks; no dup orders (197 tests) |
 | S4.5 OK | Edge Proof v0 | no trade without an EdgeReport (217 tests) |
-| S5 | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof |
+| S5 OK | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof (253 tests) |
 | S5.5 | Minimal ops visibility | health report w/ GREEN/YELLOW/RED/BLACK; kill-switch test |
 | S6 | Dashboard + Telegram + Tailscale kill switch | kill switch stops next tick; backup restore verified |
 | S7 | Edge Proof Engine (13 checks) | no edge proof = no trade; model disagreement -> human |
