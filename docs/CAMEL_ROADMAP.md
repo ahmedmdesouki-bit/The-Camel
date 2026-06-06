@@ -520,7 +520,7 @@ failed-source count · stale-source warnings · data-quality panel.
 **Gate:** no ingested record without full provenance + point-in-time fields; ≥16 free connectors live
 with recorded-fixture tests; macro/fundamentals/news DBs hold real data; raw text never reaches the LLM.
 
-**STATUS: IN PROGRESS — slice 1 complete (352 → 366 tests).** Framework + provenance + first 2 connectors:
+**STATUS: IN PROGRESS — slices 1–2 (352 → 371 tests); 5 connectors live (FRED, SEC EDGAR, Treasury, World Bank, BLS).** Framework + provenance + first 2 connectors:
 `data/provenance.py` (point-in-time provenance fields + `source_documents` table + `assert_provenanced`);
 `data/source_registry.py` (`SourceSpec` registry; FRED + SEC EDGAR registered); `data/connectors/base.py`
 (`SourceConnector`: fetch→parse→normalize→validate→store with an **injectable transport** — stdlib `urllib`

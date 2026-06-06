@@ -57,3 +57,19 @@ SEC_EDGAR = register(SourceSpec(
     base_url="https://data.sec.gov", requires_api_key=False,
     allowed_for_decisioning=True, reliability_tier=1,
 ))
+
+TREASURY = register(SourceSpec(
+    source_id="treasury", source_name="US Treasury Fiscal Data", source_type="macro",
+    base_url="https://api.fiscaldata.treasury.gov/services/api/fiscal_service",
+    requires_api_key=False, reliability_tier=1,
+))
+
+WORLD_BANK = register(SourceSpec(
+    source_id="world_bank", source_name="World Bank Indicators", source_type="macro",
+    base_url="https://api.worldbank.org/v2", requires_api_key=False, reliability_tier=1,
+))
+
+BLS = register(SourceSpec(
+    source_id="bls", source_name="US Bureau of Labor Statistics", source_type="macro",
+    base_url="https://api.bls.gov/publicAPI", requires_api_key=False, reliability_tier=1,
+))

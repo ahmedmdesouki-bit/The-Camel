@@ -7,7 +7,11 @@
 
 ## 2026-06-06
 
-**Sprint 8 (Data Intelligence Backbone) — slice 1 COMPLETE — 352 → 366 tests green.** The long pole begins.
+**Sprint 8 (Data Intelligence Backbone) — slices 1–2 — 352 → 371 tests green.** The long pole begins.
+*Slice 2:* `data/connectors/macro_base.py` (shared `MacroConnector.store` → `macro_observations`) + three
+more macro connectors — `treasury.py` (Treasury Fiscal Data), `world_bank.py` (World Bank Indicators),
+`bls.py` (BLS CPI/employment, with period→date mapping). FRED refactored onto the shared base.
+**5 connectors live now** (FRED, SEC EDGAR, Treasury, World Bank, BLS). `tests/test_connectors_macro.py`.
 - `data/provenance.py` — point-in-time provenance fields + the `source_documents` audit table +
   `assert_provenanced` (a record without full lineage is not decision-grade and is dropped).
 - `data/source_registry.py` — `SourceSpec` registry (FRED + SEC EDGAR registered, free/official, tier 1).
