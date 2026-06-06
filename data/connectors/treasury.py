@@ -23,11 +23,15 @@ class TreasuryConnector(MacroConnector):
         out = []
         for row in data.get("data", []):
             val = row.get("avg_interest_rate_amt")
-            if val in (None, ""):
+            if val in (None, "") or not row.get("record_date"):
+                continue
+            try:
+                value = float(val)
+            except (TypeError, ValueError):
                 continue
             desc = row.get("security_desc", "rate")
             out.append({
                 "series_id": f"treasury:{desc}", "indicator": desc,
-                "value": float(val), "event_date": row.get("record_date"),
+                "value": value, "event_date": row.get("record_date"),
             })
         return out

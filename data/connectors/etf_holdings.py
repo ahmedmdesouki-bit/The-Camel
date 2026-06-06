@@ -17,7 +17,7 @@ from data.source_registry import ETF_HOLDINGS
 # aliases must be in NORMALISED form (lowercase, alphanumerics only) to match _norm(header)
 _TICKER = ("ticker", "stockticker", "holdingticker", "symbol")
 _NAME = ("name", "securityname", "companyname", "holdingname", "security", "description")
-_WEIGHT = ("weight", "weighting", "ofnetassets", "percentofnetassets", "netassets", "weightpct")
+_WEIGHT = ("weight", "weighting", "ofnetassets", "percentofnetassets", "weightpct")
 _SHARES = ("shares", "quantity", "sharesheld")
 
 

@@ -127,8 +127,12 @@ make a feature work. If a task would require bypassing the Constitution, stop an
 - **Sprint 9 IN PROGRESS — slices 1–2.** (1) Entity resolution: `assets` table + `data/entity_resolver.py`
   (`resolve(ticker)` joins assets + company_facts + etf_holdings look-through + whitelist Sharia status).
   (2) Regime Engine: `trader/regime/` — feature builder over `macro_observations`, deterministic 10-state
-  classifier (regime + confidence + signals; `regime_to_themes`), `regime_history` audit table. → **409
-  passed**. Remaining S9: event intelligence, Sharia cross-check (multi-state).
+  classifier (regime + confidence + signals; `regime_to_themes`), `regime_history` audit table. Remaining
+  S9: event intelligence, Sharia cross-check (multi-state).
+- **QA/QC hardening pass** (independent line-by-line review of S6.5→S9): fixed YoY-vs-MoM in the regime
+  feature builder, vintage look-ahead, connector date-fabrication, BLS month-13, unguarded floats,
+  register_asset un-delist, beginner-mode rail coverage, sanitiser whitespace bypass — each with a
+  regression test (`tests/test_qa_hardening.py`). → **419 passed**. (Broker write-atomicity deferred to S12.)
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -371,7 +375,7 @@ Optimize for **evidence density, not feature count.**
 | S6.6 OK | Position accounting + Ops hardening + Beginner Mode | positions table on every fill (avg cost, realized P&L, exact phantom guard, reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode; broker matrix (331 tests) |
 | S7 OK | Entrepreneur Product Engine (engine; agent scope = code-gen only) | 17-field gate + separate Entrepreneur Constitution + 10-stage pipeline; no launch without founder approval (352 tests) |
 | S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slices 1–5 done** (framework + provenance + 10 connectors incl. ETF look-through + news injection-hardening + scraping policy, 389 tests; all 3 stub DBs real); ~10 connectors + market-data + paid remain |
-| S9 ~ | Knowledge Graph + Regime Engine | **slices 1–2 done** (entity resolver + 10-state Regime Engine over real macro, 409 tests); event intelligence + Sharia cross-check (multi-state) remain |
+| S9 ~ | Knowledge Graph + Regime Engine | **slices 1–2 done** (entity resolver + 10-state Regime Engine over real macro) + QA hardening pass, 419 tests; event intelligence + Sharia cross-check (multi-state) remain |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
 | S11 | Strategy Registry + Learning Engine | >=3 strategies (trio) pass Edge Proof; DCA guardrails; never auto-edits the Constitution |
 | S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |

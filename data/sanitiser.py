@@ -37,8 +37,10 @@ def sanitise(raw_text: str) -> Sanitised:
     `safe` is False if any injection pattern is present.
     """
     text = raw_text or ""
-    lower = text.lower()
-    flags = [p for p in INJECTION_PATTERNS if p in lower]
+    # match against a whitespace- and markdown-collapsed lowercase string so spacing tricks
+    # ("ignore   previous", line breaks, markdown noise) can't slip an injection pattern past us
+    match_str = _WS.sub(" ", _MD.sub(" ", text.lower())).strip()
+    flags = [p for p in INJECTION_PATTERNS if p in match_str]
 
     clean = _MD.sub(" ", text)
     clean = _WS.sub(" ", clean).strip()

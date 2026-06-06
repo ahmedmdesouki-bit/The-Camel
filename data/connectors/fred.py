@@ -31,9 +31,15 @@ class FredConnector(MacroConnector):
             val = obs.get("value")
             if val in (None, "", "."):          # FRED missing-value marker
                 continue
+            try:
+                value = float(val)
+            except (TypeError, ValueError):      # non-numeric → skip this obs, don't abort the run
+                continue
+            if not obs.get("date"):
+                continue
             rec = {
                 "series_id": series_id, "indicator": series_id,
-                "value": float(val), "event_date": obs.get("date"),
+                "value": value, "event_date": obs.get("date"),
             }
             if obs.get("realtime_start"):       # ALFRED vintage → real reported_at
                 rec["reported_at"] = obs["realtime_start"]
