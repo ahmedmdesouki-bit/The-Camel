@@ -7,6 +7,27 @@
 
 ## 2026-06-06
 
+**Sprint 7 (Entrepreneur Product Engine) COMPLETE — engine, 331 → 352 tests green.** The cash-flow arm,
+moved earlier in v3 and tightly scoped per the reviewers. New `entrepreneur/` package, all deterministic:
+- `product_gate.py` — the 17-field `ProductThesis` + `evaluate_gate` (the Entrepreneur analog of the Edge
+  Proof gate). The validated lead candidate (Arabic complaint/SLA-response assistant for Saudi travel/
+  hospitality) is encoded as `lead_product_thesis()` and proven through the gate end-to-end.
+- `constitution.py` — a **separate** `EntrepreneurConstitution.evaluate(action)`: BUILD is **code-gen-only**
+  (autonomous); DATA_COLLECT needs a privacy review; ASSET_USE needs a rights check; SPEND needs budget;
+  LAUNCH needs founder approval; PUBLISH_COPY blocks unapproved legal/financial/medical claims and banned
+  compliance-guarantee wording. Reuses the Trader haram-activity screen so a haram product can't be built.
+- `build_pipeline.py` — a 10-stage state machine (thesis→PRD→build plan→issues→MVP→tests→staging→approval→
+  production→measure). No skipping; STAGING needs passing tests; **PRODUCTION needs founder approval + a
+  Constitution-allowed LAUNCH** — no autonomous production deploy, ever.
+- `tests/test_entrepreneur.py`; CLAUDE.md gains Entrepreneur DO-NOT rails + repo-map entry.
+- **Scope:** this is the **engine** (deterministic, in-repo, fully tested), mirroring how the Trader arm is
+  a paper engine. Real Stripe/GitHub/customer-data/deploy integration is wired only when a real product
+  actually ships behind these gates — a founder real-world action, not Phase 0.
+
+---
+
+## 2026-06-06
+
 **Sprint 6.6 (Position Accounting + Ops Hardening + Beginner Mode) COMPLETE — 309 → 331 tests green.**
 Led by review round #6's foundational item.
 - `broker/positions.py` — **position accounting**: the single writer of the `positions` table, updated

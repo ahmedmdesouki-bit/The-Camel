@@ -106,6 +106,12 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   live**; health-monitor disk-test mocked + unknown→YELLOW; `ops/deadman.py` external dead-man's-switch;
   `config/beginner_mode.yaml` + `governance/beginner_mode.py` (only-tightens); prompt-injection adversarial
   tests; `docs/CAMEL_BROKER_MATRIX.md`. → **331 passed**.
+- **Sprint 7 COMPLETE (Entrepreneur engine).** New `entrepreneur/` package, all deterministic:
+  `product_gate.py` (17-field `ProductThesis` + gate; travel/hospitality SLA assistant as the worked
+  example), `constitution.py` (separate `EntrepreneurConstitution` — code-gen-only autonomy; privacy/rights/
+  budget/approval gates; banned claim wording; haram screen), `build_pipeline.py` (10-stage state machine;
+  no skip; PRODUCTION needs founder approval + passing tests). → **352 passed**. *Engine only — real
+  Stripe/GitHub/deploy integration lands when a real product ships behind these gates.*
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -202,6 +208,10 @@ broker/           paper.py — PaperBroker(portfolio_db, market_db)
 ledger/           writer.py — append_entry + SHA-256 hash chain (→ camel_portfolio.db)
                   reconcile.py — verify_hash_chain + balance diff
 
+entrepreneur/     product_gate.py — 17-field ProductThesis + evaluate_gate (S7)
+                  constitution.py — EntrepreneurConstitution (separate rails; code-gen-only autonomy)
+                  build_pipeline.py — 10-stage state machine (no skip; PRODUCTION needs founder approval)
+
 capital/          allocator.py — Allocator.request() routes through Constitution
 
 ops/              kill_switch.py — halt / resume / is_halted (file flag)
@@ -260,6 +270,10 @@ Do not add options / derivatives / margin / shorting strategies (the Wheel inclu
 Do not average down into individual stocks blindly (DCA ladder rules — see S11).
 Do not feed unvalidated web text directly into an LLM prompt.
 Do not let a trade proceed without an EdgeReport (S4.5+).
+Do not let an Entrepreneur product launch, spend, collect data, use third-party assets, or make
+  legal/financial/medical claims without passing the Entrepreneur Constitution + founder approval (S7).
+Do not let the agent do more than code-generation autonomously on the Entrepreneur arm.
+Do not publish copy with overstated compliance wording ("100% Sharia certified", "guaranteed", etc.).
 ```
 
 These are documentation of the Constitution + roadmap rails in one place. If a task seems
@@ -308,8 +322,8 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur moved earlier):
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK -> S6.6 OK ->
-S7 (Entrepreneur) <- NEXT -> S8 (Data Backbone) -> S9 (Knowledge Graph + Regime)
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK -> S6.6 OK -> S7 OK ->
+S8 (Data Backbone) <- NEXT -> S9 (Knowledge Graph + Regime)
 -> S10 (Full Edge Proof; shadow/enforcing) -> S11 (Strategy Registry)
 -> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S13 (Micro-Live) -> S14 (Restructure)
 ```
@@ -328,7 +342,7 @@ Optimize for **evidence density, not feature count.**
 | S6 OK | Dashboard + Telegram + monitoring (code) | dashboard reflects paper trade; weekly checks pass; loss-stop sim halts (289 tests) + machine checklist |
 | S6.5 OK | Safety & Accounting hotfix | phantom sell blocked; frozen-name close-only; buy needs edge; no $1 fallback in non-test paths (309 tests) |
 | S6.6 OK | Position accounting + Ops hardening + Beginner Mode | positions table on every fill (avg cost, realized P&L, exact phantom guard, reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode; broker matrix (331 tests) |
-| S7 | Entrepreneur Product Engine (moved earlier; agent scope = code-gen only) | no build without 17-field gate + Sharia check + approval; live payment-capable URL |
+| S7 OK | Entrepreneur Product Engine (engine; agent scope = code-gen only) | 17-field gate + separate Entrepreneur Constitution + 10-stage pipeline; no launch without founder approval (352 tests) |
 | S8 | Data Intelligence Backbone (top-20 connectors) | no record without full provenance + point-in-time; ≥16 free connectors live; raw text never reaches the LLM |
 | S9 | Knowledge Graph + Regime Engine | ticker → identity/Sharia/filings/events/exposure; regime classified from real macro; Sharia disagreement freezes buys |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
