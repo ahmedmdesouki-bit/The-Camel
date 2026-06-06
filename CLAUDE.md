@@ -112,6 +112,13 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   budget/approval gates; banned claim wording; haram screen), `build_pipeline.py` (10-stage state machine;
   no skip; PRODUCTION needs founder approval + passing tests). → **352 passed**. *Engine only — real
   Stripe/GitHub/deploy integration lands when a real product ships behind these gates.*
+- **Sprint 8 IN PROGRESS — slice 1 complete.** Data Intelligence Backbone framework: `data/provenance.py`
+  (point-in-time provenance + `source_documents` table + `assert_provenanced`), `data/source_registry.py`
+  (`SourceSpec` registry), `data/connectors/base.py` (`SourceConnector` with an injectable transport —
+  stdlib fetch in prod, stubbed in tests; **no live web in tests, zero new deps**), `data/connectors/fred.py`
+  (→ real `macro_observations`, ALFRED vintage), `data/connectors/sec_edgar.py` (→ real `company_facts`),
+  `security/scraping_policy.py` (API > … > browser-QA-only). → **366 passed**. Remaining: ~18 more
+  connectors + GDELT/news + market-data + paid vendors.
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -163,7 +170,10 @@ sharia/           whitelist.py — load/add/freeze/unfreeze (→ camel_sharia.db
                   screener.py — quarterly AAOIFI re-screen job
                   classifier.py — business-model haram classifier
 
-data/             store.py — store_price / get_prices (→ camel_market.db)
+data/             provenance.py — point-in-time provenance fields + source_documents (S8)
+                  source_registry.py — SourceSpec registry (FRED, SEC EDGAR, …) (S8)
+                  connectors/ — base.py (SourceConnector + injectable transport), fred.py, sec_edgar.py (S8)
+                  store.py — store_price / get_prices (→ camel_market.db)
                   triangulation.py — cross-source disagreement (>0.5% flags)
                   alpaca.py — Alpaca paper EOD ingestion adapter
                   freshness.py — stale-data gate (S4)
@@ -343,7 +353,7 @@ Optimize for **evidence density, not feature count.**
 | S6.5 OK | Safety & Accounting hotfix | phantom sell blocked; frozen-name close-only; buy needs edge; no $1 fallback in non-test paths (309 tests) |
 | S6.6 OK | Position accounting + Ops hardening + Beginner Mode | positions table on every fill (avg cost, realized P&L, exact phantom guard, reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode; broker matrix (331 tests) |
 | S7 OK | Entrepreneur Product Engine (engine; agent scope = code-gen only) | 17-field gate + separate Entrepreneur Constitution + 10-stage pipeline; no launch without founder approval (352 tests) |
-| S8 | Data Intelligence Backbone (top-20 connectors) | no record without full provenance + point-in-time; ≥16 free connectors live; raw text never reaches the LLM |
+| S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slice 1 done** (framework + provenance + FRED + SEC + scraping policy, 366 tests); ~18 connectors + news + paid remain |
 | S9 | Knowledge Graph + Regime Engine | ticker → identity/Sharia/filings/events/exposure; regime classified from real macro; Sharia disagreement freezes buys |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
 | S11 | Strategy Registry + Learning Engine | >=3 strategies (trio) pass Edge Proof; DCA guardrails; never auto-edits the Constitution |

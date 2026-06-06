@@ -1,10 +1,11 @@
 """
-Macro DB — camel_macro.db  [Sprint 7 stub]
+Macro DB — camel_macro.db  (S8: real point-in-time observations + provenance)
 Stores: rates, inflation, GDP, PMIs, yield curve, credit spreads, USD index,
 commodity proxies, recession indicators.
 Point-in-time snapshots to avoid look-ahead bias in backtesting.
 """
 from db.sqlite import connection
+from data.provenance import SOURCE_DOCUMENTS_DDL
 
 DDL = """
 CREATE TABLE IF NOT EXISTS macro_snapshots (
@@ -16,7 +17,27 @@ CREATE TABLE IF NOT EXISTS macro_snapshots (
     period      TEXT,
     region      TEXT DEFAULT 'US'
 );
-"""
+
+-- S8: point-in-time observations from registered connectors (e.g. FRED/ALFRED)
+CREATE TABLE IF NOT EXISTS macro_observations (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    series_id           TEXT,
+    indicator           TEXT,
+    region              TEXT DEFAULT 'US',
+    value               REAL,
+    event_date          TEXT,    -- when the value is for
+    reported_at         TEXT,    -- when it was published (ALFRED vintage)
+    ingested_at         TEXT,
+    known_at            TEXT,
+    source_id           TEXT,
+    source_url          TEXT,
+    source_document_id  TEXT,
+    content_hash        TEXT,
+    parser_version      TEXT,
+    data_quality_score  REAL,
+    UNIQUE(source_id, series_id, event_date, reported_at)
+);
+""" + SOURCE_DOCUMENTS_DDL
 
 
 def init_macro_db(path: str) -> None:

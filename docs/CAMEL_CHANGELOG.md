@@ -7,6 +7,25 @@
 
 ## 2026-06-06
 
+**Sprint 8 (Data Intelligence Backbone) — slice 1 COMPLETE — 352 → 366 tests green.** The long pole begins.
+- `data/provenance.py` — point-in-time provenance fields + the `source_documents` audit table +
+  `assert_provenanced` (a record without full lineage is not decision-grade and is dropped).
+- `data/source_registry.py` — `SourceSpec` registry (FRED + SEC EDGAR registered, free/official, tier 1).
+- `data/connectors/base.py` — `SourceConnector` pipeline (fetch→parse→normalize→validate→store) with an
+  **injectable transport**: stdlib `urllib` in production, a stub returning canned payloads in tests — so
+  **no test hits the live web, with zero new dependencies** (the same guarantee as recorded cassettes).
+- `data/connectors/fred.py` → real `macro_observations` (ALFRED vintage → honest `reported_at`);
+  `data/connectors/sec_edgar.py` → real `company_facts` (filing date vs period end). Ingestion idempotent.
+- `security/scraping_policy.py` — acquisition ladder (API > vendor > file > RSS > scrape > browser-QA-only);
+  SEC contact-header rule.
+- **PM call:** stayed **dependency-light** — deferred requests/httpx/pydantic/feedparser/vcrpy until a
+  connector genuinely needs them (honors the reviewers' anti-bloat warning). **Remaining S8 slices:** the
+  other ~18 free connectors, GDELT/news pipeline + adversarial tests, market-data adapter, paid vendors.
+
+---
+
+## 2026-06-06
+
 **Sprint 7 (Entrepreneur Product Engine) COMPLETE — engine, 331 → 352 tests green.** The cash-flow arm,
 moved earlier in v3 and tightly scoped per the reviewers. New `entrepreneur/` package, all deterministic:
 - `product_gate.py` — the 17-field `ProductThesis` + `evaluate_gate` (the Entrepreneur analog of the Edge

@@ -520,6 +520,18 @@ failed-source count · stale-source warnings · data-quality panel.
 **Gate:** no ingested record without full provenance + point-in-time fields; ≥16 free connectors live
 with recorded-fixture tests; macro/fundamentals/news DBs hold real data; raw text never reaches the LLM.
 
+**STATUS: IN PROGRESS — slice 1 complete (352 → 366 tests).** Framework + provenance + first 2 connectors:
+`data/provenance.py` (point-in-time provenance fields + `source_documents` table + `assert_provenanced`);
+`data/source_registry.py` (`SourceSpec` registry; FRED + SEC EDGAR registered); `data/connectors/base.py`
+(`SourceConnector`: fetch→parse→normalize→validate→store with an **injectable transport** — stdlib `urllib`
+in prod, stubbed in tests, so **no live web in tests, zero new deps**); `data/connectors/fred.py` → real
+`macro_observations` (ALFRED vintage → `reported_at`); `data/connectors/sec_edgar.py` → real `company_facts`
+(filing date vs period end); `security/scraping_policy.py` (API > … > browser-QA-only ladder). Idempotent
+ingestion; records missing provenance are dropped. *Dependency-light call: deferred requests/httpx/pydantic/
+feedparser/vcrpy until a connector genuinely needs them (e.g. feedparser for RSS).* **Remaining slices:**
+the other ~18 free connectors (BLS/BEA/Treasury/World Bank/EIA/GDELT/ACLED/OFAC/disclosures/ETF/French),
+GDELT/news pipeline + adversarial tests, market-data adapter, then paid vendors; markets US → Saudi → EGX.
+
 ---
 
 ### S9 — Research Knowledge Graph + Regime Engine

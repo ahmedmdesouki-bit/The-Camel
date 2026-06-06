@@ -1,10 +1,10 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S7 complete** · **352 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S7 complete**, **S8 in progress (slice 1)** · **366 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
-(S1–S14) · **Next: S8** (Data Intelligence Backbone — top-20 connectors)
+(S1–S14) · **In S8:** slice 1 done (framework + FRED + SEC); next ~18 more connectors + news + paid vendors
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's
@@ -242,7 +242,7 @@ python ops\kill_switch.py resume    # removes flag
 | **S6.5** ✅ | Safety & Accounting hotfix | No phantom sells; close-only/reduce-only for frozen/non-compliant holdings; Edge Proof mandatory for buy/increase; no $1 fallback price outside unit tests (309 tests) |
 | **S6.6** ✅ | Position accounting + Ops hardening + Beginner Mode | Positions table on every fill (weighted-avg cost, realized P&L, exact qty-based phantom guard, ledger reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode profile; broker capability matrix (331 tests) |
 | **S7** ✅ | Entrepreneur Product Engine *(engine; agent scope = code-gen only)* | 17-field Product Gate + separate Entrepreneur Constitution (privacy/rights/budget/approval gates; banned claim wording; haram screen) + 10-stage build pipeline (no launch without founder approval). Travel/hospitality SLA assistant encoded as the worked example. Real deploy/Stripe/GitHub wired only when a product ships (352 tests) |
-| **S8** → next | Data Intelligence Backbone | `SourceConnector` framework; **top-20 connectors** (SEC EDGAR/XBRL/RSS, FRED+ALFRED, BLS, BEA, Treasury, World Bank, EIA, USGS, GDELT, ACLED, GPR, EPU, OFAC, congress/senate, ETF holdings, French) w/ provenance + point-in-time + vcrpy tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); scraping policy; markets US→Saudi→EGX; fills macro/fundamentals/news DBs |
+| **S8** ◑ in progress | Data Intelligence Backbone | **slice 1 done**: `SourceConnector` framework + provenance + `source_documents` + FRED (→ macro) + SEC EDGAR (→ fundamentals) + scraping policy; injectable transport (hermetic tests, no new deps). **Next slices:** ~18 more connectors (BLS/BEA/Treasury/World Bank/EIA/USGS/GDELT/ACLED/GPR/EPU/OFAC/disclosures/ETF/French), GDELT/news + adversarial tests, market-data adapter, paid vendors (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); markets US→Saudi→EGX |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution (ticker↔CIK↔ISIN↔CUSIP); ETF look-through; structured event intelligence; 10-state regime classifier from real macro; Sharia cross-check w/ multi-state status (disagreement → freeze new buys) |
 | **S10** | Full Edge Proof Engine | **17-check** signal-conditioned proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay); minimum thresholds; model-disagreement → human. **No edge proof = no trade.** |
 | **S11** | Strategy Registry + Learning | Trio: `core_dca`, `quality_momentum`, `etf_regime_rotation` (all pass Edge Proof); StrategyMixer; DCA guardrails; intraday monitor (5-min); 4-tier learning; regime→strategy affinity |
