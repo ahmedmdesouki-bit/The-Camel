@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-06-07 — S10.5 promoted to a dedicated sprint (founder-agreed)
+
+Following the sanity-check finding, the founder agreed to treat the **operator-loop assembly** as its own
+focused effort rather than letting the wiring ride implicitly inside other sprints. **Workstreams A + B are now
+a numbered sprint, `S10.5 — Operator-Loop Assembly + Runtime Automation`**, inserted at the S10→S11 boundary
+(sequence + summary table updated in `CAMEL_ROADMAP.md` and `CLAUDE.md`). It assembles the §4 loop around the
+real S10 Edge-Proof gate **before** S11 strategies start flowing trades through it. Headline deliverable / gate:
+an end-to-end paper tick runs through the *assembled* loop and **a buy with no passing EdgeReport is rejected by
+the assembled loop (not just the Allocator unit) — closing the Phase-1 blocker (A1)**; plus real Task-Scheduler
+entrypoints for the daily ops/brief + weekly safety jobs. Still paper, no live capital. No code yet (planning).
+
+---
+
 ## 2026-06-07 — Full project sanity check (docs + code sweep)
 
 **Ran a comprehensive project audit** (three parallel review passes over the whole tree: deferred/backlog

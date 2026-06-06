@@ -149,9 +149,10 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   loop is **not yet assembled**: `loop/scheduler.py` runs with no-op callbacks, the Opportunity Router + Edge-Proof
   `Allocator` + Budget Kernel + Operator-OS state machine are not yet driven by `loop/runner.py`, the regime engine
   feeds only history/dashboard, and several ops jobs (weekly checks, heartbeat, dead-man, dashboard render, founder
-  brief) have no scheduled entrypoint. This is **Workstream A/B** in `docs/CAMEL_ROADMAP.md` — assembled across
-  S10–S11 and a hard gate in S13 live-readiness. **Wiring the Edge-Proof gate into the assembled loop (A1) is a
-  Phase-1 blocker** (harmless now only because nothing trades in Phase 0).
+  brief) have no scheduled entrypoint. This is **Workstream A/B** in `docs/CAMEL_ROADMAP.md`, now promoted to a
+  dedicated sprint **S10.5 — Operator-Loop Assembly** (founder-agreed) and a hard gate in S13 live-readiness.
+  **Wiring the Edge-Proof gate into the assembled loop (A1) is a Phase-1 blocker** (harmless now only because
+  nothing trades in Phase 0).
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -389,7 +390,7 @@ Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur
 ```
 S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK -> S6.6 OK -> S7 OK ->
 S8 ~CORE (10 connectors; rest deferred) -> S8.5 (Real-Time Data Tier) -> S9 (Knowledge Graph + Regime) <- IN PROGRESS
--> S10 (Full Edge Proof; shadow/enforcing) -> S11 (Strategy Registry + Portfolio Engine)
+-> S10 (Full Edge Proof; shadow/enforcing) -> S10.5 (Operator-Loop Assembly + Runtime) -> S11 (Strategy Registry + Portfolio Engine)
 -> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S12.5 (Research Desk; design, dormant)
 -> S13 (Micro-Live) -> S14 (Restructure)
 ```
@@ -413,6 +414,7 @@ Optimize for **evidence density, not feature count.**
 | S8.5 | Real-Time Data Tier *(founder)* | streaming quotes + live-news + real-time monitor/alerts; separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
 | S9 ~ | Knowledge Graph + Regime Engine | **slices 1–2 done** (entity resolver + 10-state Regime Engine over real macro) + QA hardening pass, 419 tests; event intelligence + Sharia cross-check (multi-state) remain |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
+| ⭐ S10.5 | Operator-Loop Assembly + Runtime (Workstream A/B) | end-to-end tick runs through the **assembled** loop (Observe→Router→Edge-Proof→Constitution→Budget→Approval→Act→Learn); **a buy with no EdgeReport is rejected by the assembled loop, not just the Allocator unit** (closes the Phase-1 blocker); scheduled daily/weekly ops + brief jobs have real entrypoints; still paper |
 | S11 | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth w/ **lot-level + gross→NRA-withholding→net** mechanics) pass Edge Proof; **multi-portfolio (lifecycle incubate→retire, tolerance-band rebalance, multi-benchmark, 6 seed portfolios, portfolio-scoped positions/ledger reconciling to fund)**; meets the 15-item acceptance checklist; never auto-edits the Constitution |
 | S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
 | S12.5 | Research Desk / Analyst Agents *(founder; design now, dormant)* | per-vertical research agents (Agent SDK — full roster incl. market-microstructure + execution/TCA) write evidence only via the **evidence-object contract**, never act; narrow/safe learning (no retrain, no Constitution edits); token budget; master switch defaults OFF |

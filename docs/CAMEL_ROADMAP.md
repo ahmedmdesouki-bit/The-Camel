@@ -14,7 +14,8 @@
 S1 ✅ → S2 ✅ → S3 ✅ → S4 ✅ → S4.5 ✅ (Edge Proof v0) → S5 ✅ → S5.5 ✅ (Minimal Ops) → S6 ✅ →
 S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hardening + Beginner Mode) → S7 ✅ (Entrepreneur engine) →
 S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 (Knowledge Graph + Regime) →
-S10 (Full Edge Proof, 17-check; shadow/enforcing) → S11 (Strategy Registry + Portfolio Engine) →
+S10 (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 (Operator-Loop Assembly + Runtime — Workstream A/B) →
+S11 (Strategy Registry + Portfolio Engine) →
 S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 (Research Desk — design, dormant) →
 S13 (Micro-Live) → S14 (Restructure)
 ```
@@ -73,8 +74,9 @@ strung together at runtime**. Consequences to close before any live trading:
 - **A2 — Drive the Operator-OS state machine + Opportunity Router from the loop** (built in S5, uncalled).
 - **A3 — Consume the Regime engine in a decision** (today it feeds only `regime_history` + the dashboard).
 - **A4 — Wire `trader/regime/peg.py` into `features.py`** (peg monitor built, not yet read). *(→ S9 slice 4.)*
-- **Home:** assembled incrementally as S10 (Edge Proof) → S11 (strategies make the loop actually trade) land;
-  A1 is a hard gate in the **S13 live-readiness** checklist and `CAMEL_LIVE_READINESS.md`. Tracked, not dropped.
+- **Home (founder-agreed 2026-06-07): a dedicated sprint — `S10.5 — Operator-Loop Assembly` — at the S10→S11
+  boundary** (see its body below), rather than letting the wiring ride implicitly inside other sprints. A1 is
+  also a hard gate in the **S13 live-readiness** checklist and `CAMEL_LIVE_READINESS.md`. Tracked, not dropped.
 
 ### WORKSTREAM B — Scheduled entrypoints / ops automation
 Built but with **no runnable trigger** (only `loop/scheduler.py` and `ops/kill_switch.py` have `__main__`):
@@ -813,6 +815,51 @@ rolling window.)*
 + signal decay applied; `trade_allowed=false` blocks the allocator; no edge proof = no trade; the
 decision-quality dashboard renders the current regime, the active strategy, and at least one
 rejected-signal-with-reason.
+
+---
+
+### ⭐ S10.5 — Operator-Loop Assembly + Runtime Automation
+*New sprint (founder-agreed 2026-06-07), promoted from Workstreams A + B. The components are built and unit-
+tested; this sprint **strings them into the live loop** and gives them a runnable harness. Deliberately its own
+focused effort at the S10→S11 boundary — by S10.5 the full 17-check Edge Proof (S10) exists, so the loop is
+assembled around the real gate **before** S11 strategies start flowing trades through it.*
+
+**Why now (the finding this closes):** today `loop/runner.py` calls `Constitution.evaluate` directly and
+`loop/scheduler.py` runs with no-op callbacks — so the upgraded §4 loop (Observe → Router → Edge/Product-Proof →
+Constitution → Budget → Approval → Act → Learn) is **never assembled at runtime**, and the Edge-Proof gate (which
+lives in `capital/allocator.py`) is **bypassed in the assembled path**. Harmless only because nothing trades in
+Phase 0 — but a **Phase-1 blocker**. Nothing new is invented here; it is *wiring built parts together safely*.
+
+**A — Assemble the decision loop (Workstream A):**
+- **A1 (the blocker):** route every consequential action through `Allocator.request()` (Edge-Proof gate +
+  Budget Kernel) instead of calling `Constitution.evaluate` directly. **Invariant test:** in the *assembled*
+  loop, a buy with no passing `EdgeReport` is rejected — i.e. the CLAUDE.md rail holds end-to-end, not just in
+  the unit. Sells stay edge-exempt (S6.5).
+- **A2:** drive the **Operator-OS state machine + Opportunity Router** from the loop (built S5, currently
+  uncalled) — Observe → Router picks a path (Trader/Entrepreneur/Research/System/Wait) → Proof → gates → Act.
+- **A3:** have a decision actually **consume the Regime engine** (today it feeds only `regime_history` + the
+  dashboard) — Router/strategy selection reads `regime_to_themes`.
+- **A4:** wire `trader/regime/peg.py` into `features.py` (if not already done in S9 slice 4).
+- **Order of operations preserved:** Sharia → Edge/Product Proof → Constitution → Budget → Approval → Act. No
+  station may be skipped; the assembly is exercised by an end-to-end integration test, not just unit tests.
+
+**B — Runtime automation / scheduled entrypoints (Workstream B):**
+- Add Task-Scheduler entrypoints (mirroring `loop/scheduler.py`) for: the **weekly** safety job
+  (`ops/scheduled_checks.run_weekly_checks` — kill-switch self-test + backup + reconcile), and a **daily ops job**
+  that beats `ops/heartbeat` + pings `ops/deadman`, **renders the dashboard** (`dashboard.write_dashboard`), and
+  **sends the founder brief** (`alerts/brief.send_founder_brief` over Telegram/WhatsApp, with RED ALERT on a
+  >3% drop). These are built but currently have no `__main__`.
+- A minimal **connector-ingestion entrypoint** (part of Workstream D) so `macro_observations` etc. are populated
+  on a schedule, not just in tests — otherwise the assembled loop's regime features read empty tables.
+
+**Out of scope (stays where it is):** new strategies (S11), the full portfolio engine (S11), live execution
+(S13). S10.5 is wiring + automation only — still **paper, still no live capital**.
+
+**Gate:** an **end-to-end integration test** drives a full simulated tick through the assembled loop
+(Observe → Router → Edge Proof → Constitution → Budget → Approval → Act → Learn) on paper; a buy with no passing
+EdgeReport is **rejected by the assembled loop** (not just by the Allocator unit); the Router returns Wait when
+there is no edge; the scheduled daily job renders the dashboard + emits the brief; the weekly job runs the
+kill-switch self-test + backup + reconcile from a real entrypoint. **A1 closes the Phase-1 blocker.**
 
 ---
 
