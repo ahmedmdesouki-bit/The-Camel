@@ -541,7 +541,14 @@ corporate-actions connector** (ex-div date, yield, payout ratio, growth streak �
 S11), and the paid vendors (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); markets US → Saudi → EGX.
 **Founder goal: many independent sources per category, cross-checked** (the source-quorum ≥2 rule already in
 the design) — so historical prices, news, geopolitics, and market-reaction data each have multiple feeds,
-no single point of failure or bias. (A cited data-resource research pass will choose the specific feeds.)
+no single point of failure or bias. **Feeds now chosen — see `docs/CAMEL_DATA_SOURCES.md` (verified, cited):**
+- *Next free connectors:* **SEC RSS** (8-K/filing events), **GPR** geopolitical-risk index (CC-BY file), **OFAC**
+  sanctions list.
+- *Dividends / corporate-actions connector* → **EODHD** Splits/Dividends API (ex-div, yield, payout ratio,
+  splits) — powers `dividend_growth` (S11).
+- *Paid, phased:* **EODHD** fundamentals (2nd source, cross-check SEC) → **Sharadar/Nasdaq Data Link**
+  (survivorship-free point-in-time, for the S12 Edge Lab) → **Benzinga** (structured news). RavenPack deferred
+  (enterprise); yfinance/Stooq prototyping-only.
 These are new-connector work on an established pattern, not blockers for S9–S12. Slice 3 added the
 **news/events pipeline**: `data/connectors/news_base.py` (`NewsConnector` — every title sanitised; injection-
 flagged titles **redacted + marked unsafe + quality-downgraded**, raw string never persisted; structured
@@ -562,7 +569,9 @@ GDELT/news pipeline + adversarial tests, market-data adapter, then paid vendors;
 ### S8.5 — Real-Time Data Tier  (founder direction — streaming ingestion + monitoring)
 *Adds a streaming/real-time path alongside the EOD connectors. Scope is **ingestion + monitoring**, NOT
 real-time execution: positional execution stays EOD (Sahm / whole-share) until at least Phase 1.*
-- **Streaming market data:** a websocket/streaming adapter (e.g. Alpaca's free IEX stream) for live
+- **Streaming vendor:** *being chosen by a follow-up research pass (Alpaca / Polygon / Tiingo / Twelve Data
+  websockets) — see `CAMEL_DATA_SOURCES.md` once it lands.* Likely Alpaca (already our price source, has a
+  free websocket). A websocket/streaming adapter for live
   quotes/trades on whitelisted names → a separate `realtime_quotes` store, point-in-time stamped. It
   **never overwrites the official EOD bars** that backtests depend on.
 - **Live news/event stream:** short-interval polling of the news connectors (GDELT / RSS) through the same
@@ -600,11 +609,20 @@ remains EOD.
   CPI/core/PPI YoY, unemployment, payrolls, HY credit spread, DXY, oil/copper/gold, commodity index,
   VIX, SPUS/Nasdaq trend.
 - **Regime → Theme mapper** — regime/event → sectors/assets/companies.
-- **Sharia cross-check + multi-state status** — independent SEC/XBRL ratio sanity-check vs the
-  canonical screener (Musaffa/Zoya). Status = `pass / fail / doubtful / frozen / pending_review` +
-  methodology (AAOIFI/MSCI/S&P/FTSE/DowJones/custom) + confidence + business/financial screen results
-  + purification_ratio + screened_at/known_at/next_review_at + source_hash. **Rule: canonical vs
-  cross-check disagree → freeze for new buys, allow reduce-only exits, route to human review.**
+- **Sharia cross-check + multi-state status** — an **in-house AAOIFI screen computed from SEC/XBRL data**
+  (free), cross-checked against a **canonical screener (Zoya — AAOIFI default; or Musaffa)**. Status =
+  `pass / fail / doubtful / frozen / pending_review` + methodology (AAOIFI/MSCI/S&P/FTSE/DowJones/custom) +
+  confidence + business/financial screen results + purification_ratio + screened_at/known_at/next_review_at +
+  source_hash. **Rule: in-house vs cross-check disagree → freeze for new buys, allow reduce-only exits, route
+  to human review.**
+  - **AAOIFI ratio thresholds (verified, from the FTSE Russell / IdealRatings Islamic-index methodology —
+    see `CAMEL_DATA_SOURCES.md`):** interest-bearing **debt** ÷ trailing-12-mo-avg market cap **≤ 30%** ·
+    (cash + deposits + interest-bearing investments) ÷ 12-mo-avg market cap **≤ 30%** · (cash + deposits +
+    receivables) ÷ total assets **≤ 67%** · non-compliant-activity revenue + non-operating interest income
+    **≤ 5%** of total income · **11 prohibited sectors** (alcohol, gambling, pork, tobacco, conventional
+    finance, conventional insurance, defense, adult, hotels, music, cinema/broadcasting). *Use AAOIFI's
+    **12-month-average** market cap (Zoya uses plain market cap — a documented difference; Zoya is the
+    cross-check, not the primary).*
 - **AAOIFI drift detection (reviewer-validated)** — ratios re-screen quarterly; flag when a *held*
   position's debt/interest ratios have moved toward the doubtful zone *since purchase* — an early
   warning before an outright freeze.
@@ -695,7 +713,8 @@ debt, durable + growing payout, sane payout ratio; purification of any impure po
 This is dividend-*growth*, **not** dividend-*capture* — capture buy-before/sell-after-ex-div rarely survives
 costs + whole-share constraints and the Edge Proof will likely reject it; build the dividend data, treat
 capture as a hypothesis to test, not a strategy to trust) and `earnings_guidance_drift` (after the earnings
-calendar + fundamentals are clean).
+calendar + fundamentals are clean). *(Dividend data: the EODHD Splits/Dividends API — ex-div date, yield,
+payout ratio, growth streak — per `CAMEL_DATA_SOURCES.md`.)*
 **Delay (revisit after Edge Lab):** `congress_signal`, complex `mean_reversion`, intraday active
 management beyond monitoring, single-name `dca_ladder`, ML / LLM strategy discovery.
 **Reject permanently:** day trading, options/Wheel, crypto derivatives, shorting, leverage,
