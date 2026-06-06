@@ -38,6 +38,9 @@ report) into the canonical roadmap. Founder decisions adopted in full:
   `realistic_paper` (limit-only, spread/slippage/partial-fill, market hours, corporate actions;
   no perf number from a fallback fill), delisted handling, and a two-engine (vectorized +
   event-driven) cross-check.
+- **Decision-quality dashboard** added to S10 (extends the S6 state dashboard): current regime,
+  active strategy, **signals rejected this cycle + the exact reason**, beating SPUS/DCA/cash, edge
+  decay, data freshness + quorum. Surfaces *why*, not just *what* — the rejections are the point.
 - Micro-Live → **S13**, Module Restructure → **S14**. Sequence is now S1–S14.
 - Net principle reaffirmed: **build the data supply chain before the proof engine; optimize for
   evidence density, not feature count.** No code written this entry — roadmap + CLAUDE.md +

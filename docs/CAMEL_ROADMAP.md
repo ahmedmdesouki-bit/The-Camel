@@ -482,8 +482,18 @@ benchmark for the horizon · worst forward return no worse than −25% unless po
 quality ≥ 0.80 · source quorum ≥ 2 for non-price events · fail if last-24-month edge materially
 underperforms the full sample (decay).
 
+**Decision-quality dashboard (extends the S6 state dashboard — shows *why*, not just *what*):**
+current regime + confidence (from S9) · active strategy + weight · **signals rejected this cycle and
+the exact reason** (failed check #, threshold missed) · are we beating SPUS / DCA / cash · **is the
+edge decaying** (rolling 24-month vs full-sample) · data freshness + source-quorum status. Panels
+come online as their inputs do: regime at S9, rejected-signals + edge-decay here at S10,
+beating-benchmark at S12. This is the more valuable operator view — it surfaces the rejections that
+are the whole point of the system.
+
 **Gate:** every signal passes all 17 checks; regime-filtered sample enforced; multiple-testing penalty
-+ signal decay applied; `trade_allowed=false` blocks the allocator; no edge proof = no trade.
++ signal decay applied; `trade_allowed=false` blocks the allocator; no edge proof = no trade; the
+decision-quality dashboard renders the current regime, the active strategy, and at least one
+rejected-signal-with-reason.
 
 ---
 
