@@ -7,6 +7,26 @@
 
 ## 2026-06-06
 
+**Data-resource deep research → `docs/CAMEL_DATA_SOURCES.md` (cited catalogue).** Deep-research pass
+(5 angles, 25 sources fetched, 96 claims, **25 adversarially verified 3-0 / 0 killed**). Outcome:
+- **Validated the free/official picks already built** — SEC EDGAR XBRL (no key; UA + ~10 req/s required),
+  FRED/ALFRED + Treasury/World Bank/BLS/BEA/EIA, GDELT, ACLED — these were the right anchors.
+- **⭐ Got the exact AAOIFI ratio spec** (from the FTSE/IdealRatings Islamic-index methodology) to implement
+  in the **S9 Sharia cross-check**: debt ÷ 12-mo-avg mkt-cap ≤30%; (cash+deposits+interest-investments) ÷
+  12-mo-avg mkt-cap ≤30%; (cash+deposits+receivables) ÷ total assets ≤67%; non-compliant rev + interest income
+  ≤5%; 11 prohibited sectors. **Zoya** = configurable cross-check (note: Zoya uses plain mkt-cap, AAOIFI uses 12-mo avg).
+- **Paid, phased:** EODHD (fundamentals cross-check + dividends/splits → powers `dividend_growth`); Sharadar/
+  Nasdaq Data Link (survivorship-free point-in-time → for the S12 Edge Lab); Benzinga (affordable structured
+  news); RavenPack deferred (enterprise). yfinance/Stooq flagged prototyping-only.
+- **Two gaps → follow-up searches:** (a) real-time/**streaming** vendors for S8.5 (Alpaca/Polygon/Tiingo/Twelve
+  Data — none confirmed yet); (b) **Tadawul/EGX** coverage — **lead: `sahmk.sa/en/developers` suggests Sahm may
+  expose an API**, which would revise the "Sahm = manual-only" broker assumption. Both need a dedicated pass.
+- Caveats: only a subset verified in depth; pricing volatile; licensing/storage terms for paid vendors NOT confirmed.
+
+---
+
+## 2026-06-06
+
 **Founder direction folded into the roadmap (docs-only; no code).** Four additions + a data goal:
 - **Portfolio Engine** (multi-portfolio, strategy-per-portfolio) → folded into **S11**: `portfolios` table,
   `PortfolioManager`, portfolio-scoped positions/ledger reconciling to the fund, fund-level caps above
