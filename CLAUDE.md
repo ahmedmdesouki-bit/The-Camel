@@ -84,6 +84,13 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   `ops/kill_switch_test.py` (halt stops the tick, resume restores), `ops/secrets_check.py`
   (plaintext-secret startup scan), `ops/backup.py` (verified backup + restore of all 7 DBs).
   → **263 passed**.
+- **Sprint 6 COMPLETE (code).** Dashboard + Monitoring: read-only HTML `dashboard/`,
+  credential-safe `alerts/` Telegram adapter + daily report delivery, `ops/heartbeat.py`,
+  `ops/log_rotation.py`, `ops/secrets_manager.py` (hard plaintext refusal), `ops/archive.py`
+  (off-box zip), `ops/reconciliation_report.py`, `ops/scheduled_checks.py` (weekly kill-switch
+  test + backup + reconcile). → **289 passed**. *Machine-setup half (Tailscale, BitLocker,
+  dedicated user, UPS, MFA, secrets migration) is the founder checklist in
+  `docs/CAMEL_MACHINE_HARDENING.md`.*
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -270,6 +277,7 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 | `docs/CAMEL_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
 | `docs/CAMEL_TESTING.md` | Test strategy, adversarial + integration suites |
 | `docs/CAMEL_LIVE_READINESS.md` | Phase 1 go-live checklist + definition of done |
+| `docs/CAMEL_MACHINE_HARDENING.md` | S6 founder machine-setup checklist (Tailscale, BitLocker, secrets, backups) |
 | `docs/CAMEL_CHANGELOG.md` | Sprint & decision history |
 | `docs/source-materials/` | Archived original PRDs/specs/playbook (provenance only) |
 | `HANDOFF.md` | Current status + tech stack + how to run |
@@ -283,8 +291,8 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 Sequence:
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 <- NEXT
--> S7 -> S8 -> S9 -> S10 -> S11 -> S12
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S7 <- NEXT
+-> S8 -> S9 -> S10 -> S11 -> S12
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
 
@@ -297,7 +305,7 @@ Guiding principle: **Safety first. Evidence second. Autonomy last.**
 | S4.5 OK | Edge Proof v0 | no trade without an EdgeReport (217 tests) |
 | S5 OK | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof (253 tests) |
 | S5.5 OK | Minimal ops visibility | daily report w/ status; kill-switch self-test; backup restore verified (263 tests) |
-| S6 | Dashboard + Telegram + Tailscale kill switch | kill switch stops next tick; backup restore verified |
+| S6 OK | Dashboard + Telegram + monitoring (code) | dashboard reflects paper trade; weekly checks pass; loss-stop sim halts (289 tests) + machine checklist |
 | S7 | Edge Proof Engine (13 checks) | no edge proof = no trade; model disagreement -> human |
 | S8 | Strategy Models + Learning Engine | >=3 strategies pass Edge Proof; DCA guardrails enforced |
 | S9 | Entrepreneur Track | no build without 17-field gate + approval |
