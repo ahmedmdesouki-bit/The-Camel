@@ -7,6 +7,46 @@
 
 ## 2026-06-06
 
+**Roadmap v3 — research-driven restructure (docs-only; no code change).**
+Folded two approved feedback documents (Power Maximization Proposal v2 + a data-source deep-research
+report) into the canonical roadmap. Founder decisions adopted in full:
+- **Entrepreneur arm moved earlier** (was S9 → now **S7**) — cash flow + learning before the
+  trading-data build. Validated by the founder's full-time travel-tech day job, making the lead
+  product (Arabic complaint/SLA-response assistant for Saudi travel/hospitality) a real domain fit
+  rather than a guess. Recorded in `CAMEL_BRIEF.md §2`.
+- **New S6.5 Safety & Accounting hotfix** — no phantom sells, close-only/reduce-only for
+  frozen/non-compliant holdings, Edge Proof mandatory for buy/increase, no $1 fallback price
+  outside unit tests.
+- **New S8 Data Intelligence Backbone** — `SourceConnector` framework + **top-20 source connectors**
+  (free/official first: SEC EDGAR/XBRL/RSS, FRED + **ALFRED vintage**, BLS, BEA, Treasury, World
+  Bank Pink Sheet, EIA, USGS, GDELT, ACLED, GPR, EPU, OFAC, congress/senate disclosures, ETF
+  issuer holdings, Kenneth French) with full provenance + point-in-time enforcement and
+  recorded-fixture (vcrpy) tests; **paid vendors phased into the plan** (EODHD, Polygon, Norgate,
+  Nasdaq/Sharadar, Quiver, Zoya/Musaffa, CRSP). Adds a scraping policy (API > vendor > file > RSS >
+  scrape > browser-QA-only) and fills the stub macro/fundamentals/news DBs.
+- **New S9 Knowledge Graph + Regime Engine** — entity resolution (ticker↔CIK↔ISIN↔CUSIP),
+  ETF look-through, structured event intelligence, a 10-state regime classifier from real macro,
+  and a Sharia cross-check with multi-state status (pass/fail/doubtful/frozen/pending_review;
+  disagreement → freeze new buys, allow reduce-only).
+- **Edge Proof upgraded to 17 checks, signal-conditioned** (was S7 → now **S10**) — adds
+  survivorship control, similar-regime filtering, multiple-testing penalty, and signal-decay
+  testing; minimum thresholds + model-disagreement → human gate.
+- **Strategy Registry trio refreshed** (was S8 → now **S11**): `core_dca`, `quality_momentum`,
+  `etf_regime_rotation` (rotation only if it beats DCA after costs); congress/mean-reversion/
+  intraday/ML deferred to post-Edge-Lab.
+- **Edge Lab gains realistic paper execution** (was S10 → now **S12**) — `loop_test` vs
+  `realistic_paper` (limit-only, spread/slippage/partial-fill, market hours, corporate actions;
+  no perf number from a fallback fill), delisted handling, and a two-engine (vectorized +
+  event-driven) cross-check.
+- Micro-Live → **S13**, Module Restructure → **S14**. Sequence is now S1–S14.
+- Net principle reaffirmed: **build the data supply chain before the proof engine; optimize for
+  evidence density, not feature count.** No code written this entry — roadmap + CLAUDE.md +
+  BRIEF cross-references renumbered to match.
+
+---
+
+## 2026-06-06
+
 **Sprint 6 (Dashboard + Monitoring) COMPLETE — code, 263 → 289 tests green.**
 - `dashboard/generate.py` — read-only HTML view (status, positions, ledger, runs, guardrail
   events, Sharia flags); HTML-escaped; no order entry.

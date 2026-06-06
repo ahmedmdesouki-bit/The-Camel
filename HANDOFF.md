@@ -91,9 +91,9 @@ db/               paths.py         — CamelDbs dataclass + init_all()  ← entr
                   sharia.py        — camel_sharia.db DDL (whitelist, sharia_events)
                   portfolio.py     — camel_portfolio.db DDL (orders, positions, ledger, runs)
                   learning.py      — camel_learning.db DDL (decisions, outcomes, lessons)
-                  macro.py         — camel_macro.db DDL (stub → S7)
-                  fundamentals.py  — camel_fundamentals.db DDL (stub → S7)
-                  news.py          — camel_news.db DDL (stub → S7)
+                  macro.py         — camel_macro.db DDL (stub → S8 Data Backbone)
+                  fundamentals.py  — camel_fundamentals.db DDL (stub → S8 Data Backbone)
+                  news.py          — camel_news.db DDL (stub → S8 Data Backbone)
                   sqlite.py        — connect() helper
                   schema.sql       — Postgres/Supabase migration target
 
@@ -188,7 +188,7 @@ Includes the full **rogue-action suite** — every prohibited action is provably
 - **7-database split** — domain isolation (replaced the original single SQLite file)
 - **Schema extensions** — `client_order_id`, `historical_drift_count`, `purification_ratio`,
   `trigger_period`, `reasoning_summary`
-- **Consolidated roadmap** — all items from 3 external feedback sources mapped into S4–S12
+- **Consolidated roadmap** — all items from 4 external feedback sources mapped into S4–S14 (Roadmap v3)
 
 ---
 
@@ -224,21 +224,26 @@ python ops\kill_switch.py resume    # removes flag
 
 ---
 
-## 7. What Is Planned (Sprints 4–12)
+## 7. What Is Planned (Sprints 6.5–14, Roadmap v3)
 
-> Full detail with module names and gate criteria is in [`CLAUDE.md`](CLAUDE.md).
+> Full detail with module names and gate criteria is in [`docs/CAMEL_ROADMAP.md`](docs/CAMEL_ROADMAP.md).
+> **Roadmap v3** restructure: build the data supply chain before the proof engine, move the
+> Entrepreneur (cash-flow) arm earlier. S4/S5/S6 below are COMPLETE (kept for context).
 
 | Sprint | Theme | Key deliverables |
 |---|---|---|
-| **S4** | Hardening | Rolling velocity stop (5d −8% / 14d −12%); illiquidity/slippage gate; Budget Kernel (capital buckets); Tool Permission Matrix; Data Freshness Checker; sanitiser; Playwright stub; `pre_flight_execution_check` (idempotency); ThesisCard full template |
-| **S5** | Operator OS | 11-state machine; Opportunity Router (Trader/Entrepreneur/Research/System-improvement/Wait); task queue; Learning Ledger; append-only op log; health monitor |
-| **S6** | Visibility + Control | Dashboard; daily Telegram health report; kill switch over Tailscale; weekly kill-switch test; secrets manager; log rotation; off-box backup; machine hardening checklist |
-| **S7** | Edge Proof Engine | 13-check proof (regime → analogues → event study → forward returns → base rate → counter-signals → valuation → momentum → liquidity → sharia → portfolio fit → corporate action → report); model-disagreement rule. **No edge proof = no trade.** Macro/fundamentals/news DBs activated |
-| **S8** | Strategy Models + Learning | Strategy Registry (trailing_stop, dca_ladder, congress_signal, etf_rotation, momentum, mean_reversion); StrategyMixer; intraday monitor (5-min); 4-tier learning engine; regime→strategy affinity learning |
-| **S9** | Entrepreneur Track | Product Gate (11 fields); build pipeline; Entrepreneur Constitution; ship one compliant product |
-| **S10** | Edge Lab (Backtesting) | Bias prevention; walk-forward; crisis tests (2000/2008/2020/2022); benchmarks (SPUS/HLAL/Cash/DCA); per-strategy + mixer backtest |
-| **S11** | Micro-Live Readiness | Approval Channel; LiveBroker; limit-orders-only; Phase 1 entry ($100–500, human-approved) |
-| **S12** | Module Restructure | Flat → `governance/ operator/ trader/ entrepreneur/ data/ security/ alerts/` (tests stay green) |
+| **S4** ✅ | Hardening | Rolling velocity stop (5d −8% / 14d −12%); illiquidity/slippage gate; Budget Kernel; Tool Permission Matrix; Data Freshness Checker; sanitiser; Playwright stub; idempotency; ThesisCard template |
+| **S5** ✅ | Operator OS | 11-state machine; Opportunity Router; task queue; Learning Ledger; op log; health monitor |
+| **S6** ✅ | Visibility + Control | Dashboard; daily Telegram health report; kill switch over Tailscale; weekly self-test; secrets manager; log rotation; off-box backup; machine hardening checklist |
+| **S6.5** | Safety & Accounting hotfix | No phantom sells; close-only/reduce-only for frozen/non-compliant holdings; Edge Proof mandatory for buy/increase; no $1 fallback price outside unit tests |
+| **S7** | Entrepreneur Product Engine *(moved earlier)* | 17-field Product Gate; build pipeline (thesis→PRD→issues→MVP→tests→approval→prod); Entrepreneur Constitution; ship one compliant product (Arabic complaint/SLA-response assistant for Saudi travel/hospitality — founder's domain) |
+| **S8** | Data Intelligence Backbone | `SourceConnector` framework; **top-20 connectors** (SEC EDGAR/XBRL/RSS, FRED+ALFRED, BLS, BEA, Treasury, World Bank, EIA, USGS, GDELT, ACLED, GPR, EPU, OFAC, congress/senate, ETF holdings, French) w/ provenance + point-in-time + vcrpy tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); scraping policy; fills macro/fundamentals/news DBs |
+| **S9** | Knowledge Graph + Regime Engine | Entity resolution (ticker↔CIK↔ISIN↔CUSIP); ETF look-through; structured event intelligence; 10-state regime classifier from real macro; Sharia cross-check w/ multi-state status (disagreement → freeze new buys) |
+| **S10** | Full Edge Proof Engine | **17-check** signal-conditioned proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay); minimum thresholds; model-disagreement → human. **No edge proof = no trade.** |
+| **S11** | Strategy Registry + Learning | Trio: `core_dca`, `quality_momentum`, `etf_regime_rotation` (all pass Edge Proof); StrategyMixer; DCA guardrails; intraday monitor (5-min); 4-tier learning; regime→strategy affinity |
+| **S12** | Edge Lab + realistic paper | `loop_test` vs `realistic_paper` (limit-only, spread/slippage/partial-fill, market hours, corporate actions); bias prevention; walk-forward; crisis tests (2000/2008/2020/2022); benchmark hierarchy; two-engine cross-check; delisted handling; kill criteria |
+| **S13** | Micro-Live Readiness | Approval Channel (Telegram one-tap, timeout=veto); LiveBroker; limit-orders-only; Phase 1 entry ($100–500, human-approved) |
+| **S14** | Module Restructure | Flat → `governance/ operator_os/ trader/ entrepreneur/ data/ security/ alerts/ dashboard/` (tests stay green) |
 
 ### Permanently excluded
 **Options / the Wheel Strategy.** Derivatives are haram and blocked by Constitution rule #1.
@@ -280,12 +285,18 @@ Appeared in two source videos; rejected both times. Do not revisit.
    idempotency, schema extensions). → S4.
 2. **Feedback 2** — Unified 19-section spec (Edge Proof Engine, 7-DB architecture, State
    Machine, Opportunity Router, Learning Ledger, Budget Kernel, Tool Permission Matrix,
-   philosophy hierarchy). → S4–S12.
+   philosophy hierarchy). → S4–S14.
 3. **Video: "Claude Stock Trading" (Samin Yasar)** — trailing stop, DCA ladder, congress
-   copy-trading via Capital Trades, intraday monitor, 50%-profit early close. → S8.
+   copy-trading via Capital Trades, intraday monitor, 50%-profit early close. → S11.
    (Wheel strategy from this source rejected.)
+4. **Power Maximization Proposal v2 + data-source deep research** — drove **Roadmap v3**:
+   top-20 source connectors (free + paid), knowledge graph + regime engine, 17-check
+   signal-conditioned Edge Proof, realistic paper execution, Sharia cross-check, and moving
+   the Entrepreneur arm earlier (now S7). → S6.5–S12. (Travel/hospitality product validated
+   by the founder's travel-tech day job; blind congress/social copy and paid-data-without-
+   references rejected.)
 
-All three were gap-analyzed line-by-line against the roadmap; every actionable item is
+All four were gap-analyzed line-by-line against the roadmap; every actionable item is
 mapped to a sprint. Memory files: `feedback_camel_arch_1.md`, `feedback_camel_arch_2.md`.
 
 ---

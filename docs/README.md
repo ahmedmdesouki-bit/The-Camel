@@ -26,7 +26,7 @@ the others point here rather than copy. This is the rule that keeps the docs fro
 | **`../HANDOFF.md`** | Current status + tech stack + how to run | New contributor | Onboarding / run instructions |
 | **`CAMEL_BRIEF.md`** | Project context: why, who, real capital, open questions | Outside reviewer, founder | The "why & who" |
 | **`CAMEL_CONSTITUTION.md`** | The rules in prose: Sharia, risk, phase gates | Founder, Sharia scholar, lawyer | The non-negotiable rules |
-| **`CAMEL_ROADMAP.md`** | Full sprint plan S1–S12 + open decisions | Builder, founder | The build roadmap |
+| **`CAMEL_ROADMAP.md`** | Full sprint plan S1–S14 (Roadmap v3) + open decisions | Builder, founder | The build roadmap |
 | **`CAMEL_DATA_CONTRACTS.md`** | 7-DB schemas, point-in-time discipline, data quality | Builder | Data model + contracts |
 | **`CAMEL_TESTING.md`** | Test strategy, adversarial suite, integration tests | Builder | How Camel is tested |
 | **`CAMEL_LIVE_READINESS.md`** | Phase 1 go-live checklist | Founder | The pre-live gate |

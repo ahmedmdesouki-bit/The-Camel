@@ -1,20 +1,23 @@
-# CAMEL ROADMAP - Canonical sprint plan (S1-S12)
+# CAMEL ROADMAP - Canonical sprint plan (S1-S14, Roadmap v3)
 
 > **Canonical home for the build roadmap, open decisions, and definition of done.**
 > The operating manual (CLAUDE.md) carries only a one-line summary table and points here.
-> Last updated: 2026-06-05.
+> Last updated: 2026-06-06. **Roadmap v3** (research-driven restructure) replaces the old
+> S7-S12 block — see `## Roadmap v3` below for the rationale and the new sequence.
 
 ---
 
 ## Build roadmap
 
-**Sequence (two half-sprints inserted per the v1 enhancement proposal — evidence and ops
-visibility pulled forward):**
+**Sequence (Roadmap v3 — data backbone before the proof engine; Entrepreneur moved earlier):**
 ```
-S1 ✅ → S2 ✅ → S3 ✅ → S4 → S4.5 (Edge Proof v0) → S5 → S5.5 (Minimal Ops) →
-S6 → S7 → S8 → S9 → S10 → S11 → S12
+S1 ✅ → S2 ✅ → S3 ✅ → S4 ✅ → S4.5 ✅ (Edge Proof v0) → S5 ✅ → S5.5 ✅ (Minimal Ops) → S6 ✅ →
+S6.5 (Safety/Accounting hotfix) → S7 (Entrepreneur) → S8 (Data Backbone) → S9 (Knowledge Graph + Regime) →
+S10 (Full Edge Proof, 17-check) → S11 (Strategy Registry) → S12 (Edge Lab + realistic paper) →
+S13 (Micro-Live) → S14 (Restructure)
 ```
 Guiding principle reaffirmed: **Safety first. Evidence second. Autonomy last.**
+Optimize for **evidence density, not feature count.**
 
 ### Completed
 - **S1 ✅** Guardrail Service + schema + tests. Gate: 28 rogue-action tests green.
@@ -132,9 +135,9 @@ switch blocks action mid-loop; point-in-time columns present on `prices`; paper 
 carry the realism marker; secrets-leak tests pass.
 
 **STATUS: COMPLETE** (branch `s4-hardening`, 197 tests; guardrail file = 43, ≥40 met).
-Deferred by dependency: **max cancel/replace attempts** → S11 (no cancel/replace path exists
-until LiveBroker); **earnings blackout** → S7 (needs an earnings calendar from the
-fundamentals DB). Corporate-action check was already pre-deferred to S7.
+Deferred by dependency: **max cancel/replace attempts** → S13 (no cancel/replace path exists
+until LiveBroker); **earnings blackout** → S8 (needs an earnings calendar from the
+fundamentals connectors). Corporate-action check was already pre-deferred to the S8/S12 data work.
 
 ---
 
@@ -299,374 +302,292 @@ transfer — is the founder checklist in `docs/CAMEL_MACHINE_HARDENING.md` (do b
 
 ---
 
-### S7 — Edge Proof Engine
-*The most important missing module — no live money until this exists.*
+## Roadmap v3 — research-driven restructure (adopted from Power Maximization Proposal v2 + data-source deep research)
 
-Every trade candidate passes 13 checks before a position is proposed (§5.2):
+**Why v3:** the system is strong on safety/governance/evidence-gating but the macro / fundamentals /
+news databases are still *stubs*. A real Edge Proof Engine is meaningless without real, point-in-time,
+provenanced data. So: **build the data supply chain before the proof engine, move the Entrepreneur
+(cash-flow) arm earlier, and upgrade Edge Proof to signal-conditioned.** North star unchanged:
+*excellent at rejecting weak ideas, proving rare strong ones, compounding capital, and building
+cash-flow products.* Optimize for **evidence density, not feature count.**
 
+**Revised sequence (S6 done):**
 ```
-classify_regime()           → macro regime (expansion / contraction / crisis / recovery)
-find_historical_analogues() → prior cases matching this setup
-run_event_study()           → forward-return distribution around the trigger
-calculate_forward_returns() → median, worst, distribution
-calculate_base_rate()       → sample N, hit rate, magnitude
-check_counter_signals()     → what would invalidate the thesis
-check_valuation()           → is the setup priced in?
-check_momentum()            → technical / momentum confirmation (step 8 §5.2)
-check_liquidity()           → spread, ADV, whole-share constraints
-check_sharia()              → re-confirm whitelist + frozen status at trade time (step 10 §5.2)
-check_portfolio_fit()       → position + sector concentration within current portfolio (step 11 §5.2)
-corporate_action_check()    → splits, mergers, delistings, ticker changes since last screen
-generate_edge_report()      → structured JSON output (below)
-```
-
-Additional guardrail wired here: **model disagreement rule** — when BOARDROOM sub-agents
-(Bull, Bear, Sharia Auditor) conflict materially, `generate_edge_report()` sets
-`trade_allowed=false` and routes to Human Approval Gate instead of auto-proceeding.
-
-Statistical controls (the contents of `calculate_base_rate` + `generate_edge_report`,
-enriching the v0 report): minimum sample-size threshold · confidence interval · median AND
-mean forward return · worst forward return · max drawdown · Sharpe-like risk-adjusted score ·
-benchmark excess return · transaction-cost adjustment · slippage adjustment · regime-specific
-base rate · signal-decay check · false-positive rate · outlier-sensitivity check.
-
-Full edge report (extends the S4.5 v0 report; reject if confidence interval crosses zero):
-```json
-{
-  "trade_allowed": false, "decision_class": "REJECT_WEAK_EDGE",
-  "sample_size": 42, "hit_rate": 0.61,
-  "median_forward_return": 0.084, "mean_forward_return": 0.071,
-  "worst_forward_return": -0.21, "max_drawdown": -0.18,
-  "benchmark_excess_return": 0.032, "estimated_cost": 0.006,
-  "net_expected_return": 0.026, "confidence_interval": [-0.04, 0.09],
-  "confidence": 0.66,
-  "reason": "Excess return positive but confidence interval crosses zero."
-}
-```
-
-Data quality scoring is refined here (full version of the `data/quality.py` v1 from S4):
-multi-source agreement, reputation, freshness, provenance — feeding `decision_eligible`.
-
-Observe-step structure follows: Regime → Theme → Asset Class → Sector → Company → Candidate.
-
-**Gate:** Every signal passes all 13 checks; `trade_allowed=false` blocks the allocator;
-no edge proof = no trade; model disagreement routes to human approval.
-
----
-
-### S8 — Strategy Models + Learning Engine
-
-Camel should not be locked into one approach. This sprint builds a **Strategy Registry** —
-a library of named, backtested, switchable strategy modules — plus a tiered learning engine
-that makes the system progressively smarter from real outcomes without violating the
-Constitution's "Camel cannot change its own rules" constraint.
-
-#### Strategy Registry (`strategies/`)
-
-Every strategy is a module that implements `BaseStrategy`:
-- `name: str` — unique identifier used in the registry, logs, and Learning Ledger
-- `description: str` — plain-English summary of the strategy's logic and intent
-- `signal(observations) → List[SignalCandidate]` — what to look at
-- `entry_logic(signal) → EntryPlan` — how to enter (single, ladder, scaled)
-- `exit_logic(position) → ExitPlan` — fixed, trailing floor, or time-based
-- `sizing_logic(signal, state) → float` — notional amount, respecting Constitution caps
-- `applicable_regimes: List[str]` — which macro regimes favour this strategy
-- `base_rate: BaseRateCard` — live-updated hit rate, median return, worst return, drawdown
-
-Signals from every strategy **still pass through the full 13-check Edge Proof Engine**
-before a position is proposed. Strategies generate candidates; Edge Proof validates them.
-
-**Initial strategy library (Sharia-compliant, no options/derivatives ever):**
-
-| Strategy | Source | Description |
-|---|---|---|
-| `trailing_stop.py` | Video Level 1 | Trailing floor — stop rises as price rises, locking gains. Dynamic invalidation point replaces fixed `price_invalidation`. Default rules: −10% initial stop; move floor up 5% below current price every time stock climbs 10%. **50% profit early-close rule**: if position reaches 50% of its profit target before time-stop, close early and recycle capital. All parameters overridable in `limits.yaml`. |
-| `dca_ladder.py` | Video Level 1 | Systematic laddering — buy dips across predefined price levels. Default ladder (video-sourced, all overridable in `limits.yaml`): −15% → buy 10 shares; −20% → buy 10 more; −30% → buy 20 more; −50% → buy 50 more. Floor only goes down to add, never triggers a sell. |
-| `congress_signal.py` | Video Level 2 | Congressional filing signal — STOCK Act disclosures (45-day lag) sourced from **Capital Trades** (capitaltrades.com). Used as **one observe-step signal** only; does NOT bypass Edge Proof; blind copy is forbidden. Only Sharia-compliant names among the disclosed trades are considered. |
-| `etf_rotation.py` | Regime logic | Rotate between SPUS / HLAL / MNZL based on macro regime classification. |
-| `momentum.py` | Price action | Trend-following on compliant single names and ETFs. |
-| `mean_reversion.py` | Price action | Quality-dip accumulation when a compliant name pulls back to key support. |
-
-**Phased rollout within S8 (validate few before adding many):**
-- **First trio** — `momentum.py`, `mean_reversion.py`, `dca_ladder.py`. These are
-  self-contained: computable from `camel_market.db` price data alone, no external deps.
-- **Then** — `etf_rotation.py` (needs regime classification → depends on the S7 macro DB,
-  so it follows, not leads).
-- **Delayed** — `congress_signal.py` (delayed, noisy disclosures; easily narrative-driven —
-  keep as a research signal, revisit after S10), `mean_reversion`→full `StrategyMixer`
-  complexity, and any intraday automation beyond monitoring.
-- Founder decision pending: whether `congress_signal` is delayed until after S10.
-
-**DCA ladder safety guardrails (mandatory — no blind averaging down):**
-- Allowed only for: (a) approved core Sharia ETFs, or (b) individual equities with a passing
-  Edge Proof AND no fundamental deterioration.
-- **No DCA** if Sharia status is frozen/watch.
-- **No DCA** if latest fundamentals deteriorated.
-- **No DCA** if the drawdown is driven by fraud, litigation, delisting, regulatory shock, or
-  a failed Sharia re-screen.
-- DCA total exposure must stay inside position + sector caps.
-- **DCA must have a final stop condition — no infinite averaging down.**
-- Default (ETFs only at first) is a founder decision: ladder on individual stocks vs ETFs only.
-
-**Wheel Strategy (Video Level 3) — permanently excluded.**
-Cash Secured Puts and Covered Calls are options (derivatives). Haram + Constitution rule #1.
-No exceptions. Do not revisit.
-
-#### StrategyMixer (`strategies/mixer.py`)
-
-Blends active strategies into a combined signal set:
-- **By regime** — activate strategies with matching `applicable_regimes` for today's regime
-- **By weight** — configurable weight per strategy (founder-set defaults in `limits.yaml`)
-- **By performance** — within the auto-weight band, shift weight toward outperformers
-- **Mixed signals** — multiple strategies can agree on the same ticker, increasing conviction
-
-#### Ongoing Learning Engine (`learning/`) — four permission tiers
-
-```
-Level 1 — Fully autonomous (no approval):
-  After every resolved trade, update the strategy's base-rate record:
-  hit/miss, actual return, actual drawdown, regime at entry.
-  Pure bookkeeping. No rule changes.
-
-Level 2 — Auto within founder-set band (default ±10%):
-  Adjust strategy weights based on 30-day rolling performance vs expected base-rate.
-  If trailing_stop hits 68% when base-rate says 60% → weight increases.
-  Band limits live in config/limits.yaml (founder-owned, agent-read-only).
-
-Level 3 — Propose only, founder approves:
-  Activate or deactivate a strategy.
-  Change a strategy's regime affinity mapping.
-  improvement_proposer.py writes a structured proposal to the Learning Ledger.
-  Founder reviews and approves/rejects. Nothing changes without explicit approval.
-
-Level 4 — Founder-only, system never touches:
-  Add a new strategy to the registry.
-  Modify the Constitution or risk rules.
-  Change the ±band limits themselves.
-```
-
-#### Intraday Position Monitor (`loop/intraday_monitor.py`)
-
-The EOD loop handles research, thesis, and new position decisions. It is not fast enough
-for active position management strategies like trailing stop and DCA ladder, which must
-react to intraday price moves in near real-time.
-
-Two separate loops run concurrently:
-
-| Loop | Cadence | Responsibility |
-|---|---|---|
-| **EOD loop** (`loop/scheduler.py`) | Once daily, post-close | Observe → Thesis → Choose → Act → Measure → Learn |
-| **Intraday monitor** (`loop/intraday_monitor.py`) | Every 5 min, market hours only (9:30am–4pm ET, Mon–Fri) | Manage open positions: update trailing floors, trigger ladder buys, apply 50%-profit early close, check stop losses |
-
-The intraday monitor does **not** open new positions — it only manages positions that the
-EOD loop has already opened and the Constitution has already approved. It operates within
-the same guardrail envelope: every management action (floor move, ladder buy, early close)
-routes through `Constitution.evaluate()` before execution.
-
-`config/limits.yaml` controls the monitor cadence and market hours window
-(founder-owned, agent-read-only).
-
-#### Regime → Strategy affinity learning (`learning/regime_matcher.py`)
-
-After enough resolved trades (minimum N=20 per regime), the system learns empirically
-which strategies perform above/below their base-rate in each regime, and updates the
-`applicable_regimes` suggestions it proposes to the founder. The founder approves all
-affinity changes (Level 3).
-
-**Gate:** Strategy registry has ≥3 active strategies; all produce signals that pass Edge
-Proof; trailing stop replaces fixed invalidation for trending positions with 50%-profit
-early-close working; DCA ladder fires at correct price levels from `limits.yaml` defaults;
-congress_signal feeds observe step from Capital Trades without bypassing proof;
-intraday monitor runs every 5 min during market hours and correctly updates floors without
-opening new positions; base-rate updater records every resolved trade; auto weight
-adjustment stays within founder-set band; improvement proposals land in Learning Ledger.
-Starter trio (momentum / mean_reversion / dca_ladder) validated before any others are
-activated. Adversarial case added: DCA attempts to average down into a deteriorating /
-frozen / litigated name → blocked.
-
----
-
-### S9 — Entrepreneur Track
-*(Was S8)*
-- Entrepreneur Product Gate — every product must answer all 11 fields before a line of code
-  is written (§11.7):
-  1. Problem statement
-  2. Target customer
-  3. Evidence of pain
-  4. Competitor check
-  5. Monetization hypothesis
-  6. MVP scope
-  7. Build cost
-  8. Launch risk
-  9. Sharia / compliance check
-  10. Data / privacy check
-  11. Success metric
-  12. Distribution channel
-  13. First 10 target customers
-  14. Willingness-to-pay evidence
-  15. Compliance risk rating
-  16. Data retention policy
-  17. Human-review requirement for generated outputs
-- Build pipeline: product_thesis → PRD → build plan → GitHub issues → MVP → tests →
-  staging → human approval → production → outcome measurement.
-  No direct production deploy without tests + founder approval.
-- Entrepreneur Constitution (separate from Trader constitution). Hard guardrails:
-  - No legal / financial / medical claims without human approval.
-  - No collection of sensitive data without explicit privacy review.
-  - No use of copyrighted templates/assets without a rights check.
-  - No production launch without founder approval.
-  - No paid ads without Budget Kernel approval.
-  - No customer-facing "official compliance guarantee" wording.
-  Risk areas: wasted money, legally risky claims, customer data mishandling, copyrighted
-  assets, non-compliant products, reputational damage — all gated.
-- Ship one compliant AI product (Stripe test mode acceptable for Phase 0).
-
-**Gate:** No build without all 11 product gate fields + Sharia check + approval;
-no paid spend without budget approval; no customer data collection without privacy check;
-live URL; payment-capable.
-
----
-
-### S10 — Edge Lab (Backtesting)
-*Run after ≥ 28 days of paper data has accumulated.*
-
-- Historical return testing: look-ahead bias prevention, survivorship bias prevention,
-  data leakage checks, overfitting check.
-- Walk-forward testing (out-of-sample validation).
-- Transaction costs + slippage + spread modeling.
-- Whole-share constraints (Sahm compatibility).
-- Sharia whitelist availability at the historical point (point-in-time compliance status).
-- **Delisted companies** — exclude or account for names that were delisted in the test window.
-- Crisis tests: 2000 dot-com, 2008 GFC, 2020 COVID, 2022 inflation/rate shock.
-- Benchmark comparison vs **SPUS / HLAL / Cash / simple DCA**.
-  If Camel cannot beat simple DCA on risk-adjusted terms after costs, it should not trade actively.
-- Signal leaderboard.
-
-- Per-strategy backtesting: every registered strategy in the registry is tested independently
-  and as a mixed portfolio. StrategyMixer blends are tested across regimes.
-- Strategy leaderboard: rank all strategies by risk-adjusted return after costs.
-
-**Benchmark hierarchy (compare against all, in order):**
-1. Cash · 2. Simple monthly DCA into SPUS · 3. SPUS buy-and-hold · 4. HLAL buy-and-hold ·
-5. MNZL where relevant · 6. Equal-weight Sharia ETF basket · 7. Camel active strategy.
-If Camel does not beat simple DCA on risk-adjusted terms after costs, Camel does not trade actively.
-
-**Strategy kill criteria — disable or move to research-only if ANY hold:**
-```
-Out-of-sample return < benchmark
-Max drawdown > allowed threshold
-Hit rate materially below base rate
-Performance depends on a single outlier
-Transaction costs erase the edge
-Signal works only in one cherry-picked regime
-Sample size too small
-```
-A killed strategy is deactivated in the registry (Level 3 — logged, founder notified).
-
-**Gate:** Every strategy tested out-of-sample; delisted companies handled; full benchmark
-hierarchy compared; weak signals rejected; each strategy has a published base-rate record;
-StrategyMixer blend tested; kill criteria enforced; Camel beats simple DCA before any live
-execution. Adversarial case added: backtest attempts to use future / restated data → blocked
-by point-in-time `known_at` discipline.
-
----
-
-### S11 — Micro-Live Readiness (Phase 1)
-
-**Prerequisites (all must pass):**
-- ≥ 28 days continuous paper operation.
-- 0 guardrail breaches.
-- Ledger reconciles with broker paper statement.
-- Every position had thesis + invalidation point.
-- Kill switch tested and confirmed working.
-- Broker API key scoped trade-only, withdrawals disabled.
-- Edge Proof Engine has approved at least one signal.
-- Approval flow end-to-end tested.
-- Margin disabled · options disabled · API key scoped to minimum required permissions.
-- Manual dry-run completed.
-- One **rejected** trade test completed in the live environment (no order placed).
-- One **approved** micro trade completed manually before any automation.
-- Emergency broker login tested.
-
-*Deliverables:*
-- Approval Channel (Telegram one-tap approve / veto with timeout = veto).
-- LiveBroker (Alpaca paper → live, behind phase flag).
-- Limit orders only (no market orders in live mode).
-- No pre-market / after-hours trading.
-- Live broker key scope verification at startup.
-
-Initial live permissions:
-```
-Human approval required for every live trade.
-No autonomous live execution.
-Max total live capital: $100–500.
-Limit orders only.
-Whitelist only.
-No pre-market / after-hours.
+S6 OK -> S6.5 (Safety/Accounting hotfix) -> S7 (Entrepreneur, moved earlier)
+-> S8 (Data Intelligence Backbone) -> S9 (Knowledge Graph + Regime Engine)
+-> S10 (Full Edge Proof, 17-check) -> S11 (Strategy Registry) -> S12 (Edge Lab + realistic paper)
+-> S13 (Micro-Live) -> S14 (Module Restructure)
 ```
 
 ---
 
-### S12 — Module Restructure (last sprint)
-*(Section 14.5 of Feedback 2)*
+### S6.5 — Safety & Accounting Hotfix  (small, do before the data work)
+Cheap, real tightening surfaced by the stress-test:
+- **No phantom sells** — block any sell whose qty exceeds current holdings.
+- **Close-only / reduce-only exits for frozen or non-compliant holdings** — a frozen name may be
+  SOLD to de-risk, never bought/increased.
+- **Edge Proof mandatory for buy/increase by default** — `Allocator.request(..., require_edge=True)`
+  is the default for opening/increasing; `reduce_only` / `close_only` actions are exempt.
+- **Remove the $1 fallback price outside unit tests** — paper fills use a validated close; the
+  `simulated_unrealistic` marker stays; **no performance number may come from a fallback fill.**
 
-Restructure the flat layout into a clean domain hierarchy. All 200+ tests must stay green.
-
-```
-governance/
-  constitution.py       (moved from guardrail/)
-  sharia_registry.py    (from sharia/)
-  risk_rules.py
-  budget_kernel.py      (from capital/)
-  tool_permissions.py
-  approvals.py
-
-operator/
-  state_machine.py
-  task_queue.py
-  opportunity_router.py
-  learning_ledger.py
-  health_monitor.py
-  kill_switch.py        (from ops/)
-
-trader/
-  thesis_card.py        (from engine/)
-  edge_proof_engine.py
-  regime_classifier.py
-  event_study.py
-  forward_returns.py
-  portfolio_engine.py
-  paper_broker.py       (from broker/)
-  broker_reconciliation.py
-
-entrepreneur/
-  product_thesis.py
-  prd_generator.py
-  build_workflow.py
-  compliance_gate.py
-  qa_checklist.py
-
-data/
-  market_data.py
-  macro_data.py
-  company_fundamentals.py
-  news_events.py
-  data_freshness.py
-  sanitiser.py
-
-security/
-  prompt_injection_filter.py
-  secrets_check.py
-  source_validation.py
-
-alerts/
-  telegram_bot.py
-  daily_report.py
-```
-
-**Gate:** Full test suite green after restructure; all imports updated; CLAUDE.md updated.
+**Gate:** phantom sell blocked; frozen-name buy blocked but close-only allowed; buy without an
+EdgeReport rejected; no $1 fallback in any non-test path.
 
 ---
+
+### S7 — Entrepreneur Product Engine  (MOVED EARLIER — cash flow first)
+*Moved ahead of the trading-data build (founder decision): for year one the Entrepreneur arm has
+higher expected cash-flow + learning than trading a small account. Trader compounds; Entrepreneur
+creates income.*
+
+**Founder context:** the founder works full-time in a **travel-tech startup** — so the lead product
+is a real domain fit.
+
+- **Product Gate — 17 fields** before any code: problem statement · target customer · evidence of
+  pain · competitor check · monetization hypothesis · MVP scope · build cost · launch risk ·
+  Sharia/compliance check · data/privacy check · success metric · distribution channel · first 10
+  target customers · willingness-to-pay evidence · compliance risk rating · data retention policy ·
+  human-review requirement for generated outputs.
+- **Lead product candidate:** Arabic complaint / SLA-response assistant for Saudi travel/hospitality
+  operators (founder's domain). Alternatives: partnership-proposal generator (fintech/travel/
+  e-commerce); Saudi loyalty-campaign planner; Sharia-compliant personal-investing research assistant.
+- Build pipeline: product_thesis → PRD → build plan → GitHub issues → MVP → tests → staging →
+  human approval → production → outcome measurement. No production deploy without tests + approval.
+- **Entrepreneur Constitution** (separate from Trader): no legal/financial/medical claims without
+  human approval; no sensitive-data collection without privacy review; no copyrighted assets without
+  a rights check; no production launch without founder approval; no paid ads without Budget Kernel
+  approval; no "official compliance guarantee" wording.
+- Ship one compliant product (Stripe test mode for Phase 0).
+
+**Gate:** no build without all 17 gate fields + Sharia check + approval; no paid spend without budget
+approval; no customer data without privacy check; live URL; payment-capable.
+
+---
+
+### S8 — Data Intelligence Backbone  (the long pole — fills the stub DBs)
+*The supply chain. The full Edge Proof Engine is impossible until macro/fundamentals/news hold real,
+point-in-time, provenanced data.*
+
+**`SourceConnector` base class** — every connector implements `fetch_raw / parse / normalize /
+validate / store`, with `source_name, source_type, requires_api_key, allowed_use,
+rate_limit_per_minute`. **Recorded-fixture tests (vcrpy / pytest-recording) — no live web in unit tests.**
+
+**Provenance enforcement** — no decision-relevant record stored without: source · source_url/endpoint ·
+source_document_id · event_date · reported_at · ingested_at · known_at · content_hash ·
+parser_version · confidence · data_quality_score · license_status. New `source_documents` table.
+
+**Top-20 source connectors (free/official first; paid phased in as budget allows):**
+
+*Free / official (1–20):*
+1. SEC EDGAR submissions API → fundamentals (10-K/10-Q/8-K metadata, filing history)
+2. SEC XBRL CompanyFacts API → fundamentals (revenue, margins, debt, cash, shares)
+3. SEC RSS feeds → news (filing alerts) + 8-K event triggers
+4. FRED → macro (rates, inflation, credit spreads, money supply, yield curve)
+5. **ALFRED (vintage)** → macro — *point-in-time* values, the key to honest macro backtests
+6. BLS API → macro (CPI/PPI/unemployment/wages)
+7. BEA API → macro (GDP/income/consumption/trade)
+8. US Treasury Fiscal Data API → macro (yields/debt/fiscal)
+9. World Bank Pink Sheet → macro (commodities: energy/metals/agriculture)
+10. EIA → macro (oil/gas/inventories)
+11. USGS minerals → macro (metals supply/demand)
+12. GDELT → news (global events, tone, entities, themes, geography)
+13. ACLED → news (political violence/protests/conflict)
+14. Caldara & Iacoviello Geopolitical Risk Index → macro
+15. Economic Policy Uncertainty Index → macro
+16. OFAC + EU/UN sanctions lists → compliance exclusion + event detection
+17. House financial disclosures → alt-data (signal only, never blind copy)
+18. Senate financial disclosures → alt-data
+19. ETF issuer holdings pages (SPUS/HLAL/MNZL) → sharia (constituents + methodology)
+20. Kenneth French Data Library → factor data (momentum/value) for `quality_momentum`
+
+*Paid (phased in, same references the research recommends):* **EODHD** (live-ish US quotes; 150k+
+tickers; raw + adjusted history; **delisted dataset for survivorship control**; corporate actions;
+~$20–100/mo) · **Polygon/Massive** (clean prices + corporate actions) · **Norgate** (survivorship-
+resistant US/AU + delisted) · **Nasdaq Data Link / Sharadar** (fundamentals) · **Quiver Quantitative**
+(congress/insider/lobbying/contracts/patents) · **Zoya / Musaffa** (Sharia API) · **CRSP** (research-
+grade, 1926, survivor-bias-free — the aspirational historical-truth layer).
+
+**Connector deps:** `requests`/`httpx`, `pydantic`, `feedparser`, `beautifulsoup4`/`trafilatura`,
+`python-dateutil`, `vcrpy`/`pytest-recording`. (Heavy quant libs deferred to S12.)
+
+**Scraping policy (`security/scraping_policy.py`):** API > vendor API > official file > RSS > static
+scrape > browser (QA only). Check robots.txt + terms; respect rate limits; clear User-Agent with
+contact email for SEC; store URL/time/hash/parser version; never execute scripts from pages; **never
+let scraped text instruct the LLM.**
+
+**Critical rules:** raw text → sanitiser → structured event → source quorum (≥2) → LLM summary (no raw
+article text reaches the reasoning engine). **No backtest is valid unless adjusted/unadjusted prices,
+splits, dividends, delistings, and ticker changes are handled.**
+
+**Dashboard extension (data-pipeline health):** connector status · last successful ingestion ·
+failed-source count · stale-source warnings · data-quality panel.
+
+**Gate:** no ingested record without full provenance + point-in-time fields; ≥16 free connectors live
+with recorded-fixture tests; macro/fundamentals/news DBs hold real data; raw text never reaches the LLM.
+
+---
+
+### S9 — Research Knowledge Graph + Regime Engine
+*Turn raw data into linked, queryable intelligence, and classify the environment before choosing strategy.*
+
+- **Entity resolution / `assets` table** — ticker ↔ CIK ↔ ISIN ↔ CUSIP ↔ company name ↔ sector ↔
+  ETF holding ↔ Sharia screen; `active_from/active_to`, `delisted_flag`. Resolver maps a ticker to
+  its full identity.
+- **ETF holdings resolver** — SPUS/HLAL/MNZL constituents (look-through to single-name exposure).
+- **Event intelligence** — structured events (`event_type`, region, affected_assets/sectors, severity,
+  direction, confidence, source_count, point-in-time stamps) + dedup + severity scorer + entity linker
+  + event→theme mapper.
+- **Regime Engine** (`trader/regime/`: `regime_classifier_v0`, `regime_feature_builder`,
+  `regime_history_store`). Regimes: LIQUIDITY_EXPANSION, LIQUIDITY_TIGHTENING, INFLATION_SHOCK,
+  DISINFLATION_GROWTH, RECESSION_RISK, RECOVERY, COMMODITY_SUPPLY_SHOCK, GEOPOLITICAL_RISK_OFF,
+  AI_CAPEX_BOOM, USD_STRENGTH_EM_PRESSURE. Features: fed_funds, 2y/10y yields, curve, real yield,
+  CPI/core/PPI YoY, unemployment, payrolls, HY credit spread, DXY, oil/copper/gold, commodity index,
+  VIX, SPUS/Nasdaq trend.
+- **Regime → Theme mapper** — regime/event → sectors/assets/companies.
+- **Sharia cross-check + multi-state status** — independent SEC/XBRL ratio sanity-check vs the
+  canonical screener (Musaffa/Zoya). Status = `pass / fail / doubtful / frozen / pending_review` +
+  methodology (AAOIFI/MSCI/S&P/FTSE/DowJones/custom) + confidence + business/financial screen results
+  + purification_ratio + screened_at/known_at/next_review_at + source_hash. **Rule: canonical vs
+  cross-check disagree → freeze for new buys, allow reduce-only exits, route to human review.**
+
+**Gate:** given a ticker, Camel returns company identity, CIK, sector, Sharia status (multi-state),
+latest filings, latest events, ETF exposure, and benchmark; the regime classifier labels the current
+environment from real macro data; a Sharia disagreement freezes new buys.
+
+---
+
+### S10 — Full Edge Proof Engine  (signal-conditioned, 17 checks)
+*Was S7. Upgraded to test THE SIGNAL on real data, not just general forward returns. Built on top of the
+S4.5 v0 gate — v0 is never removed, it's the cheapest first filter.*
+
+**17 checks:** 1 signal definition · 2 source provenance · 3 point-in-time availability · 4 historical
+sample construction · 5 survivorship-bias control · 6 similar-regime filter · 7 forward returns at
+1M/3M/6M/12M · 8 benchmark comparison (SPUS/HLAL/cash/DCA) · 9 transaction-cost + spread adjustment ·
+10 worst-case drawdown · 11 volatility-adjusted return · 12 **multiple-testing penalty** ·
+13 **signal-decay test** · 14 counter-signal inventory · 15 Sharia status at the historical decision
+date · 16 liquidity + whole-share feasibility · 17 final trade decision.
+
+**Model-disagreement rule** — BOARDROOM (Bull/Bear/Sharia Auditor) conflict → `trade_allowed=false` →
+Human Approval Gate.
+
+Edge report (extends v0): signal_id, candidate, sample_size, **regime_filtered_sample_size**,
+hit_rate_3m, median_excess_return_3m, worst_forward_return_3m, max_drawdown, benchmark, after_costs,
+turnover_estimate, data_quality_score, **multiple_testing_penalty_applied**, **signal_decay_detected**,
+trade_allowed, reason. New `edge_reports` table. Observe structure: Regime → Theme → Asset → Sector →
+Company → Candidate.
+
+**Minimum thresholds:** sample ≥ 50 · regime-filtered sample ≥ 20 · median excess ≥ +2.5% over
+benchmark for the horizon · worst forward return no worse than −25% unless position ≤ 2% · data
+quality ≥ 0.80 · source quorum ≥ 2 for non-price events · fail if last-24-month edge materially
+underperforms the full sample (decay).
+
+**Gate:** every signal passes all 17 checks; regime-filtered sample enforced; multiple-testing penalty
++ signal decay applied; `trade_allowed=false` blocks the allocator; no edge proof = no trade.
+
+---
+
+### S11 — Strategy Registry + Learning Engine
+*Was S8. Starter trio updated (now feasible because the data backbone exists).*
+
+**Starter trio (build first):** `core_dca` (monthly DCA into approved core ETF/basket; benchmark SPUS;
+no timing unless regime risk is extreme — likely beats most overactive systems after costs) ·
+`quality_momentum` (factor-driven, low turnover: 12-1 momentum, 6m momentum, positive earnings
+revisions, revenue growth, FCF margin, low leverage, liquidity, valuation-not-extreme) ·
+`etf_regime_rotation` (SPUS/HLAL/MNZL/cash by regime — **only if it beats simple DCA after costs**).
+
+Then `earnings_guidance_drift` (after the earnings calendar + fundamentals are clean).
+**Delay (revisit after Edge Lab):** `congress_signal`, complex `mean_reversion`, intraday active
+management beyond monitoring, single-name `dca_ladder`, ML / LLM strategy discovery.
+**Reject permanently:** day trading, options/Wheel, crypto derivatives, shorting, leverage,
+weapons/defense themes, blind congress/social copy.
+
+`BaseStrategy` (name, description, signal, entry/exit/sizing, applicable_regimes, base_rate); **all
+signals still pass the 17-check Edge Proof.** `StrategyMixer` (blend by regime/weight/performance).
+**DCA-ladder safety guardrails:** no DCA into frozen/deteriorating/litigated names; final stop
+condition (no infinite averaging down); inside position + sector caps. **Intraday Position Monitor**
+(5-min; manages open positions only; every action through `Constitution.evaluate()`; trailing-stop
+50%-profit early-close).
+
+**4-tier Learning Engine:** L1 auto base-rate updates · L2 auto weight within founder-set ±band ·
+L3 propose-only (founder approves activate/deactivate + regime affinity) · L4 founder-only
+(Constitution / new strategies / the band itself). Regime→strategy affinity learned at N≥20 per regime.
+
+**Gate:** ≥3 strategies (the trio) all passing Edge Proof; learning updating base-rates; improvement
+proposals land in the Learning Ledger; DCA guardrails enforced; never auto-edits the Constitution.
+
+---
+
+### S12 — Edge Lab (Backtesting) + Realistic Paper Execution
+*Was S10. Adds the realistic-paper engine + survivorship + two-engine cross-check. Mandatory before any
+live automation. Run after ≥28 days of paper data.*
+
+**Realistic paper execution (two modes):** `loop_test` (last-close fills; $1 fallback only in unit
+tests) vs `realistic_paper` (no fallback; limit orders only; spread model; slippage model; non-fill +
+partial-fill logic; market hours; corporate-action awareness). Modules: `execution_simulator`,
+`fill_model`, `slippage_model`, `order_book_snapshot`, `partial_fill`. **No performance report may use
+loop_test fills.**
+
+**Honest backtesting:** look-ahead / survivorship / data-leakage / overfitting prevention; walk-forward
+(out-of-sample); transaction-cost + slippage + spread; whole-share constraints (Sahm); point-in-time
+Sharia status; **delisted-company handling (EODHD delisted dataset; CRSP later)**; crisis tests
+(2000 dot-com, 2008 GFC, 2020 COVID, 2022 rate shock).
+
+**Benchmark hierarchy:** Cash · monthly DCA into SPUS · SPUS B&H · HLAL B&H · MNZL · equal-weight
+Sharia basket · Camel active. If Camel doesn't beat simple DCA on risk-adjusted terms after costs, it
+does not trade actively.
+
+**Strategy kill criteria** (disable / research-only if ANY): out-of-sample < benchmark · drawdown >
+threshold · hit rate below base rate · depends on one outlier · costs erase edge · works only in one
+cherry-picked regime · sample too small.
+
+**Two-engine cross-check** — a vectorized engine (vectorbt-style) AND an event-driven engine
+(custom / Zipline/LEAN-style); compare results — never trust one engine. Heavy quant libs land here:
+pandas, numpy, scipy, statsmodels, scikit-learn, vectorbt, quantstats.
+
+**Gate:** every strategy tested out-of-sample on two engines; delisted handled; full benchmark
+hierarchy compared; weak signals killed; all performance from realistic_paper fills; Camel beats
+simple DCA before any live execution; backtest using future/restated data blocked by `known_at`.
+
+---
+
+### S13 — Micro-Live Readiness (Phase 1)
+*(Was S11; prerequisites + deliverables unchanged.)*
+
+**Prerequisites (all must pass):** ≥28 days continuous paper operation · 0 guardrail breaches · ledger
+reconciles with the broker paper statement · every position had thesis + invalidation · kill switch
+tested over Tailscale · broker key trade-only/withdrawals-disabled · margin + options disabled · key
+scoped to minimum permissions · Edge Proof has approved ≥1 signal · approval flow tested · manual
+dry-run · one **rejected** trade test live (no order placed) · one **approved** micro trade done
+manually before automation · emergency broker login tested.
+
+**Deliverables:** Approval Channel (Telegram one-tap approve/veto, timeout = veto) · LiveBroker
+(Alpaca paper → live, behind the phase flag) · limit orders only · no pre-market/after-hours · live
+key-scope verification at startup.
+
+**Initial live permissions:** human approval on every live trade · no autonomous execution · max
+$100–500 · limit orders only · whitelist only · no pre-market/after-hours.
+
+---
+
+### S14 — Module Restructure (last sprint)
+Restructure the flat layout into a clean domain hierarchy (all tests stay green). Target tree extends
+the original §14.5 plan with the v3 additions:
+
+```
+governance/  constitution, sharia_registry, risk_rules, budget_kernel, tool_permissions, approvals, config_guard
+operator_os/ state_machine, task_queue, opportunity_router, learning_ledger, op_log, health_monitor, kill_switch
+trader/      thesis_card, edge_proof_engine, regime/, event_study, forward_returns, portfolio_engine
+broker/      paper_broker, live_broker, execution_simulator, fill_model, slippage_model, partial_fill, reconciliation
+entrepreneur/ product_thesis, prd_generator, build_workflow, compliance_gate, qa_checklist
+data/        market, macro, fundamentals, news, freshness, quality, sanitiser,
+             connectors/ (sec, macro, events, market_data), provenance, entity_resolver
+security/    prompt_injection_filter, secrets, source_validation, scraping_policy, source_allowlist
+alerts/      telegram, daily_report
+dashboard/   generate
+```
+
+**Gate:** full test suite green after restructure; all imports updated; CLAUDE.md updated.
 
 ## Open decisions (ask the founder before assuming)
 

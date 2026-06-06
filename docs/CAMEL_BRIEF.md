@@ -28,6 +28,9 @@ until Camel earns trust through a paper-trading track record.
 ## 2. The founder & hard constraints
 
 - **Founder:** "Chiko," Riyadh, Saudi Arabia. Beginner-to-intermediate investor.
+- **Day job:** works full-time at a **travel-tech startup** — real domain knowledge that makes
+  the Entrepreneur arm's lead product (an Arabic complaint/SLA-response assistant for Saudi
+  travel/hospitality operators) a genuine fit, not a guess.
 - **Compliance:** **Sharia-compliant only — a hard wall.** Excludes conventional finance,
   alcohol, tobacco, gambling, pork, adult content, **and weapons/defense.** No riba,
   leverage, shorting, options, or derivatives.
@@ -92,8 +95,9 @@ and tracker — are archived under `docs/source-materials/`.)*
    on contributions/skill-building than on building an autonomous operator? Argue both sides.
 
 > These questions remain genuinely open and are the right things to pressure-test. The
-> roadmap's emphasis on Edge Proof (S4.5/S7) and the Edge Lab backtesting (S10) is the
-> project's attempt to answer #1 honestly before risking capital.
+> roadmap's emphasis on the data backbone (S8), Edge Proof (S4.5/S10) and the Edge Lab
+> backtesting (S12) is the project's attempt to answer #1 honestly before risking capital —
+> and the Entrepreneur arm (now pulled earlier to S7) is the answer to #2 and #6.
 
 ---
 

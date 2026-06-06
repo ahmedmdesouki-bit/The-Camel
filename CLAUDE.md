@@ -68,8 +68,8 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   illiquidity gate, kill-switch in `evaluate`), Budget Kernel, Tool Permission Matrix, config
   immutability, data freshness/quality/sanitiser, source allowlist, Playwright stub, broker
   idempotency, point-in-time columns, ThesisCard template, secrets + adversarial suites;
-  → **197 passed**. Two items deferred by dependency: max cancel/replace (→ S11 LiveBroker),
-  earnings blackout (→ S7 earnings data).
+  → **197 passed**. Two items deferred by dependency: max cancel/replace (→ S13 LiveBroker),
+  earnings blackout (→ S8 earnings data from the fundamentals connectors).
 - **Sprint 4.5 COMPLETE.** Edge Proof v0 (`engine/edge_proof_v0.py`): historical hit-rate +
   forward-return vs benchmark from `camel_market.db`; `gate()` wired into the allocator — no
   trade proceeds without a passing `EdgeReport`; missing/weak/stale → `trade_allowed=false`.
@@ -107,9 +107,9 @@ pass the right sub-path to each module.
 | DB file | Owner module(s) | Content |
 |---|---|---|
 | `camel_market.db` | `data/` | prices, dividends, splits |
-| `camel_macro.db` | stub → Sprint 7 | rates, PMIs, yield curve, GDP |
-| `camel_fundamentals.db` | stub → Sprint 7 | revenue, margins, EPS, FCF, debt |
-| `camel_news.db` | stub → Sprint 7 | structured event objects (never raw text) |
+| `camel_macro.db` | stub → Sprint 8 | rates, PMIs, yield curve, GDP |
+| `camel_fundamentals.db` | stub → Sprint 8 | revenue, margins, EPS, FCF, debt |
+| `camel_news.db` | stub → Sprint 8 | structured event objects (never raw text) |
 | `camel_sharia.db` | `sharia/` | whitelist (versioned), sharia_events |
 | `camel_portfolio.db` | `broker/`, `ledger/`, `loop/` | orders, positions, ledger, runs |
 | `camel_learning.db` | Sprint 5 | decisions, outcomes, mistake log, lessons |
@@ -146,17 +146,17 @@ data/             store.py — store_price / get_prices (→ camel_market.db)
                   triangulation.py — cross-source disagreement (>0.5% flags)
                   alpaca.py — Alpaca paper EOD ingestion adapter
                   freshness.py — stale-data gate (S4)
-                  quality.py — data quality scoring → decision_eligible (S4, refined S7)
+                  quality.py — data quality scoring → decision_eligible (S4, refined S8)
                   sanitiser.py — raw web text → structured JSON, injection filter (S4)
-                  congress_filings.py — STOCK Act filing data adapter (stub → S8)
-                  playwright.py — headless browser adapter stub (NotImplementedError; live → S8+)
+                  congress_filings.py — STOCK Act filing data adapter (stub → S11, signal-only, never blind copy)
+                  playwright.py — headless browser adapter stub (NotImplementedError; live → S8 scraping policy, QA-only)
 
 governance/       config_guard.py — proves agent has no write path to founder config (S4)
                   budget_kernel.py — spend limits + capital buckets (S4)
                   tool_permissions.py — Tool Permission Matrix (S4)
 
 engine/           thesis.py — ThesisCard + BaseRateCard (no I/O, no DB)
-                  edge_proof_v0.py — evidence gate from market.db (S4.5; full engine S7)
+                  edge_proof_v0.py — evidence gate from market.db (S4.5; full 17-check engine S10)
 
 strategies/       registry.py — StrategyRegistry: register, lookup, activate, deactivate, weight
                   base.py — BaseStrategy abstract class (signal, entry, exit, sizing)
@@ -178,7 +178,7 @@ learning/         base_rate_updater.py — L1: update strategy base-rates after 
 loop/             runner.py — LoopRunner (takes LoopConfig with dbs: CamelDbs)
                   state.py — RunState + begin/update/finish_run (→ camel_portfolio.db)
                   scheduler.py — Windows Task Scheduler entrypoint (EOD, once daily)
-                  intraday_monitor.py — 5-min position manager during market hours (S8)
+                  intraday_monitor.py — 5-min position manager during market hours (S11)
 
 broker/           paper.py — PaperBroker(portfolio_db, market_db)
                   live.py — LiveBroker stub (Phase 1+)
@@ -241,7 +241,7 @@ Do not let Camel edit config, limits, whitelist, approval rules, or tool permiss
 Do not merge to main without approval.
 Do not use Playwright (or any browser automation) for broker actions or money movement.
 Do not add options / derivatives / margin / shorting strategies (the Wheel included).
-Do not average down into individual stocks blindly (DCA ladder rules — see S8).
+Do not average down into individual stocks blindly (DCA ladder rules — see S11).
 Do not feed unvalidated web text directly into an LLM prompt.
 Do not let a trade proceed without an EdgeReport (S4.5+).
 ```
@@ -272,7 +272,7 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 | `README.md` | Repo entry point (top-level orientation) |
 | `docs/README.md` | Documentation index |
 | `docs/CAMEL_BRIEF.md` | Project context: why/who, real capital, open questions |
-| `docs/CAMEL_ROADMAP.md` | Full sprint plan S1-S12 + open decisions + definition of done |
+| `docs/CAMEL_ROADMAP.md` | Full sprint plan S1-S14 (Roadmap v3) + open decisions + definition of done |
 | `docs/CAMEL_CONSTITUTION.md` | The rules in prose (Sharia, risk, phase gates) |
 | `docs/CAMEL_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
 | `docs/CAMEL_TESTING.md` | Test strategy, adversarial + integration suites |
@@ -287,14 +287,17 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 ---
 
-## Build roadmap - summary  (full detail: `docs/CAMEL_ROADMAP.md`)
+## Build roadmap - summary  (full detail: `docs/CAMEL_ROADMAP.md` — Roadmap v3)
 
-Sequence:
+Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur moved earlier):
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S7 <- NEXT
--> S8 -> S9 -> S10 -> S11 -> S12
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK ->
+S6.5 <- NEXT -> S7 (Entrepreneur) -> S8 (Data Backbone) -> S9 (Knowledge Graph + Regime)
+-> S10 (Full Edge Proof) -> S11 (Strategy Registry) -> S12 (Edge Lab + realistic paper)
+-> S13 (Micro-Live) -> S14 (Restructure)
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
+Optimize for **evidence density, not feature count.**
 
 | Sprint | Theme | Gate (one line) |
 |---|---|---|
@@ -306,12 +309,15 @@ Guiding principle: **Safety first. Evidence second. Autonomy last.**
 | S5 OK | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof (253 tests) |
 | S5.5 OK | Minimal ops visibility | daily report w/ status; kill-switch self-test; backup restore verified (263 tests) |
 | S6 OK | Dashboard + Telegram + monitoring (code) | dashboard reflects paper trade; weekly checks pass; loss-stop sim halts (289 tests) + machine checklist |
-| S7 | Edge Proof Engine (13 checks) | no edge proof = no trade; model disagreement -> human |
-| S8 | Strategy Models + Learning Engine | >=3 strategies pass Edge Proof; DCA guardrails enforced |
-| S9 | Entrepreneur Track | no build without 17-field gate + approval |
-| S10 | Edge Lab (backtesting) | beats simple DCA after costs; kill criteria enforced |
-| S11 | Micro-Live Readiness (Phase 1) | all live-readiness boxes pass |
-| S12 | Module Restructure | full suite green after restructure |
+| S6.5 | Safety & Accounting hotfix | phantom sell blocked; frozen-name close-only; no $1 fallback in non-test paths |
+| S7 | Entrepreneur Product Engine (moved earlier) | no build without 17-field gate + Sharia check + approval; live payment-capable URL |
+| S8 | Data Intelligence Backbone (top-20 connectors) | no record without full provenance + point-in-time; ≥16 free connectors live; raw text never reaches the LLM |
+| S9 | Knowledge Graph + Regime Engine | ticker → identity/Sharia/filings/events/exposure; regime classified from real macro; Sharia disagreement freezes buys |
+| S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
+| S11 | Strategy Registry + Learning Engine | >=3 strategies (trio) pass Edge Proof; DCA guardrails; never auto-edits the Constitution |
+| S12 | Edge Lab + realistic paper execution | two-engine cross-check; delisted handled; beats simple DCA after costs; all perf from realistic_paper fills |
+| S13 | Micro-Live Readiness (Phase 1) | all live-readiness boxes pass |
+| S14 | Module Restructure | full suite green after restructure |
 
 **Open decisions, full sprint detail, and Definition of Done:**
 `docs/CAMEL_ROADMAP.md` + `docs/CAMEL_LIVE_READINESS.md`.
