@@ -1,8 +1,13 @@
 """
-S5 — health monitor + status classifier.
+S5 — health monitor + status classifier.  (S6.6: disk checks mocked for portability.)
 """
+from collections import namedtuple
+from unittest.mock import patch
+
 from ops.health_monitor import check, daily_report_text
 from ops.kill_switch import halt, resume
+
+_Usage = namedtuple("usage", "total used free")
 
 
 def test_green_when_all_ok(dbs):
@@ -23,10 +28,19 @@ def test_red_when_db_unreachable(dbs):
     r = check(dbs, mode="paper")
     assert r.status == "RED" and any("portfolio" in i for i in r.issues)
 
-def test_yellow_when_low_disk(dbs):
-    # demand an absurd amount of free disk so the disk check raises an issue (but DBs ok)
-    r = check(dbs, mode="paper", min_disk_gb=10_000_000)
-    assert r.status == "YELLOW"
+@patch("ops.health_monitor.shutil.disk_usage")
+def test_yellow_when_low_disk(mock_usage, dbs):
+    # S6.6: mock disk so the test is deterministic across environments (no real-disk dependence)
+    mock_usage.return_value = _Usage(total=100 * 1024**3, used=99 * 1024**3, free=int(0.5 * 1024**3))
+    r = check(dbs, mode="paper", min_disk_gb=1.0)
+    assert r.status == "YELLOW" and any("low disk" in i for i in r.issues)
+
+@patch("ops.health_monitor.shutil.disk_usage")
+def test_yellow_when_disk_check_unknown(mock_usage, dbs):
+    # S6.6: an unknown/errored disk check fails safe to YELLOW, not GREEN
+    mock_usage.side_effect = OSError("disk query failed")
+    r = check(dbs, mode="paper")
+    assert r.status == "YELLOW" and any("unknown" in i for i in r.issues)
 
 def test_daily_report_text_contains_status(dbs):
     r = check(dbs, mode="paper")

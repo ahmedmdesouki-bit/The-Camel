@@ -12,7 +12,7 @@ defining principle is an **inversion of trust**: the LLM only *proposes*; a dete
 > **LLM proposes. Math tests. Guardrails decide. Humans approve what's risky. Autonomy is earned, not granted.**
 > **Safety first. Evidence second. Autonomy last.**
 
-**Status:** Phase 0 (paper) · Sprints **S1–S6.5 complete** · **309 tests green** · 7-DB architecture live ·
+**Status:** Phase 0 (paper) · Sprints **S1–S6.6 complete** · **331 tests green** · 7-DB architecture live ·
 on **Roadmap v3** (S1–S14), next **S7** (Entrepreneur).
 
 ---
@@ -33,6 +33,7 @@ the others point here rather than copy. This is the rule that keeps the docs fro
 | **`CAMEL_DATA_CONTRACTS.md`** | 7-DB schemas, point-in-time discipline, data quality | Builder | Data model + contracts |
 | **`CAMEL_TESTING.md`** | Test strategy, adversarial suite, integration tests | Builder | How Camel is tested |
 | **`CAMEL_LIVE_READINESS.md`** | Phase 1 go-live checklist | Founder | The pre-live gate |
+| **`CAMEL_BROKER_MATRIX.md`** | Broker comparison + resolved direction | Founder, builder | The broker decision |
 | **`CAMEL_CHANGELOG.md`** | Sprint-by-sprint history | Everyone | What happened when |
 
 **Authoritative code beats docs.** Where a doc describes a rule, the implementation

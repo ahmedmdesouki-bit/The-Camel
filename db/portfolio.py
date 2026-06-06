@@ -27,11 +27,15 @@ CREATE TABLE IF NOT EXISTS orders (
 
 CREATE TABLE IF NOT EXISTS positions (
     symbol          TEXT PRIMARY KEY,
-    qty             REAL,
-    avg_cost        REAL,
-    market_value    REAL,
-    unrealized_pnl  REAL,
-    updated_at      TEXT DEFAULT (datetime('now'))
+    qty             REAL    DEFAULT 0,
+    avg_cost        REAL    DEFAULT 0,
+    market_price    REAL    DEFAULT 0,
+    market_value    REAL    DEFAULT 0,
+    unrealized_pnl  REAL    DEFAULT 0,
+    realized_pnl    REAL    DEFAULT 0,        -- S6.6: realized on sells
+    opened_at       TEXT,
+    updated_at      TEXT    DEFAULT (datetime('now')),
+    status          TEXT    DEFAULT 'open'    -- open | closed
 );
 
 CREATE TABLE IF NOT EXISTS ledger (

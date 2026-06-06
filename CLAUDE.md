@@ -100,6 +100,12 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   the PaperBroker refuses the $1 fallback price outside opted-in unit tests
   (`broker/paper.py`, `NoMarketPriceError`; fallback fills stamped `fill_model="fallback_dollar"`).
   → **309 passed**.
+- **Sprint 6.6 COMPLETE.** Position accounting + ops hardening (review rounds #5–6):
+  `broker/positions.py` maintains the `positions` table on every fill (weighted-avg cost, realized P&L,
+  exact qty-based phantom guard, ledger reconcile); SQLite WAL mode; illiquidity gate **fail-closed in
+  live**; health-monitor disk-test mocked + unknown→YELLOW; `ops/deadman.py` external dead-man's-switch;
+  `config/beginner_mode.yaml` + `governance/beginner_mode.py` (only-tightens); prompt-injection adversarial
+  tests; `docs/CAMEL_BROKER_MATRIX.md`. → **331 passed**.
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -190,6 +196,7 @@ loop/             runner.py — LoopRunner (takes LoopConfig with dbs: CamelDbs)
                   intraday_monitor.py — 5-min position manager during market hours (S11)
 
 broker/           paper.py — PaperBroker(portfolio_db, market_db)
+                  positions.py — position accounting: apply_fill (avg cost, realized P&L), held_qty (S6.6)
                   live.py — LiveBroker stub (Phase 1+)
 
 ledger/           writer.py — append_entry + SHA-256 hash chain (→ camel_portfolio.db)
@@ -286,7 +293,8 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 | `docs/CAMEL_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
 | `docs/CAMEL_TESTING.md` | Test strategy, adversarial + integration suites |
 | `docs/CAMEL_LIVE_READINESS.md` | Phase 1 go-live checklist + definition of done |
-| `docs/CAMEL_MACHINE_HARDENING.md` | S6 founder machine-setup checklist (Tailscale, BitLocker, secrets, backups) |
+| `docs/CAMEL_MACHINE_HARDENING.md` | S6 founder machine-setup checklist (Tailscale, BitLocker, secrets, backups, NTFS config lock, dead-man's-switch) |
+| `docs/CAMEL_BROKER_MATRIX.md` | Broker capability comparison + resolved direction (Alpaca + Sahm manual + IBKR Phase 2) |
 | `docs/CAMEL_CHANGELOG.md` | Sprint & decision history |
 | `docs/source-materials/` | Archived original PRDs/specs/playbook (provenance only) |
 | `HANDOFF.md` | Current status + tech stack + how to run |
@@ -300,9 +308,9 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur moved earlier):
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK ->
-S6.6 (Ops hardening + Beginner Mode) <- NEXT -> S7 (Entrepreneur) -> S8 (Data Backbone)
--> S9 (Knowledge Graph + Regime) -> S10 (Full Edge Proof; shadow/enforcing) -> S11 (Strategy Registry)
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK -> S6.6 OK ->
+S7 (Entrepreneur) <- NEXT -> S8 (Data Backbone) -> S9 (Knowledge Graph + Regime)
+-> S10 (Full Edge Proof; shadow/enforcing) -> S11 (Strategy Registry)
 -> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S13 (Micro-Live) -> S14 (Restructure)
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
@@ -319,7 +327,7 @@ Optimize for **evidence density, not feature count.**
 | S5.5 OK | Minimal ops visibility | daily report w/ status; kill-switch self-test; backup restore verified (263 tests) |
 | S6 OK | Dashboard + Telegram + monitoring (code) | dashboard reflects paper trade; weekly checks pass; loss-stop sim halts (289 tests) + machine checklist |
 | S6.5 OK | Safety & Accounting hotfix | phantom sell blocked; frozen-name close-only; buy needs edge; no $1 fallback in non-test paths (309 tests) |
-| S6.6 | Ops hardening + Beginner Mode | illiquidity-gate fail-loud; prompt-injection tests; dead-man's-switch; SQLite WAL; OS-level config immutability; beginner-mode profile; broker matrix |
+| S6.6 OK | Position accounting + Ops hardening + Beginner Mode | positions table on every fill (avg cost, realized P&L, exact phantom guard, reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode; broker matrix (331 tests) |
 | S7 | Entrepreneur Product Engine (moved earlier; agent scope = code-gen only) | no build without 17-field gate + Sharia check + approval; live payment-capable URL |
 | S8 | Data Intelligence Backbone (top-20 connectors) | no record without full provenance + point-in-time; ≥16 free connectors live; raw text never reaches the LLM |
 | S9 | Knowledge Graph + Regime Engine | ticker → identity/Sharia/filings/events/exposure; regime classified from real macro; Sharia disagreement freezes buys |

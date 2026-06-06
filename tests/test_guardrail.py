@@ -39,6 +39,9 @@ def buy(**kw):
     d.update(kw)
     return Action(**d)
 
+# liquidity inputs a real live trade would carry (S6.6 live fail-closed needs these present)
+LIQ = dict(bid_ask_spread_pct=0.001, avg_daily_volume=1_000_000, order_shares=1)
+
 # ---------------- happy path ----------------
 def test_clean_paper_buy_allowed(C):
     assert C.evaluate(buy(), base_state()).allow
@@ -47,6 +50,18 @@ def test_sell_to_close_allowed_without_thesis(C):
     # selling a held compliant position needs no thesis (S6.5: but it must be held)
     s = base_state(positions={"SPUS": 1000.0})
     assert C.evaluate(buy(side="sell", thesis=None), s).allow
+
+# ---------------- S6.6: illiquidity gate fail-closed in live ----------------
+
+def test_live_buy_without_liquidity_data_blocked(C):
+    # paper skips the gate gracefully; live must FAIL CLOSED when the data is missing
+    d = C.evaluate(buy(mode="live"), base_state())
+    assert not d.allow and d.limit_hit == "illiquidity_data_missing"
+
+def test_paper_buy_without_liquidity_data_allowed(C):
+    # same action in paper mode still passes (graceful skip)
+    assert C.evaluate(buy(mode="paper"), base_state()).allow
+
 
 # ---------------- S6.5 accounting safety: phantom sells + close-only exits ----------------
 
@@ -121,7 +136,8 @@ def _rogue_actions():
         "oversize_sector": (buy(notional_usd=1500), base_state(sector_values={"Diversified": 3000})),  # 4500>40%
         "haram_business": (Action(type=ActionType.DEPLOY, business_model="a sports betting casino app"), base_state()),
         "whitelist_no_approval": (Action(type=ActionType.ADD_WHITELIST, symbol="NEW"), base_state()),
-        "live_no_approval": (buy(mode="live"), base_state()),
+        "live_no_approval": (buy(mode="live", bid_ask_spread_pct=0.001,
+                                  avg_daily_volume=1_000_000, order_shares=10), base_state()),
         "cash_over_buffer": (buy(notional_usd=4600), base_state()),  # buffer=1000, deployable=4000
         "daily_loss_stop": (buy(), base_state(day_pnl_pct=-0.06)),
         "weekly_stop": (buy(), base_state(week_pnl_pct=-0.11)),
@@ -160,12 +176,12 @@ def test_daily_loss_stop_boundary(C):
 
 # ---------------- live / phase behaviour ----------------
 def test_live_with_approval_allowed(C):
-    assert C.evaluate(buy(mode="live", approval_id="appr_123"), base_state()).allow
+    assert C.evaluate(buy(mode="live", approval_id="appr_123", **LIQ), base_state()).allow
 
 def test_phase2_auto_within_envelope(C):
     c2 = Constitution({"phase": 2, "per_order_envelope_usd": 50})
-    assert c2.evaluate(buy(mode="live", notional_usd=50), base_state()).allow      # within envelope, no approval
-    assert not c2.evaluate(buy(mode="live", notional_usd=51), base_state()).allow  # over envelope needs approval
+    assert c2.evaluate(buy(mode="live", notional_usd=50, **LIQ), base_state()).allow      # within envelope, no approval
+    assert not c2.evaluate(buy(mode="live", notional_usd=51, **LIQ), base_state()).allow  # over envelope needs approval
 
 def test_small_fund_no_buffer(C):
     # <1000 fund => 0% buffer, deploy freely up to position cap

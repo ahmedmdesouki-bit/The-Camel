@@ -12,7 +12,7 @@
 **Sequence (Roadmap v3 — data backbone before the proof engine; Entrepreneur moved earlier):**
 ```
 S1 ✅ → S2 ✅ → S3 ✅ → S4 ✅ → S4.5 ✅ (Edge Proof v0) → S5 ✅ → S5.5 ✅ (Minimal Ops) → S6 ✅ →
-S6.5 ✅ (Safety/Accounting hotfix) → S6.6 (Ops hardening + Beginner Mode) → S7 (Entrepreneur) →
+S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hardening + Beginner Mode) → S7 (Entrepreneur) →
 S8 (Data Backbone) → S9 (Knowledge Graph + Regime) → S10 (Full Edge Proof, 17-check; shadow/enforcing) →
 S11 (Strategy Registry) → S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) →
 S13 (Micro-Live) → S14 (Restructure)
@@ -391,6 +391,15 @@ and reconcile with ledger cash; the broker's exact qty-based phantom guard block
 disk-test is deterministic (mocked) and unknown disk → YELLOW; illiquidity-gate skip is logged and blocks
 in live; the three prompt-injection tests pass; the dead-man's-switch alerts on a missed ping; all DBs run
 WAL mode; the beginner-mode profile loads and can never widen a rail; broker matrix documented.
+
+**STATUS: COMPLETE (309 → 331 tests).** `broker/positions.py` (single writer of the `positions` table:
+weighted-avg cost, realized P&L, exact qty-based `InsufficientPositionError` guard, reconcile helper),
+wired into `PaperBroker.submit`; extended `positions` schema; SQLite WAL in `db/sqlite.connection`;
+illiquidity **fail-closed in live** (`illiquidity_data_missing`) in `constitution.py`; health-monitor
+disk-test mocked + unknown→YELLOW; `ops/deadman.py` (network-safe external ping); `config/beginner_mode.yaml`
++ `governance/beginner_mode.py` (only-tightens, `RailWidenedError`); prompt-injection adversarial tests;
+`docs/CAMEL_BROKER_MATRIX.md` + machine-hardening NTFS/dead-man items. New tests: `test_positions.py`,
+`test_s6_6_hardening.py`, plus additions to guardrail/adversarial/health/broker suites.
 
 ---
 

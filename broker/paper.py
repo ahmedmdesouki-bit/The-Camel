@@ -26,6 +26,7 @@ from typing import Optional
 from db.sqlite import connection
 from guardrail.constitution import Action, Decision
 from ledger.writer import append_entry
+from broker.positions import apply_fill, held_qty, InsufficientPositionError
 
 
 class DuplicateOrderException(Exception):
@@ -151,6 +152,14 @@ class PaperBroker:
         qty = notional / fill_price if fill_price else 0.0
         now = datetime.now(timezone.utc).isoformat()
 
+        # S6.6: exact qty-based phantom-sell guard — the broker knows the positions table.
+        # (The Constitution's value-based guard is the first wall; this is the precise second wall.)
+        if action.side.lower() == "sell":
+            have = held_qty(self.portfolio_db, symbol)
+            if qty > have + 1e-9:
+                raise InsufficientPositionError(
+                    f"sell {qty:.6f} {symbol} exceeds held {have:.6f}")
+
         with connection(self.portfolio_db) as conn:
             cur = conn.execute(
                 "INSERT INTO orders "
@@ -165,6 +174,9 @@ class PaperBroker:
         signed = -notional if is_buy else notional   # BUY = cash out, SELL = cash in
         append_entry(self.portfolio_db, ledger_type, symbol,
                      signed, ref=f"order_{order_id}")
+
+        # S6.6: keep the positions table in sync — weighted-avg cost on buy, realized P&L on sell.
+        apply_fill(self.portfolio_db, symbol, action.side, qty, fill_price)
 
         return Fill(
             order_id=order_id, symbol=symbol, side=action.side,

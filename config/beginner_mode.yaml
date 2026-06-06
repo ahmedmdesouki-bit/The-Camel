@@ -1,0 +1,21 @@
+# Beginner Mode (S6.6) — a founder-selectable profile for the REAL small account.
+#
+# It may ONLY tighten rails relative to config/limits.yaml; it can never widen a Sharia or
+# capital-preservation rail. Enforced by governance/beginner_mode.py (raises RailWidenedError).
+# Load via: Constitution(limits=beginner_limits()).
+
+phase: 0
+allow_leverage: false
+require_approval_live: true
+
+max_position_pct: 0.10        # tighter than base 0.20
+max_sector_pct: 0.30          # tighter than base 0.40
+daily_loss_stop_pct: -0.03    # tighter than base -0.05 (closer to zero = stops sooner)
+weekly_drawdown_stop_pct: -0.06
+per_order_envelope_usd: 25     # smaller than base 50
+max_orders_per_day: 3          # fewer than default 10
+
+cash_tiers:                    # larger cash buffer than base
+  - {max_fund: 1000,   min_cash_pct: 0.20}
+  - {max_fund: 10000,  min_cash_pct: 0.20}
+  - {max_fund: 1.0e12, min_cash_pct: 0.20}
