@@ -7,6 +7,24 @@
 
 ## 2026-06-06
 
+**Sprint 6 (Dashboard + Monitoring) COMPLETE — code, 263 → 289 tests green.**
+- `dashboard/generate.py` — read-only HTML view (status, positions, ledger, runs, guardrail
+  events, Sharia flags); HTML-escaped; no order entry.
+- `alerts/` — credential-safe Telegram adapter (STUB mode with no token, never hits the
+  network in tests) + daily-report delivery.
+- `ops/` — heartbeat (single-row), log_rotation, secrets_manager (`enforce_startup(strict)`
+  RAISES on plaintext secrets), reconciliation_report, archive (off-box zip), scheduled_checks
+  (weekly kill-switch self-test + verified backup + reconcile, logged to op_log). New
+  `heartbeat` table in db/portfolio.py.
+- `docs/CAMEL_MACHINE_HARDENING.md` — the founder-only machine checklist (Tailscale, BitLocker,
+  dedicated user, UPS, MFA, secrets migration, encrypted off-box backup).
+- A test fixture initially matched the secrets-leak scanner's own pattern — the scanner caught
+  it (working as intended); fixture de-shaped.
+
+---
+
+## 2026-06-06
+
 **Sprint 5.5 (Minimal Ops Visibility) COMPLETE — 253 → 263 tests green.**
 - `ops/daily_report.py` — assembles the GREEN/YELLOW/RED/BLACK status + live counts into the
   founder daily report (console/text; Telegram delivery in S6).

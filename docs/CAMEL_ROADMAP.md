@@ -290,6 +290,13 @@ test, secrets-manager hard refusal, off-box encrypted backup, dashboard, Tailsca
 reflects paper trade within one refresh; weekly kill-switch test passes; backup restore
 verified; secrets not in plaintext.
 
+**STATUS: COMPLETE (code, 289 tests).** `dashboard/` (read-only HTML), `alerts/` (Telegram,
+credential-safe stub), `ops/`: heartbeat, log_rotation, secrets_manager (hard refusal),
+reconciliation_report, archive (off-box zip), scheduled_checks (weekly kill-switch + backup +
+reconcile). The **machine-setup half** — Tailscale kill-switch path, BitLocker, dedicated OS
+user, UPS, 5G fallback, MFA, secrets migration to Credential Manager, encrypted off-box
+transfer — is the founder checklist in `docs/CAMEL_MACHINE_HARDENING.md` (do before Phase 1).
+
 ---
 
 ### S7 — Edge Proof Engine
