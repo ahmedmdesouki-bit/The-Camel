@@ -1,13 +1,14 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S5.5 complete** · **263 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S6 complete** · **289 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
-**Repo state:** 30 commits on `master`, clean working tree · **Next: S6** (Dashboard + Telegram + Tailscale)
+**Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
+(S1–S14) · **Next: S6.5** (safety & accounting hotfix → then S7 Entrepreneur, S8 Data Backbone)
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's
-> sprint table below shows the S1–S3 core; S4–S5.5 detail lives in the roadmap.
+> sprint table below shows the S1–S3 core; S4–S6 detail lives in the roadmap.
 
 > Companion docs: [`CLAUDE.md`](CLAUDE.md) is the source of truth for how to work
 > in this repo and the full sprint roadmap. This file is the orientation handoff —
@@ -17,21 +18,24 @@
 
 ## 1. What Camel Is
 
-Camel is a **guardrailed autonomous AI operator** that runs a continuous
+The Camel is a Python-based, **guardrailed autonomous operator** that runs a continuous
 Observe→Thesis→Choose→Act→Measure→Learn loop across two arms:
 
 - **Trader Camel** — Sharia-compliant market trading (paper first, live only when earned).
 - **Entrepreneur Camel** — Sharia-compliant AI products (build/deploy/sell).
 
-The defining idea: **every consequential action passes through a deterministic constraint
-engine (the Constitution) that the LLM cannot edit.** The agent proposes; the Constitution
-disposes. Autonomy is aggressive *inside* the rails and mechanically impossible *outside*
-them.
+The defining idea is an **inversion of trust**: the LLM is the *least*-privileged component, not
+the decision-maker. It only **proposes**; every consequential action — anything touching Sharia
+compliance, real money, or the live internet — is **decided** by deterministic machinery the model
+cannot edit: a **Constitution**, an **Edge Proof** evidence gate, a **Budget Kernel**, append-only
+**audit logs**, a **kill switch**, and **human approval gates** before any live-money autonomy.
+Aggressive *inside* the rails, mechanically powerless *outside* them — autonomy is **earned**
+through a paper track record, never granted.
 
 ### North Star
-> Camel is a Sharia-compliant autonomous operator with a deterministic constitution,
-> an edge-proof engine, a budget kernel, and a learning ledger.
-> **LLM proposes. Math tests. Guardrails decide. Human approves high-risk actions.**
+> The Camel is a Sharia-compliant autonomous operator with a deterministic constitution,
+> an edge-proof engine, a budget kernel, and a learning ledger. Not a stock-picking chatbot.
+> **LLM proposes. Math tests. Guardrails decide. Humans approve what's risky. Autonomy is earned, not granted.**
 
 ### Priority hierarchy (never inverted)
 ```

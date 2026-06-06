@@ -1,16 +1,19 @@
 # Camel — Documentation Index
 
-**Camel** is a guardrailed autonomous AI operator that runs a continuous
+**The Camel** is a Python-based, guardrailed autonomous operator running a continuous
 Observe→Thesis→Choose→Act→Measure→Learn loop across two arms — **Trader Camel**
-(Sharia-compliant markets) and **Entrepreneur Camel** (Sharia-compliant AI products).
-Founder: Chiko (Riyadh). Runtime: Windows 11 PC.
+(Sharia-compliant markets) and **Entrepreneur Camel** (Sharia-compliant AI products). Its
+defining principle is an **inversion of trust**: the LLM only *proposes*; a deterministic
+**Constitution** it cannot edit, an **Edge Proof** gate, a **Budget Kernel**, audit logs, a
+**kill switch**, and **human approval gates** *decide*. Founder: Chiko (Riyadh). Runtime: Windows 11 PC.
 
-> **North Star:** Camel is a Sharia-compliant autonomous operator with a deterministic
-> constitution, an edge-proof engine, a budget kernel, and a learning ledger.
-> **LLM proposes. Math tests. Guardrails decide. Human approves high-risk actions.**
+> **North Star:** The Camel is a Sharia-compliant autonomous operator with a deterministic
+> constitution, an edge-proof engine, a budget kernel, and a learning ledger. Not a stock-picking chatbot.
+> **LLM proposes. Math tests. Guardrails decide. Humans approve what's risky. Autonomy is earned, not granted.**
 > **Safety first. Evidence second. Autonomy last.**
 
-**Status:** Phase 0 (paper) · Sprints 1–3 complete · 110 tests green · 7-DB architecture live.
+**Status:** Phase 0 (paper) · Sprints **S1–S6 complete** · **289 tests green** · 7-DB architecture live ·
+on **Roadmap v3** (S1–S14), next **S6.5**.
 
 ---
 

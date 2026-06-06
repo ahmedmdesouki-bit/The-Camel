@@ -13,15 +13,17 @@
 
 ## 1. TL;DR
 
-**Camel** is an always-on, guardrailed autonomous AI operator running a continuous loop
-(Observe → Form Thesis → Choose Path → Act → Measure → Learn) across two arms:
+**The Camel** is a Python-based, always-on, guardrailed autonomous operator running a continuous
+loop (Observe → Form Thesis → Choose Path → Act → Measure → Learn) across two arms:
 - **Trader Camel** — trades Sharia-compliant markets.
 - **Entrepreneur Camel** — builds/launches/sells Sharia-compliant AI products.
 
-Defining idea: **every consequential action (Sharia compliance, real money, or the live
-internet) passes through a deterministic Guardrail Constitution the agent cannot modify.**
-Aggressive inside the rails, impossible outside them. Live money stays behind a human gate
-until Camel earns trust through a paper-trading track record.
+Defining principle: an **inversion of trust** — the LLM only *proposes*; every consequential
+action (anything touching Sharia compliance, real money, or the live internet) is *decided* by
+deterministic machinery the model cannot edit: a **Constitution**, an **Edge Proof** evidence gate,
+a **Budget Kernel**, append-only **audit logs**, a **kill switch**, and **human approval gates**
+before any live-money autonomy. Aggressive inside the rails, powerless outside them — autonomy is
+earned through a paper-trading track record, never granted.
 
 ---
 
@@ -103,6 +105,6 @@ and tracker — are archived under `docs/source-materials/`.)*
 
 ## 7. One-line summary
 
-**Camel is StockSense v11's Sharia-compliant investing discipline, running inside an autonomous
-operator, contained by a deterministic guardrail constitution, earning the right to real
-capital through paper-mode evidence — Cowork-for-thinking, Claude-Code-for-doing, on a Windows PC.**
+**The Camel is StockSense v11's Sharia-compliant investing discipline, running inside an autonomous
+operator where the LLM only proposes and a deterministic constitution decides, earning the right to
+real capital through paper-mode evidence — Cowork-for-thinking, Claude-Code-for-doing, on a Windows PC.**

@@ -1,12 +1,18 @@
 # The Camel
 
-A guardrailed autonomous AI operator for Sharia-compliant trading and AI-product building.
-Every consequential action passes through a deterministic Constitution the agent cannot modify.
+A Python-based, guardrailed autonomous operator running an Observe → Thesis → Choose → Act →
+Measure → Learn loop across two Sharia-compliant arms — **Trader Camel** (markets) and
+**Entrepreneur Camel** (AI products). Its defining principle is an **inversion of trust**: the
+LLM only *proposes*; a deterministic **Constitution** it cannot edit, an **Edge Proof** evidence
+gate, a **Budget Kernel**, append-only **audit logs**, a **kill switch**, and **human approval
+gates** *decide* what actually happens. Aggressive inside the rails, powerless outside them —
+autonomy is earned through a paper track record, never granted.
 
 > **Safety first. Evidence second. Autonomy last.**
-> LLM proposes · Math tests · Guardrails decide · Human approves high-risk actions.
+> LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · Sprints 1–3 complete · 110 tests green · 7-DB architecture live.
+**Status:** Phase 0 (paper) · Sprints **S1–S6 complete** · **289 tests green** · 7-DB architecture live ·
+on **Roadmap v3** (S1–S14), next **S6.5**.
 
 ---
 
@@ -35,7 +41,7 @@ The repo path is 261 chars (over Windows MAX_PATH). Map a virtual drive first:
 ```powershell
 subst N: "<path-to-this-folder>"
 cd N:\
-python -m pytest -q          # 110 passed
+python -m pytest -q          # 289 passed
 ```
 
 *(For future work, cloning to a short path like `C:\camel` removes this friction.)*
