@@ -341,7 +341,7 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur moved earlier):
 ```
 S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK -> S6.6 OK -> S7 OK ->
-S8 (Data Backbone) <- NEXT -> S9 (Knowledge Graph + Regime)
+S8 ~CORE (10 connectors; rest deferred) -> S9 (Knowledge Graph + Regime) <- NEXT
 -> S10 (Full Edge Proof; shadow/enforcing) -> S11 (Strategy Registry)
 -> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S13 (Micro-Live) -> S14 (Restructure)
 ```

@@ -523,7 +523,14 @@ with recorded-fixture tests; macro/fundamentals/news DBs hold real data; raw tex
 **STATUS: IN PROGRESS — slices 1–5 (352 → 389 tests); 10 connectors live (FRED, SEC EDGAR, Treasury, World
 Bank, BLS, GDELT, BEA, EIA, ACLED, ETF-holdings) — all three stub DBs hold real data.** Slice 4 added BEA +
 EIA (macro) + ACLED (conflict→news). Slice 5 added the **ETF issuer-holdings** connector (CSV; header-tolerant;
-SPUS/HLAL/MNZL constituents → `camel_sharia.db.etf_holdings` for single-name look-through; feeds S9). Slice 3 added the
+SPUS/HLAL/MNZL constituents → `camel_sharia.db.etf_holdings` for single-name look-through; feeds S9).
+
+**S8 CORE DELIVERED — remaining connectors DEFERRED (founder decision).** The framework is proven across
+JSON + CSV, macro/fundamentals/news/sharia domains; 10 connectors give enough breadth for S9 to proceed.
+**Parked backlog (revisit as an S8 continuation):** OFAC sanctions, USGS minerals, congress/senate
+disclosures, Kenneth French factors, SEC RSS/8-K, GPR/EPU indices, a market-data adapter, and the paid
+vendors (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); markets US → Saudi → EGX. These are new-connector
+work on an established pattern, not blockers for S9–S12. Slice 3 added the
 **news/events pipeline**: `data/connectors/news_base.py` (`NewsConnector` — every title sanitised; injection-
 flagged titles **redacted + marked unsafe + quality-downgraded**, raw string never persisted; structured
 events only, no raw-body column) + `data/connectors/gdelt.py`, with the reviewers' **news adversarial tests**. Framework + provenance + first 2 connectors:
