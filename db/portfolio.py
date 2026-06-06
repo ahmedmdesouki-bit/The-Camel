@@ -88,6 +88,11 @@ CREATE TABLE IF NOT EXISTS op_log (
     event_type  TEXT,                              -- STATE_TRANSITION | TOOL_CALL | ROUTER | ...
     detail      TEXT
 );
+
+CREATE TABLE IF NOT EXISTS heartbeat (
+    id          INTEGER PRIMARY KEY CHECK (id = 1),  -- single row
+    ts          TEXT
+);
 """
 
 
