@@ -1,9 +1,13 @@
 # Noah — Project Handoff
 
-**Prepared:** 2026-06-05
-**Status:** Sprints 1–3 complete · 110 tests green · 7-database architecture live
+**Prepared:** 2026-06-05 · **Updated:** 2026-06-06
+**Status:** Sprints **S1 → S5.5 complete** · **263 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
-**Repo state:** 8 commits on `master`, clean working tree
+**Repo state:** 30 commits on `master`, clean working tree · **Next: S6** (Dashboard + Telegram + Tailscale)
+
+> For the live sprint-by-sprint detail and module list see `docs/NOAH_ROADMAP.md` and the
+> `## Current status` section of `Noah_CLAUDE.md` — both are kept current. This file's
+> sprint table below shows the S1–S3 core; S4–S5.5 detail lives in the roadmap.
 
 > Companion docs: [`Noah_CLAUDE.md`](Noah_CLAUDE.md) is the source of truth for how to work
 > in this repo and the full sprint roadmap. This file is the orientation handoff —
