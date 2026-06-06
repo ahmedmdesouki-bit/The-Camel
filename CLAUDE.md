@@ -120,8 +120,9 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   `security/scraping_policy.py` (API > … > browser-QA-only). Slice 2 added `MacroConnector` shared base +
   Treasury / World Bank / BLS connectors (→ macro_observations). Slice 3 added the news pipeline:
   `news_base.py` (`NewsConnector` — sanitise every title; redact + mark-unsafe injection-flagged content;
-  structured events only) + `gdelt.py` + news adversarial tests. **6 connectors live; all 3 stub DBs now
-  hold real data.** → **379 passed**. Remaining: ~14 more connectors + market-data + paid vendors.
+  structured events only) + `gdelt.py` + news adversarial tests. Slice 4 added BEA + EIA (macro) + ACLED
+  (conflict → news). **9 connectors live; all 3 stub DBs hold real data.** → **384 passed**. Remaining:
+  ~11 more connectors + market-data + paid vendors.
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -177,7 +178,7 @@ data/             provenance.py — point-in-time provenance fields + source_doc
                   source_registry.py — SourceSpec registry (FRED, SEC EDGAR, …) (S8)
                   connectors/ — base.py (SourceConnector + injectable transport), macro_base.py,
                                 fred.py, treasury.py, world_bank.py, bls.py, sec_edgar.py,
-                                news_base.py (sanitise/redact), gdelt.py (S8)
+                                bea.py, eia.py, news_base.py (sanitise/redact), gdelt.py, acled.py (S8)
                   store.py — store_price / get_prices (→ camel_market.db)
                   triangulation.py — cross-source disagreement (>0.5% flags)
                   alpaca.py — Alpaca paper EOD ingestion adapter
@@ -358,7 +359,7 @@ Optimize for **evidence density, not feature count.**
 | S6.5 OK | Safety & Accounting hotfix | phantom sell blocked; frozen-name close-only; buy needs edge; no $1 fallback in non-test paths (309 tests) |
 | S6.6 OK | Position accounting + Ops hardening + Beginner Mode | positions table on every fill (avg cost, realized P&L, exact phantom guard, reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode; broker matrix (331 tests) |
 | S7 OK | Entrepreneur Product Engine (engine; agent scope = code-gen only) | 17-field gate + separate Entrepreneur Constitution + 10-stage pipeline; no launch without founder approval (352 tests) |
-| S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slices 1–3 done** (framework + provenance + 6 connectors: FRED/SEC/Treasury/World Bank/BLS/GDELT + news pipeline w/ injection-hardening + scraping policy, 379 tests; all 3 stub DBs now real); ~14 connectors + market-data + paid remain |
+| S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slices 1–4 done** (framework + provenance + 9 connectors: FRED/SEC/Treasury/World Bank/BLS/GDELT/BEA/EIA/ACLED + news injection-hardening + scraping policy, 384 tests; all 3 stub DBs real); ~11 connectors + market-data + paid remain |
 | S9 | Knowledge Graph + Regime Engine | ticker → identity/Sharia/filings/events/exposure; regime classified from real macro; Sharia disagreement freezes buys |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
 | S11 | Strategy Registry + Learning Engine | >=3 strategies (trio) pass Edge Proof; DCA guardrails; never auto-edits the Constitution |

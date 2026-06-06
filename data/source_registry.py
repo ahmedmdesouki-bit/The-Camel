@@ -79,3 +79,19 @@ GDELT = register(SourceSpec(
     base_url="https://api.gdeltproject.org", requires_api_key=False,
     requires_cross_check=True, reliability_tier=2,   # news → needs source quorum >=2
 ))
+
+BEA = register(SourceSpec(
+    source_id="bea", source_name="US Bureau of Economic Analysis", source_type="macro",
+    base_url="https://apps.bea.gov", requires_api_key=True, reliability_tier=1,
+))
+
+EIA = register(SourceSpec(
+    source_id="eia", source_name="US Energy Information Administration", source_type="macro",
+    base_url="https://api.eia.gov", requires_api_key=True, reliability_tier=1,
+))
+
+ACLED = register(SourceSpec(
+    source_id="acled", source_name="ACLED (armed conflict / protests)", source_type="news",
+    base_url="https://api.acleddata.com", requires_api_key=True,
+    requires_cross_check=True, reliability_tier=2,
+))
