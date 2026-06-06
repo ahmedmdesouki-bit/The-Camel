@@ -91,15 +91,44 @@ Sharia = in-house AAOIFI × Zoya · news = GDELT × SEC RSS × Benzinga · geopo
 
 ---
 
-## Open gaps — two targeted follow-up searches needed
+## Follow-up research — RESOLVED (2026-06-06, direct web verification)
 
-1. **Real-time / streaming (S8.5) — UNRESOLVED.** No source's websocket/streaming tier was confirmed this pass.
-   Benzinga "real-time" is REST/poll; GDELT is near-real-time; SEC RSS is 10-min batch; GPR is a static file.
-   Candidates to verify: **Alpaca (has a websocket), Polygon, Tiingo, Twelve Data** — delays, free-tier limits, redistribution terms.
-2. **Saudi (Tadawul) / Egypt (EGX) coverage — UNRESOLVED, with leads.** No global vendor's Tadawul/EGX coverage was
-   verified. **Leads found (verify next):** **`sahmk.sa/en/developers`** — *Sahm appears to expose a developer/API
-   surface*, which would change our "Sahm = manual-entry only" assumption in the broker matrix; **Twelve Data
-   `/exchanges/XSAU`** (Saudi); **EODHD `/exchange/EGX`** (Egypt). These need a dedicated verification pass.
+*(The deep-research workflow failed on a harness/schema error, so these two gaps were verified directly via
+web search + primary-source fetches. Findings below are sourced; pricing is volatile — re-verify at procurement.)*
+
+### Gap 1 — Real-time / streaming for S8.5 (monitoring-only) — RESOLVED
+
+| Source | Free websocket? | Real-time or delayed | Limits | Cost for real-time | Verdict |
+|---|---|---|---|---|---|
+| **Alpaca** | ✅ yes | **Real-time** (IEX exchange only on free) | IEX feed only (single exchange) | free (IEX); SIP/full-market = paid Algo Trader Plus | ✅ **primary S8.5 stream** (already our price source) |
+| **Finnhub** | ✅ yes | **Real-time** | **≤ 50 symbols** free; 60 calls/min | free | ✅ **free cross-check stream** (quorum ≥2) |
+| Polygon.io (now "Massive") | ❌ | real-time only on **$199/mo Advanced**; free/cheap = 15-min delayed | — | $199/mo | ⚪ too pricey for real-time |
+| Twelve Data | mostly paid | websocket paid (Pro+) | free REST = 8 req/min | Pro+ | ⚪ skip for streaming |
+| Tiingo | — | EOD-focused, not streaming | — | — | ⚪ not a streaming pick |
+
+**Pick for S8.5:** **Alpaca IEX websocket (primary) + Finnhub free websocket (cross-check, ≤50 symbols).** Both
+true real-time, both **free**, both fit a monitoring-only tier on a whitelist of a handful of names — **no new
+paid spend.** IEX is a single exchange (partial volume) — fine for monitoring, never treated as decision-grade
+tape alone (quorum rule). *Sources: alpaca.markets/data, docs.alpaca.markets streaming; finnhub.io websocket docs; polygon.io pricing.*
+
+### Gap 2 — Saudi (Tadawul) / Egypt (EGX) data + the Sahm-API verdict — RESOLVED
+
+| Source | Market | What it provides | Access / pricing | Verdict |
+|---|---|---|---|---|
+| **Sahm / SAHMK Developers API** | **Saudi (Tadawul)** | **DATA ONLY** — REST quotes, **realtime websocket (Pro+)**, historical OHLCV/adjusted, financials | API key; free **100 req/day**, Starter **$149/mo** (5k/day), Pro $499/mo | ✅ **Saudi data connector** — but ⛔ **NO order-placement/execution endpoints** |
+| **Twelve Data** | Saudi (XSAU) | EOD (delayed) equities | Pro+ paid plan | 🔎 alt Saudi EOD source |
+| **EODHD** | **Egypt (EGX)** | **279 tickers**, EOD + fundamentals (EGP) | free tier; paid from **$19.99/mo** | ✅ **Egypt data connector** |
+| Thndr / Telda (Egypt) | Egypt brokers | retail apps | — | ⚪ no retail execution API confirmed |
+
+**⭐ Sahm-API verdict (the key question):** **Sahm HAS a usable *data* API, but NOT a *trading/execution* API.**
+The SAHMK Developers API is **market-data only** (quotes, realtime websocket on Pro+, historical, financials; `X-API-Key` auth) — its docs list **no order/execution endpoints**. So **the broker matrix's "Sahm = manual-entry
+for execution" assumption HOLDS** (autonomous order placement via Sahm is still not possible). *But* we gained a
+genuine **Saudi (Tadawul) market-data source** — Sahm's data API (free 100 req/day likely covers a small EOD
+whitelist; $149/mo if more is needed). *Source: sahmk.sa/en/developers (fetched).*
+
+**Saudi/EGX data path (when those markets come online, post-US):** Saudi = **Sahm Data API** (Tadawul-licensed,
+local; free tier first) or Twelve Data; Egypt = **EODHD EGX** ($19.99+). **Execution for both stays MANUAL**
+(Sahm for Saudi/US-ETF; Thndr/Telda for Egypt) — no retail execution API confirmed for autonomous order placement.
 
 ## Caveats (honest)
 - **Only a subset was verified in depth.** Confirmed: Sharadar, SEC EDGAR, EODHD, Zoya, IdealRatings/FTSE, GDELT,

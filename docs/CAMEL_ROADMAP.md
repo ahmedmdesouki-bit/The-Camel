@@ -569,9 +569,10 @@ GDELT/news pipeline + adversarial tests, market-data adapter, then paid vendors;
 ### S8.5 — Real-Time Data Tier  (founder direction — streaming ingestion + monitoring)
 *Adds a streaming/real-time path alongside the EOD connectors. Scope is **ingestion + monitoring**, NOT
 real-time execution: positional execution stays EOD (Sahm / whole-share) until at least Phase 1.*
-- **Streaming vendor:** *being chosen by a follow-up research pass (Alpaca / Polygon / Tiingo / Twelve Data
-  websockets) — see `CAMEL_DATA_SOURCES.md` once it lands.* Likely Alpaca (already our price source, has a
-  free websocket). A websocket/streaming adapter for live
+- **Streaming vendor (resolved — see `CAMEL_DATA_SOURCES.md`): Alpaca IEX websocket (primary) + Finnhub free
+  websocket (cross-check, ≤50 symbols)** — both true real-time, both **free**, both fit a monitoring-only tier
+  on a small whitelist (no new paid spend). IEX is single-exchange → monitoring-only, never decision-grade tape
+  alone. A websocket/streaming adapter for live
   quotes/trades on whitelisted names → a separate `realtime_quotes` store, point-in-time stamped. It
   **never overwrites the official EOD bars** that backtests depend on.
 - **Live news/event stream:** short-interval polling of the news connectors (GDELT / RSS) through the same

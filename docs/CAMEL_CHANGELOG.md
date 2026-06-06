@@ -7,6 +7,21 @@
 
 ## 2026-06-06
 
+**Follow-up data research — two gaps RESOLVED (direct web verification).** The follow-up deep-research
+*workflow failed* on a harness/schema error, so the two gaps were closed by direct web search + primary-source
+fetches:
+- **Streaming (S8.5) resolved → Alpaca IEX websocket (primary) + Finnhub free websocket (cross-check, ≤50
+  symbols)** — both true real-time, both **free**, monitoring-only fit, no new paid spend. Polygon real-time is
+  $199/mo (skip); Twelve Data/Tiingo not suited to free streaming.
+- **Sahm-API verdict (the key question): Sahm has a usable DATA API but NO execution API.** The SAHMK Developers
+  API is market-data only (REST + realtime websocket on Pro+ + historical + financials; `X-API-Key`); no order
+  endpoints → **manual execution for Sahm stands** (broker matrix updated). Bonus: it's a genuine **Tadawul
+  (Saudi) data source** (free 100 req/day; $149/mo). **Egypt (EGX) data → EODHD** (279 tickers, EOD + fundamentals,
+  $19.99+). Execution for Saudi *and* Egypt remains manual (no retail execution API found).
+- Folded into S8.5 (streaming pick), the broker matrix (Sahm verdict + Saudi data path), and `CAMEL_DATA_SOURCES.md`.
+
+---
+
 **Data-resource deep research → `docs/CAMEL_DATA_SOURCES.md` (cited catalogue).** Deep-research pass
 (5 angles, 25 sources fetched, 96 claims, **25 adversarially verified 3-0 / 0 killed**). Outcome:
 - **Validated the free/official picks already built** — SEC EDGAR XBRL (no key; UA + ~10 req/s required),

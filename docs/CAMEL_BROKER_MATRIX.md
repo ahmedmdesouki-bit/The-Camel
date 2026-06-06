@@ -8,10 +8,11 @@
 - **Alpaca** — the **autonomous US paper→micro-live path**. API-first; key is **trade-only with
   withdrawals disabled**; limit orders only; no pre-/after-hours. This is the broker the operator
   actually drives.
-- **Sahm** — the founder's **real Saudi/US-ETF account**, assumed **no automation API**. ⚠️ *Lead to verify
-  (data research, 2026-06-06): `sahmk.sa/en/developers` suggests Sahm may expose a developer/API surface — if
-  confirmed, the manual-entry assumption below may be revised to a real API integration. Verify before S13.*
-  Until then, handled by
+- **Sahm** — the founder's **real Saudi/US-ETF account**. ✅ *Verified (2026-06-06): the SAHMK Developers API is
+  **market-DATA only** (REST quotes, realtime websocket on Pro+, historical, financials; `X-API-Key`) — it has
+  **NO order-placement/execution endpoints**, so autonomous trading via Sahm is still not possible and the
+  manual-entry path stands. Bonus: Sahm's data API is a genuine **Tadawul (Saudi) data source** for the Saudi
+  market phase (free 100 req/day; $149/mo Starter).* Execution handled by
   a **`ManualBroker` (manual-entry) mode**: Camel proposes → founder executes in the Sahm app →
   logs the fill (price/shares/timestamp) back to the append-only ledger under the **same Constitution
   + reconciliation**. No automation, but full evidence + guardrail discipline.
