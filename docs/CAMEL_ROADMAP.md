@@ -349,8 +349,21 @@ direct-`evaluate` loop path.)*
 
 ---
 
-### S6.6 — Ops & Safety Hardening + Beginner Mode  (adopted from external review round #5)
-Cheap, real items surfaced by two independent technical reviews. All small; each closes a verified gap.
+### S6.6 — Position Accounting + Ops & Safety Hardening + Beginner Mode  (review rounds #5–6)
+Correctness + cheap hardening surfaced by three independent technical reviews. The lead item (position
+accounting) is foundational; the rest each close a verified gap.
+- **⭐ Position accounting on every fill (review #6 — the foundational one).** Today the PaperBroker
+  writes orders + ledger but **never maintains a positions table** — so the S6.5 phantom-sell/oversell
+  guards are only *value-based* and paper P&L can't be trusted or reconciled. Add a real `positions`
+  table (symbol · qty · avg_cost · market_price · market_value · realized_pnl · opened_at · updated_at ·
+  status) updated on every paper fill: BUY creates/increases + weighted-average cost; SELL validates
+  `qty ≤ held`, reduces, realizes P&L, closes at zero. The broker gains an **exact qty-based phantom
+  guard** (`sell_qty ≤ held_qty`), making the Constitution's value-based guard precise. Positions must
+  reconcile with ledger cash.
+- **Health-monitor test portability (review #6 — verified bug).** `test_yellow_when_low_disk` is
+  environment-sensitive (it asserts YELLOW by demanding 10 PB free; a filesystem reporting huge capacity
+  returns GREEN and the test fails). Mock `shutil.disk_usage()`; and make an **unknown/errored disk check
+  → YELLOW** (fail-safe), not GREEN.
 - **Illiquidity-gate fail-loud** — the spread/ADV gate in `constitution.py` currently **skips silently
   when its data is absent**, so an illiquid trade can pass unchecked. Log every skip + raise a
   dashboard/alert flag; **fail-closed (block) in live mode** when the data needed to clear the gate is
@@ -373,9 +386,11 @@ Cheap, real items surfaced by two independent technical reviews. All small; each
   markets, API availability, Sharia screening, fractional shares, minimum capital, fees, PDT rule,
   automation. Resolves the live-broker direction.
 
-**Gate:** illiquidity-gate skip is logged and blocks in live; the three prompt-injection tests pass;
-the dead-man's-switch alerts on a missed ping; all DBs run WAL mode; the beginner-mode profile loads and
-can never widen a rail; broker matrix documented.
+**Gate:** positions update on every fill (weighted-avg cost on buy, realized P&L on sell, close at zero)
+and reconcile with ledger cash; the broker's exact qty-based phantom guard blocks over-selling; the
+disk-test is deterministic (mocked) and unknown disk → YELLOW; illiquidity-gate skip is logged and blocks
+in live; the three prompt-injection tests pass; the dead-man's-switch alerts on a missed ping; all DBs run
+WAL mode; the beginner-mode profile loads and can never widen a rail; broker matrix documented.
 
 ---
 
@@ -537,10 +552,12 @@ date · 16 liquidity + whole-share feasibility · 17 final trade decision.
 **Model-disagreement rule** — BOARDROOM (Bull/Bear/Sharia Auditor) conflict → `trade_allowed=false` →
 Human Approval Gate.
 
-Edge report (extends v0): signal_id, candidate, sample_size, **regime_filtered_sample_size**,
-hit_rate_3m, median_excess_return_3m, worst_forward_return_3m, max_drawdown, benchmark, after_costs,
-turnover_estimate, data_quality_score, **multiple_testing_penalty_applied**, **signal_decay_detected**,
-trade_allowed, reason. New `edge_reports` table. Observe structure: Regime → Theme → Asset → Sector →
+Edge report (extends v0): signal_id, **signal_definition_hash** (review #6 — recompute evidence if the
+signal definition changes; prevents hidden strategy drift), candidate, sample_size,
+**regime_filtered_sample_size**, hit_rate_3m, median_excess_return_3m, worst_forward_return_3m,
+max_drawdown, benchmark, after_costs, turnover_estimate, data_quality_score,
+**multiple_testing_penalty_applied**, **signal_decay_detected**, trade_allowed, reason. New
+`edge_reports` table. Observe structure: Regime → Theme → Asset → Sector →
 Company → Candidate.
 
 **Minimum thresholds:** sample ≥ 50 · regime-filtered sample ≥ 20 · median excess ≥ +2.5% over
@@ -675,6 +692,10 @@ app → logs the fill (price/shares/timestamp) back to the append-only ledger un
 checks + reconciliation. **IBKR deferred to Phase 2.** Full comparison in `docs/CAMEL_BROKER_MATRIX.md`.
 *(PDT note: Alpaca live's $25K pattern-day-trader rule is largely N/A — Camel is cash-account, long-only,
 positional, not day-trading; documented in the matrix.)*
+
+**Approval payload hardening (review #6):** a Telegram approval must carry an **action hash** + the
+structured fields (notional · symbol · side · Edge-Proof summary · invalidation) and be logged; **no
+approval by free-text message alone**; timeout = veto.
 
 **Deliverables:** Approval Channel (Telegram one-tap approve/veto, timeout = veto) · LiveBroker — Alpaca
 (paper → live, behind the phase flag) · `ManualBroker` (Sahm) manual-entry mode · limit orders only · no
