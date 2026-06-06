@@ -6,7 +6,7 @@
 >
 > **Snapshot date:** 2026-06-06 · **Repo:** https://github.com/ahmedmdesouki-bit/The-Camel
 > (branch `main`) · **Status:** Sprints S1–S7 complete · S8 core (10 connectors; rest deferred) · S9 in
-> progress (slice 1, entity resolution) · 395 tests green · paper-mode only · on Roadmap v3 (S1–S14).
+> progress (slices 1–2: entity resolution + Regime Engine) · 409 tests green · paper-mode only · on Roadmap v3 (S1–S14).
 
 > ⚠️ **What this is:** a personal, educational, decision-support / engineering project for the
 > founder's **own** capital. It is **not** financial, legal, or Sharia advice, and **not** a
@@ -182,7 +182,7 @@ Learning Ledger, an append-only op log, and a GREEN/YELLOW/RED/BLACK health moni
 
 ---
 
-## 7. What's built — Phase 0, 395 tests green
+## 7. What's built — Phase 0, 409 tests green
 
 The **safety and evidence core is done.** Everything below runs in paper/simulation behind a human gate.
 

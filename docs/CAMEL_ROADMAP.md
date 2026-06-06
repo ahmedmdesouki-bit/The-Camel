@@ -581,13 +581,17 @@ GDELT/news pipeline + adversarial tests, market-data adapter, then paid vendors;
 latest filings, latest events, ETF exposure, and benchmark; the regime classifier labels the current
 environment from real macro data; a Sharia disagreement freezes new buys.
 
-**STATUS: IN PROGRESS — slice 1 (entity resolution) complete (389 → 395 tests).** `assets` table
-(ticker/CIK/ISIN/CUSIP/name/sector/active_from-to/delisted_flag) in the fundamentals DB +
-`data/entity_resolver.py`: `resolve(ticker)` returns full identity by joining `assets` + `company_facts`
-(latest filing) + `etf_holdings` (ETF look-through exposure) + the Sharia whitelist (status/frozen). Delivers
-the gate's identity half. **Remaining S9 slices:** Regime Engine (classifier from macro_observations), event
-intelligence (dedup/severity/entity-linker/theme mapper over news_events), Sharia cross-check + multi-state
-status + AAOIFI drift + local-board override.
+**STATUS: IN PROGRESS — slices 1–2 (389 → 409 tests).**
+- *Slice 1 (entity resolution):* `assets` table (ticker/CIK/ISIN/CUSIP/name/sector/active_from-to/
+  delisted_flag) + `data/entity_resolver.py` `resolve(ticker)` → full identity joining `assets` +
+  `company_facts` + `etf_holdings` look-through + Sharia whitelist.
+- *Slice 2 (Regime Engine):* `trader/regime/` — `features.py` (point-in-time macro features from
+  `macro_observations`: fed funds, 10y−2y curve, CPI YoY, unemployment, HY spread, VIX, USD, oil YoY),
+  `classifier.py` (deterministic signal-scored 10-state classifier → regime + confidence + which signals
+  fired; `regime_to_themes` mapper), `history.py` + `regime_history` table (append-only audit). v0 covers
+  the macro-derivable regimes; AI_CAPEX_BOOM / confident RECOVERY need equity-sector signals (later).
+**Remaining S9 slices:** event intelligence (dedup/severity/entity-linker/theme mapper over `news_events`);
+Sharia cross-check + multi-state status + AAOIFI drift + local-board override.
 
 ---
 

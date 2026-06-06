@@ -1,10 +1,10 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9 in progress (slice 1)** · **395 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9 in progress (slice 1)** · **409 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
-(S1–S14) · **S8 core done** (10 connectors; rest deferred to backlog). **In S9:** slice 1 done (entity resolver: ticker → full identity); next regime engine + event intelligence + Sharia cross-check
+(S1–S14) · **S8 core done** (10 connectors; rest deferred to backlog). **In S9:** slices 1–2 done (entity resolver + 10-state Regime Engine over real macro); next event intelligence + Sharia cross-check
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's
@@ -243,7 +243,7 @@ python ops\kill_switch.py resume    # removes flag
 | **S6.6** ✅ | Position accounting + Ops hardening + Beginner Mode | Positions table on every fill (weighted-avg cost, realized P&L, exact qty-based phantom guard, ledger reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode profile; broker capability matrix (331 tests) |
 | **S7** ✅ | Entrepreneur Product Engine *(engine; agent scope = code-gen only)* | 17-field Product Gate + separate Entrepreneur Constitution (privacy/rights/budget/approval gates; banned claim wording; haram screen) + 10-stage build pipeline (no launch without founder approval). Travel/hospitality SLA assistant encoded as the worked example. Real deploy/Stripe/GitHub wired only when a product ships (352 tests) |
 | **S8** ◑ core done | Data Intelligence Backbone | framework + provenance + `source_documents` + **10 connectors** (FRED/Treasury/World Bank/BLS/BEA/EIA macro, SEC fundamentals, GDELT/ACLED news, ETF-holdings look-through) + news injection-hardening + scraping policy; injectable transport (hermetic, no new deps); all 3 stub DBs real. **Deferred backlog:** ~10 more connectors (USGS/GPR/EPU/OFAC/disclosures/French/SEC-RSS), market-data adapter, paid vendors; markets US→Saudi→EGX |
-| **S9** ◑ in progress | Knowledge Graph + Regime Engine | **slice 1 done**: entity resolution — `assets` table + `resolve(ticker)` → identity (CIK↔ISIN↔CUSIP↔name↔sector), Sharia status, ETF look-through exposure, latest filing, delisted flag. **Next:** event intelligence; 10-state regime classifier from real macro; Sharia cross-check w/ multi-state status (disagreement → freeze new buys) |
+| **S9** ◑ in progress | Knowledge Graph + Regime Engine | **slices 1–2 done**: (1) entity resolution — `assets` table + `resolve(ticker)` → identity, Sharia status, ETF look-through, latest filing, delisted flag; (2) **Regime Engine** (`trader/regime/`) — feature builder over `macro_observations` + deterministic 10-state classifier (regime + confidence + themes) + `regime_history` audit. **Next:** event intelligence; Sharia cross-check w/ multi-state status (disagreement → freeze new buys) |
 | **S10** | Full Edge Proof Engine | **17-check** signal-conditioned proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay); minimum thresholds; model-disagreement → human. **No edge proof = no trade.** |
 | **S11** | Strategy Registry + Learning | Trio: `core_dca`, `quality_momentum`, `etf_regime_rotation` (all pass Edge Proof); StrategyMixer; DCA guardrails; intraday monitor (5-min); 4-tier learning; regime→strategy affinity |
 | **S12** | Edge Lab + realistic paper + ⭐ Sandbox Mode | Three run modes incl. **`sandbox`** (full system on live data + virtual money — the dress rehearsal that produces the micro-live track record); bias prevention; walk-forward; crisis tests; benchmark hierarchy; two-engine cross-check; delisted handling; Sharia-drag quantified; **No-Edge protocol → DCA**; kill criteria |

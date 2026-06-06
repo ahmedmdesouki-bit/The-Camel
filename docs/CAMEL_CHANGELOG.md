@@ -7,6 +7,18 @@
 
 ## 2026-06-06
 
+**Sprint 9 (Knowledge Graph + Regime Engine) — slice 2 (Regime Engine) — 395 → 409 tests green.** New
+`trader/regime/` package: `features.py` builds point-in-time macro features from `macro_observations`
+(fed funds, 10y−2y curve, CPI YoY, unemployment, HY spread, VIX, USD, oil YoY); `classifier.py` is a
+deterministic signal-scored 10-state classifier (LIQUIDITY_EXPANSION/TIGHTENING, INFLATION_SHOCK,
+DISINFLATION_GROWTH, RECESSION_RISK, RECOVERY, COMMODITY_SUPPLY_SHOCK, GEOPOLITICAL_RISK_OFF,
+AI_CAPEX_BOOM, USD_STRENGTH_EM_PRESSURE) → regime + confidence + the signals that fired, plus a
+`regime_to_themes` mapper; `history.py` + a `regime_history` audit table persist each call. v0 covers the
+macro-derivable regimes; AI_CAPEX_BOOM and a confident RECOVERY need equity-sector signals (later). The
+LLM never decides the regime. `tests/test_regime.py`.
+
+---
+
 **Sprint 9 (Knowledge Graph + Regime Engine) — slice 1 (entity resolution) — 389 → 395 tests green.**
 New `assets` table (ticker ↔ CIK ↔ ISIN ↔ CUSIP ↔ name ↔ sector, `active_from/to`, `delisted_flag` for
 survivorship control) in the fundamentals DB, and `data/entity_resolver.py`: `resolve(ticker)` returns a
