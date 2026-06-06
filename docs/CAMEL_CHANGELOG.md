@@ -7,7 +7,14 @@
 
 ## 2026-06-06
 
-**Sprint 8 (Data Intelligence Backbone) — slices 1–2 — 352 → 371 tests green.** The long pole begins.
+**Sprint 8 (Data Intelligence Backbone) — slices 1–3 — 352 → 379 tests green.** The long pole begins.
+*Slice 3 (news/events pipeline):* `data/connectors/news_base.py` (`NewsConnector` — every title runs through
+the sanitiser; **injection-flagged titles are redacted, marked `safe=0`, and quality-downgraded** so the raw
+hostile string never persists; only structured events land, no raw-body column) + `data/connectors/gdelt.py`
+(GDELT DOC 2.0 → structured events). `db/news.py` rebuilt as a provenanced structured-event table. The
+reviewers' **news-pipeline adversarial tests** in `tests/test_connectors_news.py` prove injection text is
+redacted, no hostile string is persisted, and there is no raw-body column. **6 connectors live; all three
+stub DBs (macro/fundamentals/news) now hold real data.**
 *Slice 2:* `data/connectors/macro_base.py` (shared `MacroConnector.store` → `macro_observations`) + three
 more macro connectors — `treasury.py` (Treasury Fiscal Data), `world_bank.py` (World Bank Indicators),
 `bls.py` (BLS CPI/employment, with period→date mapping). FRED refactored onto the shared base.
