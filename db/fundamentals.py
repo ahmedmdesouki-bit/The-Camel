@@ -35,6 +35,21 @@ CREATE TABLE IF NOT EXISTS valuation_snapshots (
     source      TEXT
 );
 
+-- S9: entity-resolution identity table (ticker <-> CIK <-> ISIN <-> CUSIP <-> name <-> sector)
+-- active_from/active_to + delisted_flag give survivorship control for honest backtesting (S12).
+CREATE TABLE IF NOT EXISTS assets (
+    symbol        TEXT PRIMARY KEY,
+    cik           TEXT,
+    isin          TEXT,
+    cusip         TEXT,
+    name          TEXT,
+    sector        TEXT,
+    active_from   TEXT,
+    active_to     TEXT,
+    delisted_flag INTEGER DEFAULT 0,
+    updated_at    TEXT
+);
+
 -- S8: point-in-time XBRL facts from SEC EDGAR, fully provenanced
 CREATE TABLE IF NOT EXISTS company_facts (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,

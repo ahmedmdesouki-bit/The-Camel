@@ -581,6 +581,14 @@ GDELT/news pipeline + adversarial tests, market-data adapter, then paid vendors;
 latest filings, latest events, ETF exposure, and benchmark; the regime classifier labels the current
 environment from real macro data; a Sharia disagreement freezes new buys.
 
+**STATUS: IN PROGRESS — slice 1 (entity resolution) complete (389 → 395 tests).** `assets` table
+(ticker/CIK/ISIN/CUSIP/name/sector/active_from-to/delisted_flag) in the fundamentals DB +
+`data/entity_resolver.py`: `resolve(ticker)` returns full identity by joining `assets` + `company_facts`
+(latest filing) + `etf_holdings` (ETF look-through exposure) + the Sharia whitelist (status/frozen). Delivers
+the gate's identity half. **Remaining S9 slices:** Regime Engine (classifier from macro_observations), event
+intelligence (dedup/severity/entity-linker/theme mapper over news_events), Sharia cross-check + multi-state
+status + AAOIFI drift + local-board override.
+
 ---
 
 ### S10 — Full Edge Proof Engine  (signal-conditioned, 17 checks)
