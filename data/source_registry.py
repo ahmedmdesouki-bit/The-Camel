@@ -95,3 +95,8 @@ ACLED = register(SourceSpec(
     base_url="https://api.acleddata.com", requires_api_key=True,
     requires_cross_check=True, reliability_tier=2,
 ))
+
+ETF_HOLDINGS = register(SourceSpec(
+    source_id="etf_holdings", source_name="Sharia ETF issuer holdings (SPUS/HLAL/MNZL)",
+    source_type="sharia", base_url="", requires_api_key=False, reliability_tier=1,
+))
