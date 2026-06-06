@@ -603,6 +603,12 @@ remains EOD.
 - **Event intelligence** — structured events (`event_type`, region, affected_assets/sectors, severity,
   direction, confidence, source_count, point-in-time stamps) + dedup + severity scorer + entity linker
   + event→theme mapper.
+- **⭐ Event-reaction engine (consultant-adopted)** — an `event_reactions` table recording how markets
+  *historically* reacted to each event type: `event_type · event_date · known_at · affected_symbols/sectors/
+  commodities · return_1d/5d/21d/63d/126d · max_drawdown_63d · benchmark_return · excess_return · regime_at_event`.
+  Answers "when this kind of event happened before, what moved, how far, how long, and did compliant names
+  capture it?" — the **point-in-time substrate for the S10 signal-conditioned event studies** (built honestly
+  off `known_at`, never look-ahead).
 - **Regime Engine** (`trader/regime/`: `regime_classifier_v0`, `regime_feature_builder`,
   `regime_history_store`). Regimes: LIQUIDITY_EXPANSION, LIQUIDITY_TIGHTENING, INFLATION_SHOCK,
   DISINFLATION_GROWTH, RECESSION_RISK, RECOVERY, COMMODITY_SUPPLY_SHOCK, GEOPOLITICAL_RISK_OFF,
@@ -714,7 +720,19 @@ debt, durable + growing payout, sane payout ratio; purification of any impure po
 This is dividend-*growth*, **not** dividend-*capture* — capture buy-before/sell-after-ex-div rarely survives
 costs + whole-share constraints and the Edge Proof will likely reject it; build the dividend data, treat
 capture as a hypothesis to test, not a strategy to trust) and `earnings_guidance_drift` (after the earnings
-calendar + fundamentals are clean). *(Dividend data: the EODHD Splits/Dividends API — ex-div date, yield,
+calendar + fundamentals are clean).
+  - **Dividend mechanics (consultant-adopted) — model the cash, not a single opaque event:** store **gross /
+    withheld / net separately** (`dividend_events` + `dividend_receipts` tables); handle ex-date rules incl.
+    the **25%+ special-dividend deferral** (ex-date = one business day *after* payment) and due-bills;
+    corporate actions (splits/spinoffs/mergers/name-changes) are **ledger events**, and splits can cancel/
+    adjust standing orders — broker-order state must reconcile, not assume orders persist; use **settle-date**
+    accounting where broker practice requires. **Lot-level position accounting** for dividend/tax-sensitive
+    strategies (weighted-average is too lossy for income work; dashboards still aggregate by symbol).
+  - **Tax frame = NRA withholding, NOT US-person (founder is KSA-resident — corrected from the consultant
+    docs):** model **gross → withholding (Form 1042-S / DIV vs DIVNRA split) → net**; the US **qualified-
+    dividend 60-day-holding rule is largely N/A** for a non-US person, so do *not* build holding-period tax
+    optimization — withholding (treaty rate) is what matters.
+  *(Dividend data: the EODHD Splits/Dividends API — ex-div date, yield,
 payout ratio, growth streak — per `CAMEL_DATA_SOURCES.md`.)*
 **Delay (revisit after Edge Lab):** `congress_signal`, complex `mean_reversion`, intraday active
 management beyond monitoring, single-name `dca_ladder`, ML / LLM strategy discovery.
@@ -745,6 +763,30 @@ one implicit portfolio; this adds a first-class multi-portfolio layer under the 
 - Built for **breadth at scale** (N portfolios/strategies handled concurrently and cleanly); **execution
   stays EOD-positional**. Fund-level caps (total exposure, sector, cash buffer) sit *above* per-portfolio caps,
   and per-portfolio positions/ledger must reconcile to the fund.
+- **Portfolio lifecycle (consultant-adopted):** incubate → qualify → pilot → scale → defend → retire, with
+  per-phase gates (schema/data validated → realistic-paper fills/corp-actions → low-cap live + approval →
+  normal → close-only/low-risk on drawdown → flatten & archive). A strategy that fails can **demote to
+  realistic-paper (cooldown)**, not just delete.
+- **Rebalancing:** tolerance-band (default — cuts turnover) + calendar + event-triggered (benchmark/whitelist/
+  corporate-action/risk-budget breach). 4-level risk budgets: portfolio · sleeve · strategy · position.
+- **Multi-benchmark per portfolio:** policy benchmark (what it should resemble) · opportunity benchmark
+  (cost of the Sharia constraint) · cash hurdle. **Attribution:** allocation · selection · dividend/carry ·
+  trading/friction effects.
+- **Seed portfolios (consultant-adopted):** `core_sharia_growth` (SPUS bench; DCA/rotation) · `income_dividend`
+  (dividend-quality) · `thematic_satellite` (momentum/themes) · `cash_waiting_room` (idle cash/watchlist) ·
+  `experimental_paper` (new strategies pre-promotion) · `entrepreneur_camel` (product budget, revenue KPIs).
+- **Strategy-portfolio matrix:** each strategy declares `allowed_portfolios`, `forbidden_portfolios`,
+  `max_portfolio_weight`, `max_single_position`, `min_signal_confidence`, `kill_rule`, `requires_edge_proof` —
+  so a strategy runs only where it's permitted (the consultant SQL schemas for `portfolios` / `strategies` /
+  `portfolio_strategy_allocations` / `positions` / `trades` / `dividends` / `edge_proof_reports` are the
+  concrete starting point).
+
+**Portfolio/strategy definition-of-done (consultant acceptance checklist, adopted):** every position belongs to
+a portfolio + a `strategy_id` (or a manual reason); every strategy is allowed only in specific portfolios;
+every buy/increase needs Edge Proof; every portfolio has a benchmark + attribution; every dividend is recorded
+separately from price return; every datapoint carries `source_id/known_at/ingested_at/content_hash`; critical
+signals need ≥2 sources or human approval; data-quality failure blocks trades; portfolio drift produces
+*rebalance suggestions*, not automatic live trades.
 
 **Gate:** ≥3 strategies (the trio) all passing Edge Proof; learning updating base-rates; improvement
 proposals land in the Learning Ledger; DCA guardrails enforced; never auto-edits the Constitution;
@@ -760,7 +802,12 @@ live automation. Run after ≥28 days of paper data.*
 **Run modes (three):**
 - `loop_test` — historical / last-close fills; $1 fallback unit-tests only.
 - `realistic_paper` — no fallback; limit orders only; spread + slippage models; non-fill + partial-fill
-  logic; market hours; corporate-action awareness.
+  logic; market hours; corporate-action awareness. **(Consultant-adopted) Camel's own realistic paper must
+  do what broker paper does NOT:** Alpaca paper explicitly does *not* simulate dividends, market impact,
+  latency slippage, queue position, or fees — so `realistic_paper` adds **dividend entitlement + settlement
+  replay, corporate-action replay, fees, and stale-data rejection**. Two distinct concepts: *broker paper*
+  (API-integration smoke test) vs *Camel realistic_paper* (decision-validation). No performance number ever
+  comes from broker paper or `loop_test`.
 - **`sandbox` — the full system on LIVE real-time data with VIRTUAL money (founder request).** ⭐
   Sandbox runs the *entire* loop — Observe → strategies (S11) → Edge Proof (shadow or enforcing) →
   Constitution → **virtual fills via the realistic-paper engine** — against the **live market feed**,
@@ -817,11 +864,19 @@ simple DCA before any live execution; backtest using future/restated data blocke
 *Dedicated agents that each own an information vertical and run study → analyze → store cycles, feeding the
 knowledge graph + Learning Ledger for decision-making. **Architecture built now; kept dormant until capital
 and a proven edge justify the token spend** — founder decision: "design it, defer running it.")*
-- **Vertical analyst agents** (Claude Agent SDK — the planned "real tool-use autonomy" trigger): macro,
-  sector, single-name/fundamentals, geopolitics, Sharia, and per-strategy desks. Each: gather (via the S8
-  connectors) → analyze → write a **structured, sourced research note + confidence** into `camel_learning.db` /
-  the knowledge graph. **Agents propose/analyze; they never decide** — Edge Proof + Constitution still gate
-  every consequential action (trust inversion intact).
+- **Vertical analyst agents** (Claude Agent SDK — the planned "real tool-use autonomy" trigger). Full roster
+  (consultant-adopted): **market-microstructure** (spreads/liquidity/execution conditions), **macro & vintage**,
+  **fundamentals/XBRL**, **dividend & corporate-actions**, **news/geopolitical**, **Sharia auditor**,
+  **portfolio & risk** (crowding/overlap/drift), and **execution/TCA** (predicted-vs-realized fills → feeds
+  slippage models back to S12). Each: gather (via the S8 connectors) → analyze → write a **structured, sourced
+  research note + confidence** into `camel_learning.db` / the knowledge graph. **Agents propose/analyze; they
+  never decide** — Edge Proof + Constitution still gate every consequential action (trust inversion intact).
+- **Evidence-object contract (consultant-adopted):** each note is a mini credit-memo, not a chat reply —
+  `claim · scope · evidence_ids · source_count · freshness · disagreement_score · confidence · horizon ·
+  direction · invalidation_conditions · recommended_action · portfolio_fit · compliance_status` — and that
+  object is what flows into Edge Proof. The learning loop is **narrow & safe**: agents update retrieval
+  indices / prompt templates / entity dictionaries / event taxonomies / slippage params / source-reliability
+  priors — they **never** retrain or edit the Constitution.
 - **Orchestration:** **on-demand by default** (an analyst spins up when an opportunity/decision needs its
   vertical); an always-on fleet is a later, explicit cost decision. A hard **research token budget**.
 - **Guardrails:** research agents are read-only to config/limits/whitelist; their notes are *evidence, never

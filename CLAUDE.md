@@ -380,9 +380,9 @@ Optimize for **evidence density, not feature count.**
 | S8.5 | Real-Time Data Tier *(founder)* | streaming quotes + live-news + real-time monitor/alerts; separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
 | S9 ~ | Knowledge Graph + Regime Engine | **slices 1–2 done** (entity resolver + 10-state Regime Engine over real macro) + QA hardening pass, 419 tests; event intelligence + Sharia cross-check (multi-state) remain |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
-| S11 | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth) pass Edge Proof; **multi-portfolio (strategy-per-portfolio, portfolio-scoped positions/ledger reconciling to fund)**; never auto-edits the Constitution |
+| S11 | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth w/ **lot-level + gross→NRA-withholding→net** mechanics) pass Edge Proof; **multi-portfolio (lifecycle incubate→retire, tolerance-band rebalance, multi-benchmark, 6 seed portfolios, portfolio-scoped positions/ledger reconciling to fund)**; meets the 15-item acceptance checklist; never auto-edits the Constitution |
 | S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
-| S12.5 | Research Desk / Analyst Agents *(founder; design now, dormant)* | per-vertical research agents (Agent SDK) write evidence only, never act; token budget; master switch defaults OFF |
+| S12.5 | Research Desk / Analyst Agents *(founder; design now, dormant)* | per-vertical research agents (Agent SDK — full roster incl. market-microstructure + execution/TCA) write evidence only via the **evidence-object contract**, never act; narrow/safe learning (no retrain, no Constitution edits); token budget; master switch defaults OFF |
 | S13 | Micro-Live Readiness (Phase 1) | all live-readiness boxes pass |
 | S14 | Module Restructure | full suite green after restructure |
 

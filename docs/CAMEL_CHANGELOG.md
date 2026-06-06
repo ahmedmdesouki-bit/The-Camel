@@ -7,6 +7,30 @@
 
 ## 2026-06-06
 
+**Consultant review round #7 (portfolio/strategy/data/research-agent expansion) folded (docs-only).** Two
+consultant docs that *independently validated* the architecture we'd already built/planned (~70% already
+done or folded). **Adopted (5 additive items):**
+- **Event-reaction engine** (`event_reactions` table: return_1d/5d/21d/63d, excess-vs-benchmark, regime-at-event)
+  → S9, the point-in-time substrate for S10 signal-conditioned event studies.
+- **Dividend mechanics** (gross/withheld/net; ex-date 25%-special deferral + due-bills; settle-date; corporate
+  actions as ledger events; **lot-level** accounting) → S11/S12. **Tax frame corrected to NRA-withholding**
+  (founder is KSA-resident; the US qualified-dividend 60-day rule is N/A — model gross→withholding→net).
+- **Portfolio lifecycle** (incubate→…→retire), tolerance-band rebalancing, 4-level risk budgets, multi-benchmark
+  (policy/opportunity/cash), the **6 seed portfolios** + strategy-portfolio matrix + the consultant SQL schemas → S11.
+- **Acceptance checklist** (15 items) → S11 definition-of-done.
+- **Fuller research-agent roster** (adds market-microstructure + execution/TCA) + the **evidence-object contract** → S12.5.
+**Declined / corrected (founder-agreed push-backs):**
+- **Vendor cost:** declined the Polygon/Massive-Advanced-as-primary ($199/mo) and $400–$2,000/mo stack — the
+  free-first path (Alpaca/Finnhub free + SEC EDGAR + EODHD ~$20) in `CAMEL_DATA_SOURCES.md` holds for a personal book.
+- **Infra:** declined the near-term Postgres + Parquet/Iceberg lakehouse + feature-store migration — SQLite stays;
+  migrate only when multi-device/scale genuinely demands it (we ingest *structured events*, not GDELT's raw firehose).
+- **Tax:** corrected the US-person qualified-dividend assumption to NRA withholding (see above).
+*Their stale sprint numbering (S5.6–S7) mapped onto our v3; "S5.6 hotfix" = our shipped S6.5. No code; 419 tests unchanged.*
+
+---
+
+## 2026-06-06
+
 **Follow-up data research — two gaps RESOLVED (direct web verification).** The follow-up deep-research
 *workflow failed* on a harness/schema error, so the two gaps were closed by direct web search + primary-source
 fetches:
