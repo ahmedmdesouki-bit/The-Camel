@@ -1,7 +1,7 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9 in progress (slice 1)** · **426 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9 in progress (slice 1)** · **440 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
 (S1–S14) · **S8 core done** (10 connectors; rest deferred to backlog). **In S9:** slices 1–2 done (entity resolver + 10-state Regime Engine over real macro); next event intelligence + Sharia cross-check

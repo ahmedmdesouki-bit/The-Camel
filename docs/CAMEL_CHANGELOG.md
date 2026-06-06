@@ -5,6 +5,23 @@
 
 ---
 
+## 2026-06-07 — More Alaa harvest shipped (founder alerting + peg monitor)
+
+**Built the next batch of self-contained Alaa-harvested items as real, tested code** (the rest stay scheduled
+at their sprints): (1) `alerts/whatsapp.py` — **WhatsApp/CallMeBot** 2nd alert channel, same credential-safe
+stub contract as Telegram (no network in tests); (2) `alerts/redalert.py` — the **RED ALERT founder-panic
+protocol** (breathe→assess→act; informational only — never places/blocks/proposes a trade); (3) `alerts/brief.py`
+— a **founder daily brief** built from the dashboard snapshot (single source of truth), deliverable over
+Telegram *or* WhatsApp, appending RED ALERT on a >3% drop; (4) `trader/regime/peg.py` — the **SAR/USD peg
+monitor** (pure `peg_status` + dormant-safe `latest_peg_status`, for the S9 regime layer). Plus the cash-drag
+ratio already shipped inside Dashboard v2. `tests/test_alerts_founder.py` (9) + `tests/test_peg_monitor.py` (5).
+**426 → 440 tests green.** **Deferred (on purpose):** the sector-cap ≤40% guardrail → S11 (needs the portfolio
+engine + per-holding sector aggregation to be meaningful; won't half-wire a guardrail). Remaining Alaa items
+(strategy-fit selector/mix UX, OCR manual entry, eval harness, camel-coach skill, yield-on-cost, moat matrix)
+stay scheduled at S11/S12.5/S13.
+
+---
+
 ## 2026-06-06 — Feedback session wrap
 
 **Dashboard v2 SHIPPED (first code out of the feedback session).** Rebuilt the S6 operator dashboard taking

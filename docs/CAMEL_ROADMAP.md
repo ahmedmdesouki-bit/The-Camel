@@ -29,7 +29,9 @@ live dress rehearsal that produces the track record gating micro-live.)*
 > explicit S8 goal. A cited data-resource research pass is the agreed next task after this fold.
 > **Cross-build harvest — Alaa's Camel (2026-06-06), founder-facing layer folded in** (full review:
 > `docs/CAMEL_ALAA_REVIEW.md`). A friend's parallel Camel built the *cockpit + coach* to our *engine + rails*.
-> Independent validation of the framing; net gift is a mature founder-facing surface we'd deprioritized. Folded:
+> Independent validation of the framing; net gift is a mature founder-facing surface we'd deprioritized.
+> **BUILT (2026-06-07): (e) Dashboard v2 · (f) WhatsApp/CallMeBot + founder brief · (a) RED ALERT panic
+> protocol · SAR/USD peg monitor · cash-drag ratio.** Remaining items stay scheduled below. Folded:
 > (a) **founder-panic "RED ALERT" protocol** (breathe→assess→act; human-factors guardrail) → Constitution
 > human-factors + S13 approval gate + daily-brief auto-fire on drop >3%; (b) **screenshot-OCR manual entry**
 > (paste a Sahm screenshot → prices/positions; still writes the append-only ledger + must reconcile) → S13

@@ -1,8 +1,20 @@
 # Alaa's Camel — file-by-file review & what we're taking
 
 **Reviewed:** 2026-06-06. Source: a parallel "Camel" build by **Alaa (Aladdin)**, a friend of the founder,
-shared for cross-pollination. Reviewed every file line-by-line. **No code copied yet** — this is the
-assessment + the docs-only fold into our roadmap.
+shared for cross-pollination. Reviewed every file line-by-line.
+
+> **BUILT so far (2026-06-07, real tested code — not just docs):**
+> - **Dashboard v2** — `dashboard/snapshot.py` + `generate.py` (rich, offline, read-only; Decisions/Regime/
+>   safety panels). ✅
+> - **WhatsApp/CallMeBot 2nd alert channel** — `alerts/whatsapp.py`. ✅
+> - **Founder daily brief** — `alerts/brief.py` (built from the dashboard snapshot; Telegram or WhatsApp). ✅
+> - **RED ALERT panic protocol** — `alerts/redalert.py` (breathe→assess→act; informational, never trades). ✅
+> - **SAR/USD peg monitor** — `trader/regime/peg.py` (pure + dormant-safe reader). ✅
+> - **Cash-drag ratio** — baked into the dashboard KPIs. ✅
+>
+> Everything else below remains **scheduled** at its target sprint (S11 strategy-fit/mix, S12.5 evals/coach
+> skill, S13 OCR manual entry, S11 sector-cap/yield-on-cost/moat matrix). Deliberately not pre-built against
+> sprints that don't exist yet.
 
 ## What Alaa built (the one-line truth)
 Alaa built the **front-of-house** of the same idea we're building the **back-of-house** of. Same vocabulary

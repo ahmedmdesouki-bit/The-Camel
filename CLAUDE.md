@@ -138,6 +138,13 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   Adds the panels a portfolio tracker lacks — **Edge-Proof verdicts + Constitution rejections-with-reasons**,
   macro regime, and an honest live-money safety posture. Early slice of the S10 decision-quality dashboard,
   on Alaa's visual ground but re-pointed at our governed state. `tests/test_dashboard_snapshot.py`. → **426 passed**.
+- **Founder alerting + peg monitor** (more harvested from Alaa, now real code): `alerts/whatsapp.py`
+  (CallMeBot 2nd channel, same credential-safe stub contract as Telegram), `alerts/redalert.py` (the
+  **RED ALERT** founder-panic protocol — breathe→assess→act, informational only, never proposes a trade),
+  `alerts/brief.py` (founder daily brief built from the dashboard snapshot; Telegram **or** WhatsApp; appends
+  RED ALERT on a >3% drop), and `trader/regime/peg.py` (**SAR/USD peg monitor** — pure + dormant-safe DB
+  reader, for the S9 regime layer). `tests/test_alerts_founder.py` + `tests/test_peg_monitor.py`. → **440 passed**.
+  *(Sector-cap ≤40% guardrail deliberately deferred to S11 — needs the portfolio engine to be meaningful.)*
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -246,7 +253,14 @@ entrepreneur/     product_gate.py — 17-field ProductThesis + evaluate_gate (S7
                   build_pipeline.py — 10-stage state machine (no skip; PRODUCTION needs founder approval)
 
 trader/regime/    features.py (macro features from macro_observations), classifier.py (10-state
-                  regime + confidence + themes), history.py + regime_history table (S9)
+                  regime + confidence + themes), history.py + regime_history table (S9),
+                  peg.py — SAR/USD peg monitor (pure peg_status + dormant-safe latest_peg_status)
+
+alerts/           telegram.py — credential-safe one-way notifier (+approve/veto S11)
+                  whatsapp.py — CallMeBot 2nd channel (same stub contract)
+                  redalert.py — RED ALERT founder-panic protocol (informational; never trades)
+                  brief.py — founder daily brief from the dashboard snapshot (any notifier)
+                  daily.py — ops/health daily report delivery
 
 capital/          allocator.py — Allocator.request() routes through Constitution
 
