@@ -1,16 +1,16 @@
 # Source materials (archive)
 
-These are the **original inputs** that Noah was built from. They are kept for provenance and
+These are the **original inputs** that Camel was built from. They are kept for provenance and
 reference but are **superseded** by the canonical docs in `../` (the `docs/` folder) and
-`../../Noah_CLAUDE.md`. Do not treat anything here as current — for live truth use the
+`../../CLAUDE.md`. Do not treat anything here as current — for live truth use the
 canonical doc set.
 
 | File | What it is |
 |---|---|
-| `Noah_PRD_v1.md` | Original Noah product requirements (→ absorbed into `NOAH_ROADMAP.md`) |
-| `Noah_x_StockSense_v11_Spec.md` | Original Noah × StockSense build spec |
-| `Noah_Stack_and_Runbook.md` | Original stack + runbook notes (→ `HANDOFF.md`, `Noah_CLAUDE.md`) |
-| `ADAM_PRD_v1.md` | The ADAM-stack PRD that Noah was derived from |
+| `Camel_PRD_v1.md` | Original Camel product requirements (→ absorbed into `CAMEL_ROADMAP.md`) |
+| `Camel_x_StockSense_v11_Spec.md` | Original Camel × StockSense build spec |
+| `Camel_Stack_and_Runbook.md` | Original stack + runbook notes (→ `HANDOFF.md`, `CLAUDE.md`) |
+| `ADAM_PRD_v1.md` | The ADAM-stack PRD that Camel was derived from |
 | `ADAM_x_StockSense_v11_Spec.md` | The ADAM × StockSense merge spec |
 | `StockSense_v11_Playbook.md` | The founder's original Sharia-compliant investing playbook |
 | `StockSense_v11_Dashboard.html` | The original client-side HTML dashboard |

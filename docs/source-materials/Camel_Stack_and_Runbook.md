@@ -1,5 +1,5 @@
-# 🧭 Noah — Stack Review & Windows Runbook
-*Companion to Noah PRD v1 · Runtime: your Windows PC · June 2026*
+# 🧭 Camel — Stack Review & Windows Runbook
+*Companion to Camel PRD v1 · Runtime: your Windows PC · June 2026*
 
 ---
 
@@ -33,7 +33,7 @@ lean Phase 0 (SQLite + plain loop + Alpaca paper + Telegram) so you're running i
 
 ---
 
-## Part B — Step-by-step: get Noah running on Windows
+## Part B — Step-by-step: get Camel running on Windows
 
 > Goal of these steps: a green test suite and Claude Code ready to build Sprint 2.
 > Nothing here touches real money.
@@ -52,14 +52,14 @@ irm https://claude.ai/install.ps1 | iex
 Then run `claude` once to authenticate (follow the login prompt).
 *(Alternative, if you prefer npm + Node 18+: `npm install -g @anthropic-ai/claude-code`.)*
 
-### Step 3 — Drop in the Noah repo
-1. Unzip `Noah_Sprint1_*.zip` somewhere like `C:\Noah\` → you get a `noah\` folder.
+### Step 3 — Drop in the Camel repo
+1. Unzip `Camel_Sprint1_*.zip` somewhere like `C:\Camel\` → you get a `camel\` folder.
 2. It already contains `CLAUDE.md` (Claude Code reads this automatically for context).
 
 ### Step 4 — Verify the safety core (the Sprint 1 gate)
-In PowerShell, inside the `noah` folder:
+In PowerShell, inside the `camel` folder:
 ```powershell
-cd C:\Noah\noah
+cd C:\Camel\camel
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -70,7 +70,7 @@ pytest -q
 
 ### Step 5 — Open the project in Claude Code
 ```powershell
-cd C:\Noah\noah
+cd C:\Camel\camel
 claude
 ```
 Claude Code reads `CLAUDE.md` and self-briefs. Good first prompts:
@@ -97,7 +97,7 @@ you've earned Phase 1 (capped, human-approved live).
 ## Part C — What stays in Cowork vs Claude Code
 
 - **Bring back to Cowork (here):** Sharia scans on new names, strategy/base-rate discussions,
-  the dashboard + tracker, reviewing Noah's decisions, research, any doc/deck.
+  the dashboard + tracker, reviewing Camel's decisions, research, any doc/deck.
 - **Do in Claude Code (your PC):** all repo building, tests, the loop, broker/data integration,
   deployment, the scheduler.
 
@@ -105,4 +105,4 @@ You don't lose anything by switching — same underlying engine, right surface f
 
 ---
 
-*Noah · Stack & Runbook · Educational/engineering decision support — not financial, legal, or Sharia advice.*
+*Camel · Stack & Runbook · Educational/engineering decision support — not financial, legal, or Sharia advice.*

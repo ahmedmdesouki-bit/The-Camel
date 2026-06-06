@@ -1,4 +1,4 @@
-# 📐 Noah × StockSense v11 — Product Requirements Document
+# 📐 Camel × StockSense v11 — Product Requirements Document
 ### The buildable blueprint for a guardrailed autonomous operator
 *PRD v1.0 · June 2026 · Companion to the Build Spec v0.2 · Target runtime: Windows PC (KSA), founder-operated*
 
@@ -10,11 +10,11 @@
 
 ## 1. Summary
 
-**What we're building:** an always-on AI operator ("Noah") that runs a continuous Observe → Thesis → Choose → Act → Measure → Learn loop across two domains — **Trader Noah** (Sharia-compliant markets) and **Entrepreneur Noah** (Sharia-compliant AI products) — where every consequential action is filtered through a deterministic **Guardrail Constitution** the agent cannot modify.
+**What we're building:** an always-on AI operator ("Camel") that runs a continuous Observe → Thesis → Choose → Act → Measure → Learn loop across two domains — **Trader Camel** (Sharia-compliant markets) and **Entrepreneur Camel** (Sharia-compliant AI products) — where every consequential action is filtered through a deterministic **Guardrail Constitution** the agent cannot modify.
 
 **Why:** to convert StockSense v11 (a manual decision-support doc) into a self-operating system that compounds knowledge and, once proven, capital — without exposing you to ruin, Sharia violations, or unattended money movement.
 
-**Definition of success (north star):** Noah completes ≥ 4 weeks of fully autonomous **paper** operation with **zero guardrail breaches**, a reconciling ledger, and an invalidation point on every position — earning the right to a tightly-capped live phase.
+**Definition of success (north star):** Camel completes ≥ 4 weeks of fully autonomous **paper** operation with **zero guardrail breaches**, a reconciling ledger, and an invalidation point on every position — earning the right to a tightly-capped live phase.
 
 ---
 
@@ -51,8 +51,8 @@
 ## 4. Personas
 
 - **Founder (you):** sets limits, approves live actions, holds the kill switch and secrets. Not in the loop for research/build.
-- **Trader Noah:** sub-agent — forms market theses, sizes to invalidation, prepares orders.
-- **Entrepreneur Noah:** sub-agent — chooses/builds/deploys compliant AI products.
+- **Trader Camel:** sub-agent — forms market theses, sizes to invalidation, prepares orders.
+- **Entrepreneur Camel:** sub-agent — chooses/builds/deploys compliant AI products.
 - **Sharia Auditor:** sub-agent with **veto** wired to the Constitution; no action ships if it objects.
 - **Risk/Compliance sub-agent:** runs the §2 checks pre-execution.
 
@@ -242,15 +242,15 @@ adam/
 
 1. **Live broker for Phase 1:** Alpaca (cleaner API) vs IBKR (broader). *(Paper = Alpaca regardless.)*
 2. **Notification channel:** Pushover vs Telegram bot for approvals.
-3. **First Entrepreneur product:** what compliant tool should Noah ship as the proving build?
+3. **First Entrepreneur product:** what compliant tool should Camel ship as the proving build?
 4. **Canonical Sharia screener:** Musaffa vs Zoya as the source of truth for the whitelist.
 5. **Limit values:** confirm the starting numbers in `limits.yaml` (defaults in §2.2 of the Spec).
 
 ---
 
 ## 13. Definition of done (v1)
-The system is "up and running" when: the guardrail suite is green; Noah runs the full loop unattended on paper nightly; the dashboard and ledger reflect it; the kill switch and alerts work; one compliant product is deployed; and you have 28 days of clean paper operation meeting every §3 Phase-0 criterion — at which point Phase 1 (capped, human-approved live) is unlocked.
+The system is "up and running" when: the guardrail suite is green; Camel runs the full loop unattended on paper nightly; the dashboard and ledger reflect it; the kill switch and alerts work; one compliant product is deployed; and you have 28 days of clean paper operation meeting every §3 Phase-0 criterion — at which point Phase 1 (capped, human-approved live) is unlocked.
 
 ---
 
-*Noah × StockSense v11 · PRD v1.0 · Build the safety core first; earn autonomy with evidence. Not financial, legal, or Sharia advice.*
+*Camel × StockSense v11 · PRD v1.0 · Build the safety core first; earn autonomy with evidence. Not financial, legal, or Sharia advice.*

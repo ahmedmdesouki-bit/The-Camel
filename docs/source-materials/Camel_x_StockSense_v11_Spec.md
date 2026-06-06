@@ -1,46 +1,46 @@
-# 🜂 Noah × StockSense v11 — Autonomous Operator Build Spec
+# 🜂 Camel × StockSense v11 — Autonomous Operator Build Spec
 ### A guardrailed AI operator that picks Sharia-compliant opportunities and acts within hard limits
-*Version 0.1 · June 2026 · Merges the Noah 6-layer stack with the StockSense v11 investment brain*
+*Version 0.1 · June 2026 · Merges the Camel 6-layer stack with the StockSense v11 investment brain*
 
 ---
 
-> ⚠️ **Disclaimer & operating stance.** This is an engineering/decision-support spec, not financial or legal advice. The design deliberately keeps **live money movement behind a human-approval gate** and routes all autonomy through hard-coded constraints. An agent that places trades or moves funds entirely unattended is a liability, not a feature — this spec is built so Noah can be aggressive *inside the rails* and powerless *outside them*.
+> ⚠️ **Disclaimer & operating stance.** This is an engineering/decision-support spec, not financial or legal advice. The design deliberately keeps **live money movement behind a human-approval gate** and routes all autonomy through hard-coded constraints. An agent that places trades or moves funds entirely unattended is a liability, not a feature — this spec is built so Camel can be aggressive *inside the rails* and powerless *outside them*.
 
 ---
 
 ## 0. The one-sentence design
 
-**Noah is free to think, research, build, and propose autonomously — but every action that touches the Sharia gate, real capital, or the outside world passes through a constraint engine Noah cannot edit.** Hermes powers it, Paperclip orchestrates it, the Guardrail Constitution contains it, StockSense v11 is its investing conscience.
+**Camel is free to think, research, build, and propose autonomously — but every action that touches the Sharia gate, real capital, or the outside world passes through a constraint engine Camel cannot edit.** Hermes powers it, Paperclip orchestrates it, the Guardrail Constitution contains it, StockSense v11 is its investing conscience.
 
 ---
 
-## 1. What we already have vs. what Noah adds
+## 1. What we already have vs. what Camel adds
 
-| Capability | StockSense v11 (built) | Noah adds |
+| Capability | StockSense v11 (built) | Camel adds |
 |---|---|---|
 | Investing brain (Observe→Thesis→Act→Measure→Learn) | ✅ base-rate engine, invalidation discipline, research log | Runs the loop **autonomously** on a schedule |
 | Sharia gate | ✅ documented hard wall + scan | Turns it into **code that blocks actions** |
-| Tracker + dashboard | ✅ Excel + HTML | Becomes a **live service** Noah reads/writes |
-| Two operators | ⚠️ implicit (markets only) | **Trader Noah + AI Entrepreneur Noah** |
+| Tracker + dashboard | ✅ Excel + HTML | Becomes a **live service** Camel reads/writes |
+| Two operators | ⚠️ implicit (markets only) | **Trader Camel + AI Entrepreneur Camel** |
 | Capital | ⚠️ manual | **$10K fund** with a guardrailed allocator |
 | Memory / persistence | ⚠️ a doc you reload | **Always-on machine + database** |
 | Execution surface | ❌ none | GitHub / Supabase / Netlify / Playwright |
 
-**The honest gap:** v11 assumes *you* are in the loop. Noah removes you from the loop for everything *except* the three things that can actually hurt you — Sharia violations, losing money, and acting on the live internet. Those stay gated.
+**The honest gap:** v11 assumes *you* are in the loop. Camel removes you from the loop for everything *except* the three things that can actually hurt you — Sharia violations, losing money, and acting on the live internet. Those stay gated.
 
 ---
 
 ## 2. The Guardrail Constitution (Layer 0 — the part that makes autonomy safe)
 
-These are not prompts. They are **deterministic checks in code** that sit between Noah's intent and any real action. Noah proposes; the Constitution disposes. If a proposed action fails any check, it is **rejected and logged** — no override path exists in the agent.
+These are not prompts. They are **deterministic checks in code** that sit between Camel's intent and any real action. Camel proposes; the Constitution disposes. If a proposed action fails any check, it is **rejected and logged** — no override path exists in the agent.
 
 ### 2.1 The Sharia Gate, as code
-- **Universe whitelist.** Noah may only act on instruments/businesses on a pre-screened compliant list (seed: SPUS, HLAL, MNZL + any name that has passed a logged `SHARIA SCAN`). Anything off-list is auto-rejected at the *planning* stage, before capital is ever considered.
-- **Business-activity filter.** For *AI Entrepreneur Noah*, the business model itself is screened — no haram lines (conventional finance, alcohol, tobacco, gambling, pork, adult, weapons/defense). A coded keyword+classifier gate on the PRD.
+- **Universe whitelist.** Camel may only act on instruments/businesses on a pre-screened compliant list (seed: SPUS, HLAL, MNZL + any name that has passed a logged `SHARIA SCAN`). Anything off-list is auto-rejected at the *planning* stage, before capital is ever considered.
+- **Business-activity filter.** For *AI Entrepreneur Camel*, the business model itself is screened — no haram lines (conventional finance, alcohol, tobacco, gambling, pork, adult, weapons/defense). A coded keyword+classifier gate on the PRD.
 - **Ratio re-screen.** Quarterly job re-runs AAOIFI ratios (debt/mktcap <33%, cash+interest-sec/mktcap <33%, non-compliant income <5%); any name that drifts non-compliant is frozen and flagged.
 - **No interest, no leverage, no derivatives, no margin, no short-selling** — both a Sharia requirement and a risk control. Hard-blocked.
 
-### 2.2 Capital & risk limits (the numbers Noah cannot exceed)
+### 2.2 Capital & risk limits (the numbers Camel cannot exceed)
 
 | Guardrail | Limit (tunable) | Why |
 |---|---|---|
@@ -54,9 +54,9 @@ These are not prompts. They are **deterministic checks in code** that sit betwee
 | Invalidation point | **required** before any position opens | v11 rule #4, enforced |
 
 ### 2.3 The money-movement gate (the most important rule)
-- **Live trades and any fund withdrawal require human approval** until Noah has a logged track record (Phase 2+), and even then only **auto-execute inside the ≤$50/order envelope on whitelist names**. Everything larger queues for your one-tap approval via the remote channel.
-- Noah **prepares** the order (ticker, size, entry, invalidation, base-rate card) → you **approve/execute**. This is the defensible posture and the one I can support.
-- **Brokerage reality check:** Sahm (your current app) is whole-share retail with **no trading API** → Noah can't place orders there programmatically without fragile UI automation (Playwright), which you should *never* point at live orders unattended. For real Trader-Noah autonomy you'd need an **API broker that is also Sharia-workable** (e.g., Interactive Brokers / Alpaca with a self-imposed compliant whitelist). Treat this as a prerequisite decision, not a detail.
+- **Live trades and any fund withdrawal require human approval** until Camel has a logged track record (Phase 2+), and even then only **auto-execute inside the ≤$50/order envelope on whitelist names**. Everything larger queues for your one-tap approval via the remote channel.
+- Camel **prepares** the order (ticker, size, entry, invalidation, base-rate card) → you **approve/execute**. This is the defensible posture and the one I can support.
+- **Brokerage reality check:** Sahm (your current app) is whole-share retail with **no trading API** → Camel can't place orders there programmatically without fragile UI automation (Playwright), which you should *never* point at live orders unattended. For real Trader-Camel autonomy you'd need an **API broker that is also Sharia-workable** (e.g., Interactive Brokers / Alpaca with a self-imposed compliant whitelist). Treat this as a prerequisite decision, not a detail.
 
 ### 2.4 Kill switch & audit
 - **Founder kill switch** over Tailscale: one command halts the loop and flattens nothing automatically (no panic selling — v11 RED ALERT ethos) but stops new actions.
@@ -65,10 +65,10 @@ These are not prompts. They are **deterministic checks in code** that sit betwee
 
 ---
 
-## 3. Mapping the 6 Noah layers to our build
+## 3. Mapping the 6 Camel layers to our build
 
 ### Layer 1 — Intelligence (the brains)
-- **Codex** = builder (turns goals/PRDs into working code for Entrepreneur Noah).
+- **Codex** = builder (turns goals/PRDs into working code for Entrepreneur Camel).
 - **OpenAI/Claude API** = reasoning, the StockSense v11 *investment cortex* (base-rate engine, BOARDROOM debate, EARNINGS CHECK).
 - **PRD → /goal → build** is the spine for the Entrepreneur side. For the Trader side, the "PRD" is a **thesis card** (v11 §5) that must include sample size, hit rate, what's priced in, and an invalidation point.
 
@@ -79,17 +79,17 @@ These are not prompts. They are **deterministic checks in code** that sit betwee
 
 ### Layer 3 — Execution (where it ships)
 - **GitHub** (build/version), **Supabase** (state: positions, ledger, research log, whitelist), **Netlify** (deploy the v11 dashboard + any Entrepreneur products), **Cloudflare** (security/edge), **Tailscale** (private remote access), **Playwright** (web automation: data scraping, *not* live orders).
-- The v11 **HTML dashboard becomes the live UI**; the **Excel tracker logic moves into Supabase** so Noah reads/writes positions programmatically.
+- The v11 **HTML dashboard becomes the live UI**; the **Excel tracker logic moves into Supabase** so Camel reads/writes positions programmatically.
 
 ### Layer 4 — Capital ($10K fund)
-- One **$10K working-capital pool** Noah allocates between Trader and Entrepreneur — **but only within §2.2 limits**, and live trades gated per §2.3.
-- **No fixed buckets** (per the slide) is fine *only because* the Constitution caps concentration and per-order size. "Noah decides allocation" is safe when the decision space is pre-bounded.
-- **Differentiated read:** the **Entrepreneur side is the better place to let Noah run hot.** Building/deploying/selling AI tools has bounded downside (you lose build time + hosting $) and uncapped upside, with far less regulatory and ruin risk than autonomous trading. **Lead autonomy with Entrepreneur Noah; keep Trader Noah on a tight leash longer.**
+- One **$10K working-capital pool** Camel allocates between Trader and Entrepreneur — **but only within §2.2 limits**, and live trades gated per §2.3.
+- **No fixed buckets** (per the slide) is fine *only because* the Constitution caps concentration and per-order size. "Camel decides allocation" is safe when the decision space is pre-bounded.
+- **Differentiated read:** the **Entrepreneur side is the better place to let Camel run hot.** Building/deploying/selling AI tools has bounded downside (you lose build time + hosting $) and uncapped upside, with far less regulatory and ruin risk than autonomous trading. **Lead autonomy with Entrepreneur Camel; keep Trader Camel on a tight leash longer.**
 
 ### Layer 5 — Physical
 - **Windows PC (KSA) + 5G + Tailscale + founder laptop.** Good. The real work here is **security hardening**, because a remotely-accessible machine that controls money is a target: dedicated user, full-disk encryption, Tailscale ACLs + MFA, no inbound ports, secrets in a manager (never in code/chat — mirrors your EODHD-key rule), automatic patching, and a daily encrypted backup of the ledger off-box.
 
-### Layer 6 — The Noah Loop (with guardrail checkpoints)
+### Layer 6 — The Camel Loop (with guardrail checkpoints)
 ```
 1 Observe Signals      → data pulled per v11 §12 sources (EOD, triangulated)
 2 Form Thesis          → base-rate card REQUIRED (v11 §5)  ──┐
@@ -103,9 +103,9 @@ Each arrow into step 4 passes through the Constitution. That is the whole safety
 
 ---
 
-## 4. Trader Noah vs AI Entrepreneur Noah
+## 4. Trader Camel vs AI Entrepreneur Camel
 
-| | Trader Noah | AI Entrepreneur Noah |
+| | Trader Camel | AI Entrepreneur Camel |
 |---|---|---|
 | Job | Trade compliant markets, seek asymmetric setups | Build/launch/sell scalable AI products |
 | Sharia screen | Instrument whitelist (§2.1) | Business-model screen (§2.1) |
@@ -118,11 +118,11 @@ Each arrow into step 4 passes through the Constitution. That is the whole safety
 
 ## 5. Phased rollout — the safe path to "auto within guardrails"
 
-**Phase 0 — Paper / dry run (4–8 weeks).** Full loop, **zero live money.** Noah observes, forms thesis cards, chooses paths, *simulates* trades, builds one real Entrepreneur product. Goal: prove the Constitution rejects every bad action. Exit criteria: 0 guardrail breaches, every position had an invalidation point, ledger reconciles.
+**Phase 0 — Paper / dry run (4–8 weeks).** Full loop, **zero live money.** Camel observes, forms thesis cards, chooses paths, *simulates* trades, builds one real Entrepreneur product. Goal: prove the Constitution rejects every bad action. Exit criteria: 0 guardrail breaches, every position had an invalidation point, ledger reconciles.
 
 **Phase 1 — Micro-live, human-approved (4+ weeks).** Real but tiny ($100–500). **Every trade you approve.** Entrepreneur side may auto-deploy within a small hosting budget. Build the approval channel (push notification → one-tap approve/veto).
 
-**Phase 2 — Guardrailed auto (gated).** Auto-execute trades **only**: on the whitelist, ≤ per-order envelope, within all §2.2 limits, with daily loss stop live. You get notified and can veto within a window. Entrepreneur Noah runs largely autonomously.
+**Phase 2 — Guardrailed auto (gated).** Auto-execute trades **only**: on the whitelist, ≤ per-order envelope, within all §2.2 limits, with daily loss stop live. You get notified and can veto within a window. Entrepreneur Camel runs largely autonomously.
 
 **Phase 3 — Scale the envelope.** Raise per-order/position limits *only* as the logged base-rate track record justifies it. Autonomy is **earned by evidence**, never granted by default.
 
@@ -130,7 +130,7 @@ Each arrow into step 4 passes through the Constitution. That is the whole safety
 
 ## 6. Prerequisites & open decisions (yours to make)
 
-1. **Broker with an API + your Sharia stance** — Sahm has no API. Pick the execution venue before Trader Noah can be more than paper. *(decision)*
+1. **Broker with an API + your Sharia stance** — Sahm has no API. Pick the execution venue before Trader Camel can be more than paper. *(decision)*
 2. **Sharia authority for the coded gate** — which standard/screener is canonical (AAOIFI via Musaffa/Zoya), and who signs off on the whitelist. *(decision)*
 3. **Legal/regulatory** — automated trading and running a revenue business from KSA have compliance implications; worth a professional check before live capital. *(flag — not advice)*
 4. **Secrets & security owner** — who holds the keys, where they live, MFA on everything. *(decision)*
@@ -151,11 +151,11 @@ Each arrow into step 4 passes through the Constitution. That is the whole safety
 ---
 
 ## 8. Naming & identity
-The post calls it Noah ("two operators, one learning system"). Your instance can keep Noah as the operator and **StockSense v11 as its investing conscience / Sharia auditor**. Hermes = the body, Paperclip = the manager, the Constitution = the law, Noah = the will.
+The post calls it Camel ("two operators, one learning system"). Your instance can keep Camel as the operator and **StockSense v11 as its investing conscience / Sharia auditor**. Hermes = the body, Paperclip = the manager, the Constitution = the law, Camel = the will.
 
 ---
 
-## 9. Broker decision — the Trader-Noah execution venue *(refined with June 2026 facts)*
+## 9. Broker decision — the Trader-Camel execution venue *(refined with June 2026 facts)*
 
 The Sahm blocker is real, but the path around it is clearer than expected. Two API brokers are reachable from KSA, and one of them solves Phase 0 for free.
 
@@ -180,7 +180,7 @@ The Sahm blocker is real, but the path around it is clearer than expected. Two A
 
 A remotely-accessible box that touches capital is a target. Minimum bar before any live phase:
 
-- **Identity & access:** dedicated non-admin OS user for Noah; Tailscale ACLs locked to your devices only; **MFA on every account** (broker, OpenAI, Supabase, GitHub, email); no inbound ports open to the public internet.
+- **Identity & access:** dedicated non-admin OS user for Camel; Tailscale ACLs locked to your devices only; **MFA on every account** (broker, OpenAI, Supabase, GitHub, email); no inbound ports open to the public internet.
 - **Secrets:** broker keys + API keys in a secrets manager (or at minimum an encrypted `.env` outside the repo) — **never in code, never in chat, never in the knowledge doc** (mirrors your EODHD-key rule). Rotate quarterly.
 - **Machine:** full-disk encryption (BitLocker), automatic security updates, firewall on, screen-lock.
 - **Broker-side blast radius:** use API keys scoped to **trading only — withdrawals disabled at the broker.** Even a fully compromised key then cannot move money *out*, only trade within the Constitution.
@@ -191,7 +191,7 @@ A remotely-accessible box that touches capital is a target. Minimum bar before a
 
 ## 11. KSA legal & regulatory flags *(flag, not advice — verify with a professional)*
 
-- **Personal vs. service is the key line.** Automating *your own* account is materially different from *offering* automated/robo-advisory to others. In **March 2026 the Saudi CMA approved a robo-advisory framework** — but it governs **licensed Capital Market Institutions offering the service to clients** (algorithm testing ≥10 days pre-launch, risk disclosures, diversification rules). If Noah ever manages money for anyone but you, that framework — and licensing — is in scope.
+- **Personal vs. service is the key line.** Automating *your own* account is materially different from *offering* automated/robo-advisory to others. In **March 2026 the Saudi CMA approved a robo-advisory framework** — but it governs **licensed Capital Market Institutions offering the service to clients** (algorithm testing ≥10 days pre-launch, risk disclosures, diversification rules). If Camel ever manages money for anyone but you, that framework — and licensing — is in scope.
 - **Foreign-securities rule worth noting:** the CMA framework expects securities listed outside KSA to be supervised by a regulator of *equivalent* standard (US SEC qualifies) — relevant if you scale.
 - **Diversification echo:** the CMA's own eligibility rule excludes portfolios *concentrated in a single asset* — which independently validates the Constitution's position/sector caps (§2.2).
 - **The Entrepreneur side** (running a revenue-generating online business from KSA) has its own commercial-registration/tax considerations separate from securities law.
@@ -227,4 +227,4 @@ A remotely-accessible box that touches capital is a target. Minimum bar before a
 
 ---
 
-*Noah × StockSense v11 · Build Spec v0.2 · Educational/engineering decision support — not financial, legal, or Sharia advice. Live money stays behind a human gate until evidence says otherwise.*
+*Camel × StockSense v11 · Build Spec v0.2 · Educational/engineering decision support — not financial, legal, or Sharia advice. Live money stays behind a human gate until evidence says otherwise.*
