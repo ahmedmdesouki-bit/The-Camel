@@ -70,7 +70,8 @@ def test_strict_passes_on_placeholders():
     assert enforce_startup({"ALPACA_API_KEY": "your_paper_key"}, strict=True) == []
 
 def test_warn_only_returns_offenders():
-    offenders = enforce_startup({"OPENAI_API_KEY": "sk-realkey1234567890"}, strict=False)
+    # a non-placeholder value (not shaped like a real key, to avoid the secrets-leak scanner)
+    offenders = enforce_startup({"OPENAI_API_KEY": "redacted-openai-keyvalue"}, strict=False)
     assert "OPENAI_API_KEY" in offenders
 
 def test_get_secret_env_fallback(monkeypatch):
