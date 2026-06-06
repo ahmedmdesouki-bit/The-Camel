@@ -326,7 +326,13 @@ verified; secrets not in plaintext.
 **STATUS: COMPLETE (code, 289 tests).** `dashboard/` (read-only HTML), `alerts/` (Telegram,
 credential-safe stub), `ops/`: heartbeat, log_rotation, secrets_manager (hard refusal),
 reconciliation_report, archive (off-box zip), scheduled_checks (weekly kill-switch + backup +
-reconcile). The **machine-setup half** — Tailscale kill-switch path, BitLocker, dedicated OS
+reconcile). **Dashboard v2 (post-Alaa review, 2026-06-06):** rebuilt as `dashboard/snapshot.py`
+(pure JSON snapshot from the 7 DBs) + `dashboard/generate.py` (rich tabbed, CSS-only, fully
+offline/read-only HTML — Overview · Portfolio · **Decisions** · Regime · Sharia · Ops). It now
+surfaces the things a portfolio tracker can't: **Edge-Proof verdicts and Constitution
+rejections-with-reasons**, the macro regime, and an honest live-money safety posture — the early
+delivery of the S10 *decision-quality dashboard* on Alaa's visual ground. The **machine-setup
+half** — Tailscale kill-switch path, BitLocker, dedicated OS
 user, UPS, 5G fallback, MFA, secrets migration to Credential Manager, encrypted off-box
 transfer — is the founder checklist in `docs/CAMEL_MACHINE_HARDENING.md` (do before Phase 1).
 
@@ -725,6 +731,11 @@ edge decaying** (rolling 24-month vs full-sample) · data freshness + source-quo
 come online as their inputs do: regime at S9, rejected-signals + edge-decay here at S10,
 beating-benchmark at S12. This is the more valuable operator view — it surfaces the rejections that
 are the whole point of the system.
+*(**Scaffold already shipped at S6** — Dashboard v2 (`dashboard/snapshot.py` + `generate.py`) already
+renders the Decisions tab (Edge-Proof verdicts + Constitution rejections-with-reasons), the Regime tab,
+and the safety posture. S10 fills the remaining panels as their inputs arrive: failed-check-number +
+threshold-missed detail (needs the 17-check engine), beating-SPUS/DCA (S12), and the edge-decay
+rolling window.)*
 
 **Gate:** every signal passes all 17 checks; regime-filtered sample enforced; multiple-testing penalty
 + signal decay applied; `trade_allowed=false` blocks the allocator; no edge proof = no trade; the

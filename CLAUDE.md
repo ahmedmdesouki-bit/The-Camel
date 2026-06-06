@@ -133,6 +133,11 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   feature builder, vintage look-ahead, connector date-fabrication, BLS month-13, unguarded floats,
   register_asset un-delist, beginner-mode rail coverage, sanitiser whitespace bypass — each with a
   regression test (`tests/test_qa_hardening.py`). → **419 passed**. (Broker write-atomicity deferred to S12.)
+- **Dashboard v2** (post-Alaa cross-build review): rebuilt `dashboard/` as `snapshot.py` (pure JSON snapshot
+  from the 7 DBs) + `generate.py` (rich, tabbed, **CSS-only / zero-JS**, fully offline & read-only HTML).
+  Adds the panels a portfolio tracker lacks — **Edge-Proof verdicts + Constitution rejections-with-reasons**,
+  macro regime, and an honest live-money safety posture. Early slice of the S10 decision-quality dashboard,
+  on Alaa's visual ground but re-pointed at our governed state. `tests/test_dashboard_snapshot.py`. → **426 passed**.
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -246,6 +251,10 @@ trader/regime/    features.py (macro features from macro_observations), classifi
 capital/          allocator.py — Allocator.request() routes through Constitution
 
 ops/              kill_switch.py — halt / resume / is_halted (file flag)
+
+dashboard/        snapshot.py — pure JSON snapshot from the 7 DBs (positions, edge decisions,
+                  guardrail rejections-with-reasons, regime, safety posture) — read-only, offline
+                  generate.py — rich tabbed CSS-only HTML renderer (build_dashboard_html / write_dashboard)
 
 db/schema.sql     Postgres/Supabase schema (Phase 1+ migration target)
 tests/            test_guardrail.py, test_sharia.py, test_data.py,
