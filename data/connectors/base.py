@@ -74,6 +74,13 @@ class SourceConnector:
     def parse_json(raw: str) -> dict:
         return json.loads(raw)
 
+    @staticmethod
+    def parse_csv(raw: str) -> list:
+        """Parse CSV text into a list of dict rows (stdlib; no pandas dependency)."""
+        import csv
+        import io
+        return list(csv.DictReader(io.StringIO(raw)))
+
     def _stamp(self, rec: dict, raw: str, url: str, now: str) -> dict:
         r = dict(rec)
         r["event_date"] = r.get("event_date") or now

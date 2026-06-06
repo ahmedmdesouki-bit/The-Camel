@@ -5,7 +5,7 @@
 > reading anything else. Repo links are provided if you want to go deeper.
 >
 > **Snapshot date:** 2026-06-06 · **Repo:** https://github.com/ahmedmdesouki-bit/The-Camel
-> (branch `main`) · **Status:** Sprints S1–S7 complete, S8 in progress (slice 1) · 384 tests green ·
+> (branch `main`) · **Status:** Sprints S1–S7 complete, S8 in progress (slice 1) · 389 tests green ·
 > paper-mode only · on Roadmap v3 (S1–S14).
 
 > ⚠️ **What this is:** a personal, educational, decision-support / engineering project for the
@@ -182,7 +182,7 @@ Learning Ledger, an append-only op log, and a GREEN/YELLOW/RED/BLACK health moni
 
 ---
 
-## 7. What's built — Phase 0, 384 tests green
+## 7. What's built — Phase 0, 389 tests green
 
 The **safety and evidence core is done.** Everything below runs in paper/simulation behind a human gate.
 

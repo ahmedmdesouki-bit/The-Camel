@@ -7,7 +7,11 @@
 
 ## 2026-06-06
 
-**Sprint 8 (Data Intelligence Backbone) — slices 1–4 — 352 → 384 tests green.** The long pole begins.
+**Sprint 8 (Data Intelligence Backbone) — slices 1–5 — 352 → 389 tests green.** The long pole begins.
+*Slice 5:* `data/connectors/etf_holdings.py` — Sharia-ETF issuer holdings (SPUS/HLAL/MNZL) from CSV →
+`camel_sharia.db.etf_holdings`, so the portfolio can look *through* an ETF to its single-name exposure
+(feeds S9). Header-tolerant (case/space-insensitive alias matching across issuer layouts); `parse_csv`
+added to the connector base (stdlib `csv`, no pandas). **10 connectors live.**
 *Slice 4:* `bea.py` (BEA GDP/income) + `eia.py` (EIA energy) → macro_observations; `acled.py` (armed
 conflict / protests) → news_events as structured events built only from `event_type`+`country` (free-text
 `notes` never stored). **9 connectors live** (FRED, SEC, Treasury, World Bank, BLS, GDELT, BEA, EIA, ACLED).
