@@ -334,6 +334,16 @@ Cheap, real tightening surfaced by the stress-test:
 **Gate:** phantom sell blocked; frozen-name buy blocked but close-only allowed; buy without an
 EdgeReport rejected; no $1 fallback in any non-test path.
 
+**STATUS: COMPLETE (289 → 309 tests).** Phantom-sell + oversell guard and close-only/reduce-only
+exits for frozen/non-compliant holdings in `guardrail/constitution.py`; `Allocator.request` now
+defaults `require_edge` to True for buy/increase and False for sell/non-trade
+(`capital/allocator.py`); `PaperBroker(allow_fallback_price=False)` is the default and raises
+`NoMarketPriceError` rather than fabricating a $1 fill, with fallback fills stamped
+`fill_model="fallback_dollar"`. New gate suite `tests/test_s6_5_safety.py`. *(Note: a precise
+share-level phantom check at the broker arrives with realistic execution in S12; S6.5 uses the
+deterministic value-based guard in the Constitution, which covers both the allocator and the
+direct-`evaluate` loop path.)*
+
 ---
 
 ### S7 — Entrepreneur Product Engine  (MOVED EARLIER — cash flow first)

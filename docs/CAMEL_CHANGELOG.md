@@ -7,6 +7,29 @@
 
 ## 2026-06-06
 
+**Sprint 6.5 (Safety & Accounting Hotfix) COMPLETE — 289 → 309 tests green.** First code sprint
+of Roadmap v3.
+- `guardrail/constitution.py` — **phantom-sell guard** (reject a sell with no holdings →
+  `no_holdings`, or a sell exceeding held value → `oversell`) and **close-only/reduce-only exits**:
+  a frozen or non-compliant holding may now be SOLD to de-risk but never bought/increased (frozen/
+  non-compliant *buys* still reject). Off-whitelist names are rejected on both sides.
+- `capital/allocator.py` — `require_edge` now defaults to `None`, resolving to **True for a market
+  buy/increase and False for a reduce-only/close (sell) or non-trade action**. Opening a position
+  needs proven edge; de-risking does not.
+- `broker/paper.py` — the legacy **$1 fallback price is refused by default**: `submit` raises
+  `NoMarketPriceError` when no validated close exists. Unit tests opt in via
+  `allow_fallback_price=True`, and such fills are stamped `fill_model="fallback_dollar"` so no
+  performance number can come from a fabricated fill.
+- New gate suite `tests/test_s6_5_safety.py`; existing allocator/broker/guardrail tests updated for
+  the tightened defaults (Constitution-isolation calls pass `require_edge=False`).
+- Deferred to S12 by dependency: a precise *share-level* phantom check at the broker (arrives with
+  realistic execution). S6.5 uses the deterministic value-based guard in the Constitution, which
+  covers both the allocator path and the direct-`evaluate` loop path.
+
+---
+
+## 2026-06-06
+
 **Roadmap v3 — research-driven restructure (docs-only; no code change).**
 Folded two approved feedback documents (Power Maximization Proposal v2 + a data-source deep-research
 report) into the canonical roadmap. Founder decisions adopted in full:

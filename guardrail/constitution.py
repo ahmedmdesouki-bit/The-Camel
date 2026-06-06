@@ -192,19 +192,34 @@ class Constitution:
             if not L["allow_leverage"] and a.leverage > 1.0:
                 return Decision(False, "Leverage is prohibited.", "no_leverage")
 
-            # 2. Sharia whitelist gate
+            # 2. must be a name we manage (on the whitelist) — even to sell it
             inst = s.whitelist.get(a.symbol or "")
             if inst is None or not inst.on_whitelist:
                 return Decision(False, f"{a.symbol} is not on the compliant whitelist.", "off_whitelist")
-            if inst.frozen:
-                return Decision(False, f"{a.symbol} is frozen (compliance drift).", "frozen")
-            if inst.sharia_status != "compliant":
-                return Decision(False, f"{a.symbol} is not Sharia-compliant.", "not_compliant")
 
-            # selling to close a compliant position is always allowed past this point
-            if a.side.lower() == "sell":
-                return Decision(True, f"Sell/close {a.symbol} allowed.")
+            is_sell = a.side.lower() == "sell"
 
+            # 2b. close-only / reduce-only for frozen or non-compliant holdings (S6.5):
+            #     a frozen or drifted name may be SOLD to de-risk — never bought or increased.
+            if inst.frozen or inst.sharia_status != "compliant":
+                if not is_sell:
+                    if inst.frozen:
+                        return Decision(False, f"{a.symbol} is frozen (compliance drift) — close-only.", "frozen")
+                    return Decision(False, f"{a.symbol} is not Sharia-compliant — close-only.", "not_compliant")
+                # is_sell → de-risking exit is permitted; fall through to the phantom-sell guard.
+
+            # 2c. phantom-sell guard (S6.5): cannot sell what is not held; cannot oversell.
+            #     PortfolioState.positions holds market value per symbol. A precise
+            #     share-level check arrives with realistic execution in S12.
+            if is_sell:
+                held = s.positions.get(a.symbol or "", 0.0)
+                if held <= 0:
+                    return Decision(False, f"No {a.symbol} position to sell.", "no_holdings")
+                if a.notional_usd > held * (1 + 1e-6):
+                    return Decision(False, f"Sell exceeds held {a.symbol} value.", "oversell")
+                return Decision(True, f"Sell/close {a.symbol} allowed (reduce-only).")
+
+            # ---- buy / increase path (compliant, non-frozen) ----
             # 3. invalidation point required before opening/increasing
             if a.thesis is None or not a.thesis.complete():
                 return Decision(False, "No position without a written invalidation/profit-take/time-stop.", "no_invalidation")

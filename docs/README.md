@@ -12,8 +12,8 @@ defining principle is an **inversion of trust**: the LLM only *proposes*; a dete
 > **LLM proposes. Math tests. Guardrails decide. Humans approve what's risky. Autonomy is earned, not granted.**
 > **Safety first. Evidence second. Autonomy last.**
 
-**Status:** Phase 0 (paper) · Sprints **S1–S6 complete** · **289 tests green** · 7-DB architecture live ·
-on **Roadmap v3** (S1–S14), next **S6.5**.
+**Status:** Phase 0 (paper) · Sprints **S1–S6.5 complete** · **309 tests green** · 7-DB architecture live ·
+on **Roadmap v3** (S1–S14), next **S7** (Entrepreneur).
 
 ---
 

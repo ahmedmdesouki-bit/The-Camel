@@ -1,10 +1,10 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S6 complete** · **289 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S6.5 complete** · **309 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
-(S1–S14) · **Next: S6.5** (safety & accounting hotfix → then S7 Entrepreneur, S8 Data Backbone)
+(S1–S14) · **Next: S7** (Entrepreneur Product Engine → then S8 Data Backbone)
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's

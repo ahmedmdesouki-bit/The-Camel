@@ -111,9 +111,23 @@ def test_allocator_allows_passing_edge_report():
     r = Allocator().request(_buy(), _state(), edge_report=strong)
     assert r.approved
 
-def test_allocator_backward_compatible_without_edge():
-    # no edge_report and require_edge False → S3 behaviour preserved (Constitution-only)
-    assert Allocator().request(_buy(), _state()).approved
+def test_allocator_requires_edge_for_buys_by_default():
+    # S6.5: a market buy with no EdgeReport is now blocked by default
+    r = Allocator().request(_buy(), _state())
+    assert not r.approved and r.decision.limit_hit == "no_edge_proof"
+
+def test_allocator_constitution_only_when_edge_explicitly_not_required():
+    # explicit override still isolates the Constitution path (pre-S6.5 behaviour)
+    assert Allocator().request(_buy(), _state(), require_edge=False).approved
+
+def test_allocator_sell_is_exempt_from_edge_requirement():
+    # S6.5: reduce-only/close (sell) needs no Edge Proof — de-risking is always permitted
+    wl = {"SPUS": Instrument("SPUS", "Diversified", "compliant", on_whitelist=True)}
+    state = PortfolioState(fund_usd=10_000, cash_usd=5_000, whitelist=wl,
+                           positions={"SPUS": 1000.0})
+    sell = Action(type=ActionType.TRADE, symbol="SPUS", side="sell", notional_usd=400,
+                  instrument_type="etf", mode="paper")
+    assert Allocator().request(sell, state).approved   # no edge_report, default require_edge
 
 # adversarial #9 — a strategy signal with no Edge Proof is blocked
 def test_adv_signal_without_edge_proof_blocked():

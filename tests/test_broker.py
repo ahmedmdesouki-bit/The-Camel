@@ -13,7 +13,8 @@ from guardrail.constitution import (
 
 @pytest.fixture
 def broker(dbs):
-    return PaperBroker(dbs.portfolio, dbs.market)
+    # unit tests may fill without seeding a price → opt into the $1 fallback (S6.5)
+    return PaperBroker(dbs.portfolio, dbs.market, allow_fallback_price=True)
 
 @pytest.fixture
 def portfolio_db(dbs):
@@ -46,6 +47,7 @@ def test_paper_broker_fills_at_fallback_price(broker):
     assert fill.symbol == "SPUS"
     assert fill.fill_price == pytest.approx(1.0)
     assert fill.qty == pytest.approx(500.0)
+    assert fill.fill_model == "fallback_dollar"   # S6.5: fallback fills are stamped distinctly
 
 def test_paper_broker_fills_at_last_close(dbs):
     store_price(dbs.market, dict(symbol="SPUS", date="2026-06-04",
@@ -114,6 +116,27 @@ def test_auto_client_order_id_is_unique(broker):
     assert f1.client_order_id and f2.client_order_id
     assert f1.client_order_id != f2.client_order_id
 
-def test_fill_carries_realism_marker(broker):
+def test_fill_carries_realism_marker(dbs):
+    # a real last-close fill is still flagged as simulated (paper, not real execution)
+    store_price(dbs.market, dict(symbol="SPUS", date="2026-06-04", open=50.0, high=51.0,
+                                 low=49.5, close=50.0, volume=100_000, adj_close=50.0),
+                source="alpaca")
+    broker = PaperBroker(dbs.portfolio, dbs.market)
     f = broker.submit(buy_action(), good_decision())
     assert f.execution_quality == "simulated_unrealistic" and f.fill_model == "last_close"
+
+
+# ---------------- S6.5: no fabricated fill prices in production ----------------
+
+def test_paper_broker_refuses_fallback_by_default(dbs):
+    from broker.paper import NoMarketPriceError
+    # production default: no price data → refuse to fill at a fabricated price
+    broker = PaperBroker(dbs.portfolio, dbs.market)   # allow_fallback_price defaults False
+    with pytest.raises(NoMarketPriceError):
+        broker.submit(buy_action(), good_decision())
+
+def test_fallback_fill_is_stamped(broker):
+    # opted-in fallback (unit tests only) must be stamped so it can never count as real
+    f = broker.submit(buy_action(), good_decision())
+    assert f.fill_model == "fallback_dollar"
+    assert f.execution_quality == "simulated_unrealistic"

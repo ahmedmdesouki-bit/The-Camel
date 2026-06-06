@@ -5,8 +5,12 @@ Takes two DB paths:
   portfolio_db  orders + ledger writes
   market_db     last close price lookup
 
-Fills at the last known close price (fallback $1 when no price data).
-Every fill writes to orders + ledger; no real money moves.
+Fills at the last known close price. The legacy $1 fallback is now refused by default
+(S6.5): with no price data, `submit` raises NoMarketPriceError instead of inventing a
+price — so no performance number can ever come from a fabricated fill. The fallback is
+available only when a caller explicitly opts in (`allow_fallback_price=True`, unit tests
+only), and such fills are stamped `fill_model="fallback_dollar"` so they are never mistaken
+for real execution. Every fill writes to orders + ledger; no real money moves.
 
 Cash convention (matches ledger/writer.py): a BUY records a NEGATIVE ledger amount
 (cash leaves the fund to buy shares); a SELL records a POSITIVE amount (cash returns).
@@ -26,6 +30,15 @@ from ledger.writer import append_entry
 
 class DuplicateOrderException(Exception):
     """Raised when an order with the same client_order_id was already submitted (idempotency)."""
+
+
+class NoMarketPriceError(RuntimeError):
+    """Raised (S6.5) when no validated close price exists and the $1 fallback is not allowed.
+
+    Refusing to fill at a fabricated price is the point: a performance number must never come
+    from a fallback fill. Unit tests that need a fill without seeding a price opt in via
+    `PaperBroker(..., allow_fallback_price=True)`.
+    """
 
 
 def _order_exists(portfolio_db: str, client_order_id: str) -> bool:
@@ -99,9 +112,12 @@ class Fill:
 class PaperBroker:
     """Phase-0 simulated broker — no real capital."""
 
-    def __init__(self, portfolio_db: str, market_db: str):
+    def __init__(self, portfolio_db: str, market_db: str,
+                 allow_fallback_price: bool = False):
         self.portfolio_db = portfolio_db
         self.market_db = market_db
+        # S6.5: production refuses the $1 fallback; only unit tests opt in.
+        self.allow_fallback_price = allow_fallback_price
         _ensure_orders_table(portfolio_db)
 
     def submit(self, action: Action, decision: Decision,
@@ -120,7 +136,18 @@ class PaperBroker:
 
         symbol = action.symbol or ""
         notional = action.notional_usd
-        fill_price = _last_close(self.market_db, symbol) or 1.0
+
+        close = _last_close(self.market_db, symbol)
+        if close is not None:
+            fill_price, fill_model = close, "last_close"
+        elif self.allow_fallback_price:
+            # unit-test-only path — clearly stamped so it can never count as real execution
+            fill_price, fill_model = 1.0, "fallback_dollar"
+        else:
+            raise NoMarketPriceError(
+                f"No validated close price for {symbol!r}; refusing to fill at a fabricated "
+                f"price (pass allow_fallback_price=True in tests to override)."
+            )
         qty = notional / fill_price if fill_price else 0.0
         now = datetime.now(timezone.utc).isoformat()
 
@@ -142,6 +169,7 @@ class PaperBroker:
         return Fill(
             order_id=order_id, symbol=symbol, side=action.side,
             qty=qty, fill_price=fill_price, notional=notional, client_order_id=coid,
+            fill_model=fill_model,
         )
 
     def paper_balance(self) -> float:

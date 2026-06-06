@@ -44,8 +44,50 @@ def test_clean_paper_buy_allowed(C):
     assert C.evaluate(buy(), base_state()).allow
 
 def test_sell_to_close_allowed_without_thesis(C):
-    assert C.evaluate(buy(side="sell", thesis=None)).allow if False else \
-        C.evaluate(buy(side="sell", thesis=None), base_state()).allow
+    # selling a held compliant position needs no thesis (S6.5: but it must be held)
+    s = base_state(positions={"SPUS": 1000.0})
+    assert C.evaluate(buy(side="sell", thesis=None), s).allow
+
+# ---------------- S6.5 accounting safety: phantom sells + close-only exits ----------------
+
+def test_phantom_sell_rejected_when_nothing_held(C):
+    # selling a name with no position is blocked (cannot sell what you don't hold)
+    d = C.evaluate(buy(side="sell", thesis=None), base_state())
+    assert not d.allow and d.limit_hit == "no_holdings"
+
+def test_oversell_rejected(C):
+    # selling more value than is held is blocked
+    s = base_state(positions={"SPUS": 300.0})
+    d = C.evaluate(buy(side="sell", notional_usd=500.0, thesis=None), s)
+    assert not d.allow and d.limit_hit == "oversell"
+
+def test_sell_within_holdings_allowed(C):
+    s = base_state(positions={"SPUS": 1000.0})
+    assert C.evaluate(buy(side="sell", notional_usd=400.0, thesis=None), s).allow
+
+def test_frozen_name_can_be_sold_to_derisk(C):
+    # close-only: a frozen holding may be SOLD (de-risk) even though it can't be bought
+    s = base_state(positions={"FROZEN": 800.0})
+    assert C.evaluate(buy(symbol="FROZEN", side="sell", thesis=None), s).allow
+
+def test_frozen_name_cannot_be_bought(C):
+    d = C.evaluate(buy(symbol="FROZEN"), base_state())
+    assert not d.allow and d.limit_hit == "frozen"
+
+def test_non_compliant_name_can_be_sold_to_derisk(C):
+    s = base_state(positions={"BADCOMP": 800.0})
+    assert C.evaluate(buy(symbol="BADCOMP", side="sell", thesis=None), s).allow
+
+def test_non_compliant_name_cannot_be_bought(C):
+    d = C.evaluate(buy(symbol="BADCOMP"), base_state())
+    assert not d.allow and d.limit_hit == "not_compliant"
+
+def test_off_whitelist_cannot_even_be_sold(C):
+    # we only manage names we know — an unknown ticker is rejected on both sides
+    s = base_state(positions={"TSLA": 800.0})
+    d = C.evaluate(buy(symbol="TSLA", side="sell", thesis=None), s)
+    assert not d.allow and d.limit_hit == "off_whitelist"
+
 
 # ---------------- ROGUE-ACTION SUITE (all must be rejected) ----------------
 ROGUE = {

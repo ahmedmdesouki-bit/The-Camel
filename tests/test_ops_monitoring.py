@@ -132,5 +132,5 @@ def _buy():
 
 def test_daily_loss_stop_simulation_halts_trading():
     # simulate a -6% day → the allocator must reject via the Constitution circuit breaker
-    r = Allocator().request(_buy(), _state(day_pnl_pct=-0.06))
+    r = Allocator().request(_buy(), _state(day_pnl_pct=-0.06), require_edge=False)
     assert not r.approved and r.decision.limit_hit == "daily_loss_stop"
