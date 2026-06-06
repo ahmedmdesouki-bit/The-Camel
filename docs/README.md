@@ -35,6 +35,9 @@ the others point here rather than copy. This is the rule that keeps the docs fro
 | **`CAMEL_LIVE_READINESS.md`** | Phase 1 go-live checklist | Founder | The pre-live gate |
 | **`CAMEL_BROKER_MATRIX.md`** | Broker comparison + resolved direction | Founder, builder | The broker decision |
 | **`CAMEL_DATA_SOURCES.md`** | Verified data-feed catalogue + connector build-list | Founder, builder | Which data feeds, in what order |
+| **`CAMEL_MACHINE_HARDENING.md`** | S6 founder machine-setup checklist (Tailscale, BitLocker, secrets, backups) | Founder | The machine hardening checklist |
+| **`CAMEL_ALAA_REVIEW.md`** | Review of Alaa's parallel Camel (founder-facing layer) + adopt/decline + sprint mapping | Builder, founder | What we took from Alaa's build |
+| **`CAMEL_CONSULTANT_HANDOFF.md`** (root) | Self-contained snapshot for an external reviewer | Outside consultant | One-doc project briefing |
 | **`CAMEL_CHANGELOG.md`** | Sprint-by-sprint history | Everyone | What happened when |
 
 **Authoritative code beats docs.** Where a doc describes a rule, the implementation

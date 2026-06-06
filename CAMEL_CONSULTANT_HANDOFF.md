@@ -154,9 +154,9 @@ needs it). Each domain owns its file:
 | DB | Owner | Content | State |
 |---|---|---|---|
 | `camel_market.db` | `data/` | prices, dividends, splits | **live** |
-| `camel_macro.db` | (S8) | rates, yield curve, GDP, CPI | **stub → S8** |
-| `camel_fundamentals.db` | (S8) | revenue, margins, EPS, FCF, debt | **stub → S8** |
-| `camel_news.db` | (S8) | structured event objects (never raw text) | **stub → S8** |
+| `camel_macro.db` | `data/connectors/` (S8) | rates, yield curve, GDP, CPI, regime_history | **Live (real data)** |
+| `camel_fundamentals.db` | `data/connectors/` (S8) | company_facts, assets, valuation, ETF holdings | **Live (real data)** |
+| `camel_news.db` | `data/connectors/` (S8) | structured event objects (never raw text) | **Live (real data)** |
 | `camel_sharia.db` | `sharia/` | whitelist (versioned), sharia_events | **live** |
 | `camel_portfolio.db` | `broker/ ledger/ loop/` | orders, positions, ledger, runs | **live** |
 | `camel_learning.db` | learning | decisions, outcomes, mistakes, lessons | **live** |
@@ -214,7 +214,7 @@ tampering; a malicious symbol is HTML-escaped in the dashboard, not injected; a 
 ## 8. Tech stack
 
 - **Language:** Python 3.12. `guardrail/` and `engine/` are kept pure (no I/O) for unit-testability.
-- **Tests:** pytest — 289 passing. Adversarial + integration suites included.
+- **Tests:** pytest — 440 passing. Adversarial + integration suites included.
 - **Data layer:** SQLite × 7 (Phase 0). Postgres/Supabase schema staged for later migration.
 - **Market data / broker:** Alpaca paper (free IEX feed); yfinance for quick prototypes.
 - **Harness:** a plain Python loop today (Claude Agent SDK adoption deferred until real tool-use
@@ -247,8 +247,8 @@ ops/           kill_switch / heartbeat / backup / secrets_manager / scheduled_ch
 dashboard/     read-only HTML view
 alerts/        telegram / daily report
 db/            CamelDbs (7-DB paths) + per-domain DDL
-tests/         21 test files, 289 tests
-docs/          the documentation set (see §13)
+tests/         25+ test files, 440 tests
+docs/          the documentation set (see §15)
 ```
 
 ---
@@ -264,7 +264,7 @@ cash-flow (Entrepreneur) arm earlier.** Optimize for *evidence density, not feat
 
 | Sprint | Theme | One-line goal |
 |---|---|---|
-| **S8** *(in progress — slice 1 done)* | Data Intelligence Backbone | `SourceConnector` framework + **top-20 connectors** (SEC EDGAR/XBRL, FRED + ALFRED vintage, World Bank, GDELT, BLS, BEA, Treasury, EIA, ACLED, OFAC, ETF holdings, …), full provenance + point-in-time, recorded-fixture tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); fills the stub DBs |
+| **S8** *(core done — slices 1–5; rest deferred)* | Data Intelligence Backbone | `SourceConnector` framework + **top-20 connectors** (SEC EDGAR/XBRL, FRED + ALFRED vintage, World Bank, GDELT, BLS, BEA, Treasury, EIA, ACLED, OFAC, ETF holdings, …), full provenance + point-in-time, recorded-fixture tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); fills the stub DBs |
 | **S8.5** *(founder)* | Real-Time Data Tier | Streaming quotes + live-news + real-time monitor/alerts → separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution (ticker↔CIK↔ISIN↔CUSIP), ETF look-through, event intelligence, 10-state regime classifier from real macro, Sharia cross-check (multi-state status; disagreement → freeze new buys) |
 | **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay) + a decision-quality dashboard (shows *why*: rejected signals + reason, regime, beating-benchmark, edge decay) |
@@ -334,7 +334,7 @@ These are genuinely open and are the highest-value places for your feedback:
 ```bash
 git clone https://github.com/ahmedmdesouki-bit/The-Camel.git
 cd The-Camel
-python -m pytest -q          # expect: 289 passed
+python -m pytest -q          # expect: 440 passed
 ```
 
 - No credentials are required to run the test suite (Alpaca/Telegram stub out without keys).

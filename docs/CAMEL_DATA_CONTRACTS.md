@@ -13,12 +13,12 @@ pass the right sub-path to each module. `init_all(dbs)` creates all seven.
 | DB file | Owner module(s) | Content | Status |
 |---|---|---|---|
 | `camel_market.db` | `data/` | prices, dividends, splits | Live |
-| `camel_macro.db` | S7 | rates, PMIs, yield curve, GDP, recession indicators | Stub |
-| `camel_fundamentals.db` | S7 | revenue, margins, EPS, FCF, debt, valuation | Stub |
-| `camel_news.db` | S7 | structured event objects (never raw text) | Stub |
+| `camel_macro.db` | `data/connectors/` (S8) | rates, PMIs, yield curve, GDP, recession indicators, regime_history | Live (real data) |
+| `camel_fundamentals.db` | `data/connectors/` (S8) | company_facts, assets, valuation, ETF holdings | Live (real data) |
+| `camel_news.db` | `data/connectors/` (S8) | structured event objects (never raw text) | Live (real data) |
 | `camel_sharia.db` | `sharia/` | whitelist (versioned), sharia_events | Live |
 | `camel_portfolio.db` | `broker/`, `ledger/`, `loop/` | orders, positions, ledger, runs, approvals | Live |
-| `camel_learning.db` | S5/S8 | decisions, outcomes, mistake log, lessons | Schema live, unused |
+| `camel_learning.db` | `learning/` (S5+) | decisions, outcomes, mistake log, lessons, edge-proof log | Live (Learning Ledger S5; Edge-Proof log S4.5) |
 
 Migrate to Supabase/Postgres when multi-device / dashboard / remote access is needed (S6+).
 `db/schema.sql` is the Postgres migration target with the RLS sketch.

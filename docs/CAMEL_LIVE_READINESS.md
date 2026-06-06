@@ -1,7 +1,7 @@
 # CAMEL LIVE READINESS — Phase 1 go-live checklist
 
 > **Canonical home for the pre-live gate.** This is the operational checklist you tick
-> before any real money moves. The sprint that builds it is S11 (see `CAMEL_ROADMAP.md`);
+> before any real money moves. The sprint that builds it is **S13 Micro-Live** (see `CAMEL_ROADMAP.md`);
 > the rules behind it are in `CAMEL_CONSTITUTION.md`. Nothing here is automatic — going
 > live is a deliberate founder act.
 
@@ -39,7 +39,8 @@
 - [ ] ThesisCard required before any paper trade, including opportunity-cost justification
 - [ ] Invalidation required before any paper trade (fixed or trailing floor)
 - [ ] Every action logged
-- [ ] **No trade proceeds without an EdgeReport** (v0 from S4.5; full engine from S7)
+- [ ] **No trade proceeds without an EdgeReport** (v0 from S4.5; full 17-check engine from S10) — and the gate
+  is enforced in the **assembled operator loop**, not only in the `Allocator` unit (Roadmap Workstream A1)
 - [ ] Edge Proof Engine approved at least one signal
 - [ ] Adversarial test suite green (all 15 cases — see CAMEL_TESTING.md)
 - [ ] Strategy Registry has ≥ 3 active strategies with live base-rates

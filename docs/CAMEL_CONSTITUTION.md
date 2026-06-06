@@ -42,15 +42,24 @@
 
 ---
 
-## Sharia screening (AAOIFI thresholds)
+## Sharia screening (AAOIFI thresholds — verified spec)
 
-A name is non-compliant (→ frozen + alert) if any breach:
-- Debt / market cap ≥ 33%
-- (Cash + interest-bearing securities) / market cap ≥ 33%
-- Non-compliant income ≥ 5%
+A name is non-compliant (→ frozen + alert) if **any** ratio breaches (FTSE/IdealRatings AAOIFI method,
+verified in `CAMEL_DATA_SOURCES.md`; ratios use a **12-month-average market cap** denominator, not a spot
+snapshot):
+- Total debt ÷ 12-mo-avg market cap **> 30%**
+- (Cash + interest-bearing deposits + interest-bearing investments) ÷ 12-mo-avg market cap **> 30%**
+- (Cash + deposits + receivables) ÷ total assets **> 67%** (accounts-receivable / liquidity screen)
+- Non-compliant (impure) revenue **+ interest income > 5%** of total revenue → also requires **purification**
+  of the impure portion (`purification_ratio`)
+- **11 prohibited business sectors** (see below) → outright exclude regardless of ratios
 
-Business-model screen (Entrepreneur arm) rejects: conventional finance, alcohol, tobacco,
-gambling, pork, adult, weapons/defense.
+> ⚠️ **Threshold history:** earlier drafts used the looser Dow-Jones-style **33% / 33% / 5%** screen. The
+> verified AAOIFI spec above (≤30% / ≤30% / ≤67% / ≤5% + sectors) is canonical. **Enforcement of the full
+> ratio set lands at S9 slice 4** (Sharia cross-check); until then the whitelist + business-model screen apply.
+
+Business-model / prohibited-sector screen (both arms) rejects: conventional finance (riba), alcohol, tobacco,
+gambling, pork, adult, weapons/defense, and the remaining AAOIFI-prohibited categories.
 
 Quarterly re-screen freezes any drifted name. `manual_override_allowed: false`.
 

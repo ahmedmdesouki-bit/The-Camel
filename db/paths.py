@@ -22,9 +22,9 @@ from db.news import init_news_db
 class CamelDbs:
     """Holds paths to all seven Camel databases."""
     market:       str   # prices, dividends, splits
-    macro:        str   # rates, inflation, PMIs — stub until Sprint 7
-    fundamentals: str   # revenue, margins, EPS — stub until Sprint 7
-    news:         str   # structured event objects — stub until Sprint 7
+    macro:        str   # rates, inflation, PMIs, regime_history — real data (S8 connectors)
+    fundamentals: str   # company_facts, assets, valuation, ETF holdings — real data (S8 connectors)
+    news:         str   # structured event objects — real data (S8 connectors); never raw text
     sharia:       str   # whitelist, sharia_events
     portfolio:    str   # orders, positions, ledger, runs, approvals
     learning:     str   # learning ledger, mistake log

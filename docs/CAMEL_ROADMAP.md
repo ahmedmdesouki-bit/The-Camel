@@ -51,6 +51,68 @@ live dress rehearsal that produces the track record gating micro-live.)*
 Guiding principle reaffirmed: **Safety first. Evidence second. Autonomy last.**
 Optimize for **evidence density, not feature count.**
 
+---
+
+## Workstreams & Backlog (sanity check — 2026-06-07)
+
+> A full project sweep (code + all docs) confirmed **the sprint plan hasn't silently dropped anything major** —
+> but it surfaced one structural gap, plus parallel workstreams and backlog items that need an explicit home so
+> they aren't lost between sprints. Everything below is now tracked here.
+
+### ⭐ WORKSTREAM A — Operator-loop assembly / integration (the structural gap)
+**Finding:** the Camel is *a complete set of well-tested components with the integration layer largely
+unbuilt*. Each station — Opportunity Router, Edge-Proof gate (`capital/allocator.py`), Budget Kernel,
+Operator-OS state machine, Regime engine, Constitution, Approval gate — is built and unit-tested, but
+`loop/scheduler.py` assembles a `LoopConfig` with **no-op observe/choose/execute/measure/learn callbacks**, so
+the upgraded §4 loop (Observe→Router→Edge/Product-Proof→Constitution→Budget→Approval→Act→Learn) is **never
+strung together at runtime**. Consequences to close before any live trading:
+- **A1 — Wire the Edge-Proof gate into the loop.** `loop/runner.py` currently calls `Constitution.evaluate`
+  *directly*, bypassing `Allocator.request()` (where "no buy without a passing EdgeReport" actually lives).
+  Harmless today only because nothing trades (no-op callbacks) — **but a Phase-1 BLOCKER.** The CLAUDE.md rail
+  "no trade without an EdgeReport" must hold in the *assembled* loop, not just in the Allocator unit.
+- **A2 — Drive the Operator-OS state machine + Opportunity Router from the loop** (built in S5, uncalled).
+- **A3 — Consume the Regime engine in a decision** (today it feeds only `regime_history` + the dashboard).
+- **A4 — Wire `trader/regime/peg.py` into `features.py`** (peg monitor built, not yet read). *(→ S9 slice 4.)*
+- **Home:** assembled incrementally as S10 (Edge Proof) → S11 (strategies make the loop actually trade) land;
+  A1 is a hard gate in the **S13 live-readiness** checklist and `CAMEL_LIVE_READINESS.md`. Tracked, not dropped.
+
+### WORKSTREAM B — Scheduled entrypoints / ops automation
+Built but with **no runnable trigger** (only `loop/scheduler.py` and `ops/kill_switch.py` have `__main__`):
+weekly `ops/scheduled_checks.run_weekly_checks` (kill-switch test + backup + reconcile), `ops/heartbeat`,
+`ops/deadman`, **dashboard generation** (`dashboard.write_dashboard`), and the **founder daily brief**
+(`alerts/brief.send_founder_brief` over Telegram/WhatsApp). **Action:** add Task-Scheduler entrypoints (mirror
+`loop/scheduler.py`) for the weekly job + a daily ops/brief job that renders the dashboard and sends the brief.
+*(Ops-hardening follow-up; pairs with the S6 machine-setup checklist.)*
+
+### WORKSTREAM C — Founder tools (parallel, read-only, outside the trust boundary)
+- **Dashboard v2** ✅ done (`dashboard/snapshot.py` + `generate.py`).
+- **`camel-coach` skill** (harvested from Alaa) — a read-only conversational Q&A over our *real* governed state
+  (positions, edge decisions, regime, gate). Proposes, never executes. **Not yet built**; design alongside the
+  S12.5 Research Desk (shares the evidence-object + eval-harness ideas) but ships independently.
+
+### WORKSTREAM D — Connector ingestion orchestration & data backlog
+- **Ingestion orchestrator:** the 10 S8 connectors only `.run()` in tests — no scheduled production ingestion,
+  so `regime/features.py` would read empty tables at runtime. Add an ingestion job (part of Workstream B). *(S8 cont.)*
+- **Parked S8 connectors** (founder-deferred): OFAC, USGS, congress/senate disclosures, Kenneth-French factors,
+  SEC-RSS/8-K, GPR/EPU, market-data adapter, dividends/corporate-actions, paid vendors. *(S8 continuation.)*
+- **USD/SAR FX feed (NEW):** the peg monitor is dormant until a `USDSAR` series is ingested — add an FX connector
+  to the S8 backlog so the peg monitor activates. *(S8 cont. / S9 slice 4.)*
+
+### BACKLOG — smaller items with a home
+- **Alaa harvested items scheduled into sprint bodies** (so they aren't lost): screenshot-OCR manual entry → S13;
+  strategy-fit *selector* + strategy "mix" coherence UX → S11; yield-on-cost + moat matrix → S11; sector-cap
+  ≤40% (incl. ETF look-through) → S11 risk budgets.
+- **Health-monitor checks** `cpu/memory/broker/telegram/secrets` are hardcoded `"skipped"` — wire real checks
+  (psutil for cpu/mem; live-cred pings for broker/telegram). *(Ops-hardening follow-up; add `psutil`.)*
+- **`data/quality.py`** "refine" was mis-tagged to S7 — refinement belongs with the data backbone (S8 cont.).
+- **Broker write-atomicity** (positions↔ledger transaction) → **S12** (already owned). **Earnings blackout** →
+  **S8** (needs earnings calendar). **Max cancel/replace order handling** → **S13** (LiveBroker). **IBKR** → Phase 2.
+
+*(Doc-drift items found in the same sweep — phantom repo-map modules, stale test counts/sprint statuses, the
+AAOIFI threshold mismatch, and stale cross-references — were corrected in place; see the 2026-06-07 changelog entry.)*
+
+---
+
 ### Completed
 - **S1 ✅** Guardrail Service + schema + tests. Gate: 28 rogue-action tests green.
 - **S2 ✅** Sharia gate + data ingestion. Gate: off-list + haram rejected; prices land.
@@ -207,7 +269,7 @@ Hard rules — all default to `trade_allowed=false`:
 - Weak evidence (excess return not positive after estimated cost) → rejected
 - Every v0 decision logged to `camel_learning.db`
 
-The full 13-check Edge Proof Engine (S7) is built *on top of* v0 — v0 is never removed,
+The full 17-check Edge Proof Engine (S10) is built *on top of* v0 — v0 is never removed,
 it becomes the cheapest first filter.
 
 **Gate:** No trade candidate proceeds without an EdgeReport; missing/weak/stale inputs all
@@ -669,7 +731,8 @@ remains EOD.
 latest filings, latest events, ETF exposure, and benchmark; the regime classifier labels the current
 environment from real macro data; a Sharia disagreement freezes new buys.
 
-**STATUS: IN PROGRESS — slices 1–2 (389 → 409 tests).**
+**STATUS: IN PROGRESS — slices 1–2 done.** *(Suite has since advanced past S9's own slices via cross-cutting
+work: QA hardening pass → 419, Dashboard v2 → 426, Alaa founder-alerting + peg batch → **440 tests green**.)*
 - *Slice 1 (entity resolution):* `assets` table (ticker/CIK/ISIN/CUSIP/name/sector/active_from-to/
   delisted_flag) + `data/entity_resolver.py` `resolve(ticker)` → full identity joining `assets` +
   `company_facts` + `etf_holdings` look-through + Sharia whitelist.
@@ -678,8 +741,15 @@ environment from real macro data; a Sharia disagreement freezes new buys.
   `classifier.py` (deterministic signal-scored 10-state classifier → regime + confidence + which signals
   fired; `regime_to_themes` mapper), `history.py` + `regime_history` table (append-only audit). v0 covers
   the macro-derivable regimes; AI_CAPEX_BOOM / confident RECOVERY need equity-sector signals (later).
-**Remaining S9 slices:** event intelligence (dedup/severity/entity-linker/theme mapper over `news_events`);
-Sharia cross-check + multi-state status + AAOIFI drift + local-board override.
+**Remaining S9 slices:**
+- *Slice 3 — event intelligence:* dedup/severity/entity-linker/theme mapper over `news_events`, **plus the
+  `event_reactions` substrate table** (event_type · event_date · known_at · affected symbols/sectors/commodities ·
+  return_1d/5d/21d/63d/126d · max_drawdown_63d · benchmark/excess return · regime_at_event) — the point-in-time
+  base for S10 event studies.
+- *Slice 4 — Sharia cross-check:* multi-state status + **full AAOIFI ratio enforcement** (≤30% / ≤30% / ≤67% /
+  ≤5% + 11 sectors, per `CAMEL_DATA_SOURCES.md` and the updated `CAMEL_CONSTITUTION.md`) + drift + local-board
+  override. **Wire `trader/regime/peg.py` (SAR/USD peg monitor) into `features.py`** here so the regime engine
+  consumes it (today it is built + tested but not yet read by the feature builder).
 
 ---
 
@@ -1041,7 +1111,8 @@ All of the following must be true before Phase 1 (live money) is unlocked:
 - ThesisCard required before any paper trade, including the opportunity-cost justification.
 - Invalidation required before any paper trade (fixed or trailing floor).
 - Every action logged.
-- **No trade proceeds without an EdgeReport** (v0 from S4.5; full engine from S7).
+- **No trade proceeds without an EdgeReport** (v0 from S4.5; full 17-check engine from S10). This gate must
+  hold in the **assembled loop** (Workstream A1), not only in the `Allocator` unit.
 - Edge Proof Engine approved at least one signal.
 - Adversarial test suite green (config edit, frozen symbol, stale data, duplicate order,
   permission bypass, Playwright broker action, injection override, broker mismatch, ledger

@@ -5,6 +5,45 @@
 
 ---
 
+## 2026-06-07 — Full project sanity check (docs + code sweep)
+
+**Ran a comprehensive project audit** (three parallel review passes over the whole tree: deferred/backlog
+markers, doc consistency, and built-but-not-wired code). **Conclusion: the sprint plan had not silently dropped
+anything major** — but the sweep surfaced one structural gap and a layer of doc drift, all now corrected/tracked.
+
+**Added to the roadmap — new "Workstreams & Backlog" section** (top of `CAMEL_ROADMAP.md`):
+- **Workstream A — Operator-loop assembly (the structural finding).** The components (Router, Edge-Proof
+  `Allocator`, Budget Kernel, Operator-OS state machine, regime engine, peg, dashboard, brief, ops jobs) are
+  all built + unit-tested, but `loop/scheduler.py` runs with no-op callbacks, so the §4 loop is never assembled
+  at runtime. **A1 (wire the Edge-Proof gate into the assembled loop) is a Phase-1 BLOCKER** — harmless today
+  only because nothing trades in Phase 0. Now a hard gate in S13 live-readiness.
+- **Workstream B — scheduled entrypoints** for weekly checks / heartbeat / dead-man / dashboard render /
+  founder brief (only the daily loop + kill-switch currently have `__main__`).
+- **Workstream C — founder tools** (Dashboard v2 done; `camel-coach` read-only skill still to build).
+- **Workstream D — connector ingestion orchestration** + the parked S8 connector backlog + a **new USD/SAR FX
+  feed** to activate the peg monitor.
+- **Backlog**: Alaa items mapped into S11/S13 sprint bodies; health-monitor cpu/mem/broker/telegram checks
+  (add `psutil`); `data/quality.py` refinement (→ S8 cont.); plus the already-owned S12 write-atomicity, S8
+  earnings blackout, S13 cancel/replace, Phase-2 IBKR.
+
+**Doc drift corrected in place:**
+- **AAOIFI thresholds** in `CAMEL_CONSTITUTION.md` updated from the loose 33% (Dow-Jones-style) to the verified
+  AAOIFI spec (≤30% / ≤30% / ≤67% / ≤5% + 11 sectors; 12-mo-avg-mktcap denominator), with enforcement noted at
+  S9 slice 4. (Sharia is #1 in the hierarchy — the canonical rules doc must be right.)
+- **`CLAUDE.md` repo map** marked `strategies/`, `learning/`, `loop/intraday_monitor.py`,
+  `data/congress_filings.py` as ⏳ PLANNED (S11) — they were listed as if on disk but don't exist yet.
+- **Stale test counts → 440** (README run-example, CONSULTANT_HANDOFF ×3, TESTING "current suite", roadmap S9
+  status). **Sprint statuses** fixed: "S9 slice 1" → "slices 1–2", "S8 slice 1" → core (slices 1–5).
+- **DB stub status** corrected (macro/fundamentals/news now Live/real, learning no longer "unused") across
+  DATA_CONTRACTS, HANDOFF, CONSULTANT_HANDOFF, and `db/paths.py` comments.
+- **Cross-refs**: full Edge-Proof engine "S7 / 13-check" → **S10 / 17-check** (roadmap ×2 + LIVE_READINESS);
+  live-readiness sprint "S11" → **S13**; added MACHINE_HARDENING + ALAA_REVIEW + CONSULTANT_HANDOFF to the
+  `docs/README.md` index; CONSULTANT_HANDOFF "see §13" → §15.
+
+No code changed in this pass (docs only); suite stays **440 green**.
+
+---
+
 ## 2026-06-07 — More Alaa harvest shipped (founder alerting + peg monitor)
 
 **Built the next batch of self-contained Alaa-harvested items as real, tested code** (the rest stay scheduled
@@ -458,7 +497,9 @@ Three increments:
 - *S4c* — point-in-time columns (event/reported/ingested/known), broker idempotency
   (client_order_id + DuplicateOrderException), full ThesisCard template + is_trade_ready,
   secrets-leak tests, consolidated 8-case adversarial suite.
-Deferred by dependency: max cancel/replace → S11 (LiveBroker); earnings blackout → S7.
+Deferred by dependency: max cancel/replace → S11 (LiveBroker); earnings blackout → S7. *(Superseded under
+Roadmap v3 — these now map to **S13** (cancel/replace, with LiveBroker) and **S8** (earnings blackout, needs
+the earnings calendar). The canonical owners are in `CAMEL_ROADMAP.md`.)*
 *Awaiting founder approval to merge `s4-hardening` → master (branch-workflow convention).*
 
 ---

@@ -1,7 +1,7 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9 in progress (slice 1)** · **440 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9 in progress (slices 1–2)** · Dashboard v2 + founder alerts · **440 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
 (S1–S14) · **S8 core done** (10 connectors; rest deferred to backlog). **In S9:** slices 1–2 done (entity resolver + 10-state Regime Engine over real macro); next event intelligence + Sharia cross-check
@@ -63,7 +63,7 @@ We are in **Phase 0**.
 | Language | **Python 3.12** | `guardrail/` and `engine/` kept pure (no I/O) for unit-testing |
 | Database | **SQLite × 7** | One file per data domain. Migrate to Supabase when remote/dashboard/multi-device is needed |
 | Broker / data | **Alpaca paper** (free IEX feed) | `alpaca-py`. yfinance ok for quick prototypes |
-| Test framework | **pytest** | 110 tests, run via the `N:\` virtual drive (see §6) |
+| Test framework | **pytest** | 440 tests, run via the `N:\` virtual drive (see §6) |
 | Config | **YAML** (`config/limits.yaml`) | Founder-owned; agent process has no write path |
 | Scheduler | **Windows Task Scheduler** | `python loop/scheduler.py` post-close (EOD); intraday monitor every 5 min (S8) |
 | Secrets | **`.env`** now → **Windows Credential Manager** (S6) | Never in code, logs, or commits |
@@ -145,10 +145,10 @@ the relevant path to each module. `init_all(dbs)` creates all seven.
 | `camel_market.db` | `data/` | prices, dividends, splits | **Live** |
 | `camel_sharia.db` | `sharia/` | whitelist (+`historical_drift_count`, +`purification_ratio`), sharia_events (+`trigger_period`, +`reasoning_summary`) | **Live** |
 | `camel_portfolio.db` | `broker/`, `ledger/`, `loop/` | orders (+`client_order_id`), positions, ledger, runs, guardrail_events, approvals | **Live** |
-| `camel_learning.db` | S8 learning engine | decisions, outcomes, mistake log, lessons | Schema live, unused |
-| `camel_macro.db` | S7 | rates, PMIs, yield curve, GDP | Stub |
-| `camel_fundamentals.db` | S7 | revenue, margins, EPS, FCF, debt | Stub |
-| `camel_news.db` | S7 | structured event objects (never raw text) | Stub |
+| `camel_learning.db` | `learning/` (S5+) | decisions, outcomes, mistake log, lessons, edge-proof log | **Live** (Learning Ledger S5; Edge-Proof log S4.5) |
+| `camel_macro.db` | `data/connectors/` (S8) | rates, PMIs, yield curve, GDP, regime_history | **Live** (real data) |
+| `camel_fundamentals.db` | `data/connectors/` (S8) | company_facts, assets, valuation, ETF holdings | **Live** (real data) |
+| `camel_news.db` | `data/connectors/` (S8) | structured event objects (never raw text) | **Live** (real data) |
 
 ---
 

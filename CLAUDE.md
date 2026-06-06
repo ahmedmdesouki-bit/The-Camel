@@ -112,7 +112,7 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   budget/approval gates; banned claim wording; haram screen), `build_pipeline.py` (10-stage state machine;
   no skip; PRODUCTION needs founder approval + passing tests). → **352 passed**. *Engine only — real
   Stripe/GitHub/deploy integration lands when a real product ships behind these gates.*
-- **Sprint 8 IN PROGRESS — slice 1 complete.** Data Intelligence Backbone framework: `data/provenance.py`
+- **Sprint 8 — CORE COMPLETE (slices 1–5; remaining connectors deferred).** Data Intelligence Backbone framework: `data/provenance.py`
   (point-in-time provenance + `source_documents` table + `assert_provenanced`), `data/source_registry.py`
   (`SourceSpec` registry), `data/connectors/base.py` (`SourceConnector` with an injectable transport —
   stdlib fetch in prod, stubbed in tests; **no live web in tests, zero new deps**), `data/connectors/fred.py`
@@ -145,6 +145,13 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   RED ALERT on a >3% drop), and `trader/regime/peg.py` (**SAR/USD peg monitor** — pure + dormant-safe DB
   reader, for the S9 regime layer). `tests/test_alerts_founder.py` + `tests/test_peg_monitor.py`. → **440 passed**.
   *(Sector-cap ≤40% guardrail deliberately deferred to S11 — needs the portfolio engine to be meaningful.)*
+- **⚠️ Integration status (be honest about this).** The pieces are built + unit-tested, but the full §4 operator
+  loop is **not yet assembled**: `loop/scheduler.py` runs with no-op callbacks, the Opportunity Router + Edge-Proof
+  `Allocator` + Budget Kernel + Operator-OS state machine are not yet driven by `loop/runner.py`, the regime engine
+  feeds only history/dashboard, and several ops jobs (weekly checks, heartbeat, dead-man, dashboard render, founder
+  brief) have no scheduled entrypoint. This is **Workstream A/B** in `docs/CAMEL_ROADMAP.md` — assembled across
+  S10–S11 and a hard gate in S13 live-readiness. **Wiring the Edge-Proof gate into the assembled loop (A1) is a
+  Phase-1 blocker** (harmless now only because nothing trades in Phase 0).
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -209,7 +216,7 @@ data/             provenance.py — point-in-time provenance fields + source_doc
                   freshness.py — stale-data gate (S4)
                   quality.py — data quality scoring → decision_eligible (S4, refined S8)
                   sanitiser.py — raw web text → structured JSON, injection filter (S4)
-                  congress_filings.py — STOCK Act filing data adapter (stub → S11, signal-only, never blind copy)
+                  congress_filings.py — ⏳ PLANNED (S11) STOCK Act filing adapter (signal-only, never blind copy)
                   playwright.py — headless browser adapter stub (NotImplementedError; live → S8 scraping policy, QA-only)
 
 governance/       config_guard.py — proves agent has no write path to founder config (S4)
@@ -219,7 +226,8 @@ governance/       config_guard.py — proves agent has no write path to founder 
 engine/           thesis.py — ThesisCard + BaseRateCard (no I/O, no DB)
                   edge_proof_v0.py — evidence gate from market.db (S4.5; full 17-check engine S10)
 
-strategies/       registry.py — StrategyRegistry: register, lookup, activate, deactivate, weight
+strategies/       ⏳ PLANNED (S11 — NOT yet on disk; listed here as the target shape)
+                  registry.py — StrategyRegistry: register, lookup, activate, deactivate, weight
                   base.py — BaseStrategy abstract class (signal, entry, exit, sizing)
                   trailing_stop.py — trailing floor + locking-gains exit mode
                   dca_ladder.py — systematic laddering / DCA on dips
@@ -229,7 +237,8 @@ strategies/       registry.py — StrategyRegistry: register, lookup, activate, 
                   congress_signal.py — congressional filing signal (feeds Edge Proof, not blind copy)
                   mixer.py — StrategyMixer: blend by weight, regime affinity, live performance
 
-learning/         base_rate_updater.py — L1: update strategy base-rates after trade resolution
+learning/         ⏳ PLANNED (S11 — NOT yet on disk; target shape)
+                  base_rate_updater.py — L1: update strategy base-rates after trade resolution
                   strategy_scorer.py — L2: score vs expected; compute auto weight within band
                   regime_matcher.py — learn regime→strategy affinity from resolved outcomes
                   anomaly_detector.py — flag systematic underperformance vs base-rate
@@ -239,7 +248,7 @@ learning/         base_rate_updater.py — L1: update strategy base-rates after 
 loop/             runner.py — LoopRunner (takes LoopConfig with dbs: CamelDbs)
                   state.py — RunState + begin/update/finish_run (→ camel_portfolio.db)
                   scheduler.py — Windows Task Scheduler entrypoint (EOD, once daily)
-                  intraday_monitor.py — 5-min position manager during market hours (S11)
+                  intraday_monitor.py — ⏳ PLANNED (S11) 5-min position manager during market hours
 
 broker/           paper.py — PaperBroker(portfolio_db, market_db)
                   positions.py — position accounting: apply_fill (avg cost, realized P&L), held_qty (S6.6)
