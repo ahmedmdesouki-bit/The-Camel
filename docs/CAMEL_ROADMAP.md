@@ -12,7 +12,7 @@
 **Sequence (Roadmap v3 — data backbone before the proof engine; Entrepreneur moved earlier):**
 ```
 S1 ✅ → S2 ✅ → S3 ✅ → S4 ✅ → S4.5 ✅ (Edge Proof v0) → S5 ✅ → S5.5 ✅ (Minimal Ops) → S6 ✅ →
-S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hardening + Beginner Mode) → S7 (Entrepreneur) →
+S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hardening + Beginner Mode) → S7 ✅ (Entrepreneur engine) →
 S8 (Data Backbone) → S9 (Knowledge Graph + Regime) → S10 (Full Edge Proof, 17-check; shadow/enforcing) →
 S11 (Strategy Registry) → S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) →
 S13 (Micro-Live) → S14 (Restructure)
@@ -434,6 +434,17 @@ is a real domain fit.
 
 **Gate:** no build without all 17 gate fields + Sharia check + approval; no paid spend without budget
 approval; no customer data without privacy check; live URL; payment-capable.
+
+**STATUS: COMPLETE — engine (331 → 352 tests).** New `entrepreneur/` package, all deterministic:
+`product_gate.py` (17-field `ProductThesis` + `evaluate_gate`; the travel/hospitality SLA assistant
+encoded as `lead_product_thesis()` and proven through the gate); `constitution.py` (separate
+`EntrepreneurConstitution.evaluate` — BUILD is code-gen-only; DATA_COLLECT needs a privacy review;
+ASSET_USE needs a rights check; SPEND needs budget; LAUNCH needs founder approval; PUBLISH_COPY blocks
+regulated claims without approval + banned compliance-guarantee wording; reuses the Trader haram screen);
+`build_pipeline.py` (10-stage state machine — no skipping, STAGING needs passing tests, PRODUCTION needs
+founder approval + a Constitution-allowed LAUNCH). Tests in `tests/test_entrepreneur.py`. *Scope note: this
+is the **engine**; real Stripe/GitHub/customer-data/deploy integration is wired only when a real product
+ships behind these gates (a founder real-world action, like live trading) — not in Phase 0.*
 
 ---
 

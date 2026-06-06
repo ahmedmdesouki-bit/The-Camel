@@ -11,12 +11,12 @@ autonomy is earned through a paper track record, never granted.
 > **Safety first. Evidence second. Autonomy last.**
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · Sprints **S1–S6.6 complete** · **331 tests green** · 7-DB architecture live ·
-on **Roadmap v3** (S1–S14), next **S7** (Entrepreneur).
+**Status:** Phase 0 (paper) · Sprints **S1–S7 complete** · **352 tests green** · 7-DB architecture live ·
+on **Roadmap v3** (S1–S14), next **S8** (Data Intelligence Backbone).
 
 ---
 
-## What's built (Phase 0 — paper, 331 tests green)
+## What's built (Phase 0 — paper, 352 tests green)
 
 The **safety and evidence core** is done. Everything runs in paper mode behind a human gate.
 
@@ -32,6 +32,7 @@ The **safety and evidence core** is done. Everything runs in paper mode behind a
 | ✅ | **S6** Dashboard + Monitoring | Read-only HTML dashboard, credential-safe Telegram alerts, heartbeat, log rotation, hard secrets refusal, off-box archive, weekly scheduled checks + machine-hardening checklist |
 | ✅ | **S6.5** Safety & accounting hotfix | Phantom-sell guard, close-only exits for frozen/non-compliant holdings, Edge Proof mandatory for buys, no $1 fallback price in production |
 | ✅ | **S6.6** Position accounting + ops hardening | Positions table on every fill (avg cost, realized P&L, exact phantom guard, ledger reconcile); illiquidity fail-closed in live; dead-man's-switch; SQLite WAL; beginner mode; broker matrix |
+| ✅ | **S7** Entrepreneur Product Engine | 17-field Product Gate + separate Entrepreneur Constitution (code-gen-only autonomy; privacy/rights/budget/approval gates; banned claim wording) + 10-stage build pipeline (no launch without founder approval) |
 
 Plus the **7-database SQLite architecture** (market / macro / fundamentals / news / sharia / portfolio / learning)
 with **point-in-time discipline** (`event_date · reported_at · ingested_at · known_at`) so backtests can't cheat.
@@ -44,8 +45,7 @@ with **point-in-time discipline** (`event_date · reported_at · ingested_at · 
 
 | Sprint | Theme | One-line goal |
 |---|---|---|
-| **S7** → next | Entrepreneur Product Engine *(moved earlier)* | Ship one compliant product behind a 17-field gate (lead: Arabic complaint/SLA assistant for Saudi travel/hospitality); agent scope = code-gen only |
-| **S8** | Data Intelligence Backbone | `SourceConnector` + **top-20 connectors** (SEC/XBRL, FRED+ALFRED, World Bank, GDELT…), provenance + point-in-time, recorded-fixture tests; fills the stub DBs |
+| **S8** → next | Data Intelligence Backbone | `SourceConnector` + **top-20 connectors** (SEC/XBRL, FRED+ALFRED, World Bank, GDELT…), provenance + point-in-time, recorded-fixture tests; fills the stub DBs |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution, event intelligence, 10-state regime classifier, Sharia cross-check |
 | **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (multiple-testing penalty, signal decay, regime-filtered sample) + decision-quality dashboard |
 | **S11** | Strategy Registry + Learning | Trio: `core_dca` / `quality_momentum` / `etf_regime_rotation`; 4-tier learning engine |
