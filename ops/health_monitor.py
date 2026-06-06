@@ -54,6 +54,7 @@ def check(dbs: CamelDbs, mode: str = "paper", min_disk_gb: float = 1.0) -> Healt
             issues.append(f"low disk: {free_gb:.1f}GB")
     except Exception as exc:
         checks["disk"] = f"unknown ({exc})"
+        issues.append("disk check unknown")   # S6.6: fail-safe — unknown disk degrades to YELLOW
 
     # kill switch (real)
     halted = is_halted()

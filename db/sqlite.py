@@ -25,6 +25,12 @@ def connection(path: str) -> Iterator[sqlite3.Connection]:
     """
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
+    # S6.6: WAL reduces locking under concurrent read/write on the Windows desktop.
+    # Persistent per-DB and idempotent; guarded so a filesystem that rejects WAL is non-fatal.
+    try:
+        conn.execute("PRAGMA journal_mode=WAL")
+    except sqlite3.Error:
+        pass
     try:
         yield conn
         conn.commit()

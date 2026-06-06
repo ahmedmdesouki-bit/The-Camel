@@ -14,6 +14,15 @@
 - [ ] **Dedicated non-admin OS user** for The Camel (not your daily login). The loop runs as this user.
 - [ ] **MFA on every account**: broker (Alpaca), GitHub, OpenAI/Anthropic, Supabase, email, Telegram.
 - [ ] **No inbound ports** open to the public internet.
+- [ ] **OS-level config immutability (S6.6).** The code already proves the agent has no *write path*
+      to `config/limits.yaml` (`config_guard`), but defence-in-depth means the **OS** should enforce it
+      too: set NTFS permissions so the Camel's OS user has **read-only** on the `config/` directory
+      (deny Write/Modify). Then a motivated adversarial prompt can't write an adjacent file to redirect
+      config loading. Verify: as the Camel user, attempt to edit `config/limits.yaml` → permission denied.
+- [ ] **Dead-man's-switch (S6.6).** Create a free external check (e.g. healthchecks.io) and set
+      `CAMEL_DEADMAN_URL`; the EOD loop pings it via `ops/deadman.py`. A missed ping (power cycle, forced
+      Windows Update restart, sleep, logout) alerts you — the internal health monitor can't, since it
+      isn't running when the box is down.
 
 ## 2. Tailscale (private remote access + the kill switch path)
 

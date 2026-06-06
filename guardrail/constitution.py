@@ -242,7 +242,14 @@ class Constitution:
             if s.orders_today >= L["max_orders_per_day"]:
                 return Decision(False, "Max orders per day reached.", "max_orders_per_day")
 
-            # 4d. illiquidity / slippage gate (S4) — skips gracefully when data is absent
+            # 4d. illiquidity / slippage gate (S4; S6.6 fail-closed in live).
+            # In PAPER it still skips gracefully when data is absent. In LIVE, missing the data
+            # needed to clear the gate is a BLOCK — an illiquid trade must never pass unchecked.
+            liq_data_present = (a.bid_ask_spread_pct is not None
+                                and a.avg_daily_volume and a.order_shares is not None)
+            if a.mode == "live" and not liq_data_present:
+                return Decision(False, "Illiquidity data missing — cannot clear the liquidity gate in live.",
+                                "illiquidity_data_missing")
             if (a.bid_ask_spread_pct is not None
                     and a.bid_ask_spread_pct > L["max_bid_ask_spread_pct"]):
                 return Decision(False, "Bid-ask spread too wide for safe execution.", "wide_spread")

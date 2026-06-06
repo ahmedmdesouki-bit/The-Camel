@@ -1,10 +1,10 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S6.5 complete** · **309 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S6.6 complete** · **331 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
-(S1–S14) · **Next: S6.6** (Ops hardening + Beginner Mode → then S7 Entrepreneur)
+(S1–S14) · **Next: S7** (Entrepreneur Product Engine → then S8 Data Backbone)
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's
@@ -240,8 +240,8 @@ python ops\kill_switch.py resume    # removes flag
 | **S5** ✅ | Operator OS | 11-state machine; Opportunity Router; task queue; Learning Ledger; op log; health monitor |
 | **S6** ✅ | Visibility + Control | Dashboard; daily Telegram health report; kill switch over Tailscale; weekly self-test; secrets manager; log rotation; off-box backup; machine hardening checklist |
 | **S6.5** ✅ | Safety & Accounting hotfix | No phantom sells; close-only/reduce-only for frozen/non-compliant holdings; Edge Proof mandatory for buy/increase; no $1 fallback price outside unit tests (309 tests) |
-| **S6.6** → next | Ops hardening + Beginner Mode | Illiquidity-gate fail-loud (verified gap); prompt-injection adversarial tests; dead-man's-switch ping; SQLite WAL mode; OS-level config immutability; beginner-mode profile; broker capability matrix |
-| **S7** | Entrepreneur Product Engine *(moved earlier; agent scope = code-gen only)* | 17-field Product Gate; build pipeline (thesis→PRD→issues→MVP→tests→approval→prod); Entrepreneur Constitution; ship one compliant product (Arabic complaint/SLA-response assistant for Saudi travel/hospitality — founder's domain). Customer discovery/pricing/payments/launch all need founder approval |
+| **S6.6** ✅ | Position accounting + Ops hardening + Beginner Mode | Positions table on every fill (weighted-avg cost, realized P&L, exact qty-based phantom guard, ledger reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode profile; broker capability matrix (331 tests) |
+| **S7** → next | Entrepreneur Product Engine *(moved earlier; agent scope = code-gen only)* | 17-field Product Gate; build pipeline (thesis→PRD→issues→MVP→tests→approval→prod); Entrepreneur Constitution; ship one compliant product (Arabic complaint/SLA-response assistant for Saudi travel/hospitality — founder's domain). Customer discovery/pricing/payments/launch all need founder approval |
 | **S8** | Data Intelligence Backbone | `SourceConnector` framework; **top-20 connectors** (SEC EDGAR/XBRL/RSS, FRED+ALFRED, BLS, BEA, Treasury, World Bank, EIA, USGS, GDELT, ACLED, GPR, EPU, OFAC, congress/senate, ETF holdings, French) w/ provenance + point-in-time + vcrpy tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); scraping policy; fills macro/fundamentals/news DBs |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution (ticker↔CIK↔ISIN↔CUSIP); ETF look-through; structured event intelligence; 10-state regime classifier from real macro; Sharia cross-check w/ multi-state status (disagreement → freeze new buys) |
 | **S10** | Full Edge Proof Engine | **17-check** signal-conditioned proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay); minimum thresholds; model-disagreement → human. **No edge proof = no trade.** |

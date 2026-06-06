@@ -81,6 +81,7 @@ def test_paper_broker_rejects_blocked_decision(broker):
 
 def test_paper_broker_sell_writes_positive_to_ledger(broker, portfolio_db):
     # SELL is cash IN → positive ledger amount (cash convention).
+    broker.submit(buy_action(notional=500.0), good_decision())   # S6.6: establish a holding first
     sell = Action(type=ActionType.TRADE, symbol="SPUS", side="sell",
                   notional_usd=200.0, instrument_type="etf", mode="paper")
     broker.submit(sell, good_decision())

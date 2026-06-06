@@ -7,6 +7,34 @@
 
 ## 2026-06-06
 
+**Sprint 6.6 (Position Accounting + Ops Hardening + Beginner Mode) COMPLETE — 309 → 331 tests green.**
+Led by review round #6's foundational item.
+- `broker/positions.py` — **position accounting**: the single writer of the `positions` table, updated
+  on every paper fill. BUY → create/increase + weighted-average cost; SELL → validate `qty ≤ held`,
+  reduce, realize P&L `(price − avg_cost)·qty`, close at zero. `InsufficientPositionError` is the exact
+  qty-based phantom guard (the broker's precise second wall behind the Constitution's value-based one).
+  Wired into `PaperBroker.submit`; extended `positions` schema (market_price, realized_pnl, opened_at,
+  status); positions reconcile with ledger cash.
+- `db/sqlite.py` — **SQLite WAL mode** on every connection (reduce locking under concurrent r/w).
+- `guardrail/constitution.py` — illiquidity gate **fails closed in live** when the data needed to clear
+  it is missing (`illiquidity_data_missing`); paper still skips gracefully. *(Verified silent-skip gap.)*
+- `ops/health_monitor.py` + `tests/test_health.py` — disk check is now **mocked** in tests (portability —
+  a verified env-sensitive failure) and an **unknown/errored disk check degrades to YELLOW**, not GREEN.
+- `ops/deadman.py` — external **dead-man's-switch** ping (network-safe stub; never raises). Pairs with the
+  machine-hardening checklist (`CAMEL_DEADMAN_URL`).
+- `config/beginner_mode.yaml` + `governance/beginner_mode.py` — **Beginner Mode** profile for the real
+  small account; `beginner_limits()` proves it **only tightens** (raises `RailWidenedError` otherwise).
+- `tests/test_adversarial.py` — **prompt-injection** tests: a "founder said ignore the Constitution"
+  narrative, an "emergency" claim, and a forged `approval_id` all fail to bypass the gate.
+- Docs: `docs/CAMEL_BROKER_MATRIX.md` (broker direction resolved); machine-hardening gains the NTFS
+  config-lock + dead-man's-switch items.
+- *Note:* review #6 was stale (S5.5/263) and its "critical S5.6 hotfix" was largely our already-shipped
+  S6.5 — strong independent validation. The net-new item (position accounting) is this sprint.
+
+---
+
+## 2026-06-06
+
 **External review round #5 folded into the roadmap (docs-only; no code change).** Two independent
 technical reviews (one current at S6.5/309, one stale at S5.5/263). Founder decisions + adopted items:
 - **New S6.6 — Ops & Safety Hardening + Beginner Mode:** illiquidity-gate fail-loud (the spread/ADV gate
