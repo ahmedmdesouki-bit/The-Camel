@@ -15,7 +15,10 @@ _Q_END = {"Q01": "03", "Q02": "06", "Q03": "09", "Q04": "12"}
 
 def _event_date(year: str, period: str) -> str:
     if period.startswith("M") and period[1:].isdigit():
-        return f"{year}-{int(period[1:]):02d}-01"
+        m = int(period[1:])
+        if 1 <= m <= 12:
+            return f"{year}-{m:02d}-01"
+        return f"{year}-12-31"          # M13 = annual average → map to year-end (not month 13)
     if period in _Q_END:
         return f"{year}-{_Q_END[period]}-01"
     return f"{year}-12-31"
@@ -35,11 +38,15 @@ class BlsConnector(MacroConnector):
             sid = s.get("seriesID", "")
             for d in s.get("data", []):
                 val = d.get("value")
-                if val in (None, ""):
+                if val in (None, "") or not d.get("year"):
+                    continue
+                try:
+                    value = float(val)
+                except (TypeError, ValueError):
                     continue
                 out.append({
                     "series_id": sid, "indicator": sid,
-                    "value": float(val),
+                    "value": value,
                     "event_date": _event_date(str(d.get("year")), d.get("period", "")),
                 })
         return out

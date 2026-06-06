@@ -720,6 +720,11 @@ advance — in `docs/CAMEL_LIVE_READINESS.md` — so a disappointing result can'
 threshold · hit rate below base rate · depends on one outlier · costs erase edge · works only in one
 cherry-picked regime · sample too small.
 
+**Broker write atomicity + positions reconcile (QA-deferred from S9).** `broker/paper.py` currently writes
+the order, the ledger entry, and the position update in three separate transactions; wrap them in a single
+transaction and add a positions↔ledger reconcile to `ops/reconciliation_report.py` so a mid-submit failure
+can't leave them inconsistent. (Low-probability in Phase-0 single-process, but must be solid before live.)
+
 **Two-engine cross-check** — a vectorized engine (vectorbt-style) AND an event-driven engine
 (custom / Zipline/LEAN-style); compare results — never trust one engine. Heavy quant libs land here:
 pandas, numpy, scipy, statsmodels, scikit-learn, vectorbt, quantstats.

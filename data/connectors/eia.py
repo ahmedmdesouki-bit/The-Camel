@@ -13,13 +13,19 @@ from data.connectors.macro_base import MacroConnector
 from data.source_registry import EIA
 
 
+_Q_END = {"Q1": "03", "Q2": "06", "Q3": "09", "Q4": "12"}
+
+
 def _eia_date(period: str) -> str:
     p = str(period or "")
-    if len(p) == 4:                  # annual YYYY
+    if len(p) == 4:                       # annual YYYY
         return f"{p}-12-31"
-    if len(p) == 7:                  # monthly YYYY-MM
+    if len(p) == 6 and "Q" in p:          # quarterly YYYYQn
+        y, q = p.split("Q")
+        return f"{y}-{_Q_END.get('Q' + q, '12')}-01"
+    if len(p) == 7:                       # monthly YYYY-MM
         return f"{p}-01"
-    return p                          # already a full date
+    return p                               # already a full date (YYYY-MM-DD)
 
 
 class EiaConnector(MacroConnector):

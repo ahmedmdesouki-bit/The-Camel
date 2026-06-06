@@ -11,12 +11,12 @@ autonomy is earned through a paper track record, never granted.
 > **Safety first. Evidence second. Autonomy last.**
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · Sprints **S1–S7 complete** · **S8 core** (10 connectors) · **S9 in progress (slice 1)** · **409 tests green** ·
+**Status:** Phase 0 (paper) · Sprints **S1–S7 complete** · **S8 core** (10 connectors) · **S9 in progress (slice 1)** · **419 tests green** ·
 7-DB architecture live · on **Roadmap v3** (S1–S14).
 
 ---
 
-## What's built (Phase 0 — paper, 409 tests green)
+## What's built (Phase 0 — paper, 419 tests green)
 
 The **safety and evidence core** is done. Everything runs in paper mode behind a human gate.
 

@@ -7,6 +7,7 @@ return None — the classifier degrades gracefully rather than guessing. Point-i
 reads observations whose `event_date` ≤ `as_of`.
 """
 from __future__ import annotations
+from datetime import date, timedelta
 from typing import Dict, List, Optional, Tuple
 
 from db.sqlite import connection
@@ -27,36 +28,46 @@ DEFAULT_SERIES = {
 
 
 def _points(db: str, series_id: str, as_of: Optional[str]) -> List[Tuple[str, float]]:
-    sql = "SELECT event_date, value FROM macro_observations WHERE series_id=?"
+    """Point-in-time, vintage-aware: only observations with event_date AND reported_at <= as_of,
+    and for each event_date keep the LATEST vintage available as of that cutoff (no look-ahead)."""
+    sql = "SELECT event_date, reported_at, value FROM macro_observations WHERE series_id=?"
     args: list = [series_id]
     if as_of:
-        sql += " AND event_date <= ?"
-        args.append(as_of)
-    sql += " ORDER BY event_date"
+        sql += " AND event_date <= ? AND (reported_at IS NULL OR reported_at <= ?)"
+        args += [as_of, as_of]
+    sql += " ORDER BY event_date, reported_at"        # ascending → last write per date = latest vintage
+    latest_by_date: Dict[str, float] = {}
     with connection(db) as conn:
-        return [(r["event_date"], r["value"]) for r in conn.execute(sql, args).fetchall()
-                if r["value"] is not None]
+        for r in conn.execute(sql, args).fetchall():
+            if r["value"] is not None:
+                latest_by_date[r["event_date"]] = r["value"]
+    return sorted(latest_by_date.items())
 
 
 def _latest(points: List[Tuple[str, float]]) -> Optional[float]:
     return points[-1][1] if points else None
 
 
-def _yoy(points: List[Tuple[str, float]]) -> Optional[float]:
-    """Year-over-year % change of the latest point vs the point closest to ~1 year earlier."""
+def _pdate(d: str) -> date:
+    return date.fromisoformat(d[:10])
+
+
+def _yoy(points: List[Tuple[str, float]], window_days: int = 60) -> Optional[float]:
+    """True year-over-year % change: latest value vs the observation closest to exactly one year
+    earlier (within `window_days`). Returns None if no point lands near the 1-year-ago mark — so a
+    short series can't be mislabeled as YoY (the previous month-over-month bug)."""
     if len(points) < 2:
         return None
-    latest_date, latest_val = points[-1]
-    target_year = str(int(latest_date[:4]) - 1)
-    prior = None
-    for d, v in points:                              # last point with year <= (latest_year - 1)
-        if d[:4] <= target_year:
-            prior = v
-    if prior is None:
-        prior = points[0][1]                         # fall back to earliest available
-    if not prior:
+    latest_d, latest_v = points[-1]
+    target = _pdate(latest_d) - timedelta(days=365)
+    best_v, best_diff = None, None
+    for d, v in points[:-1]:
+        diff = abs((_pdate(d) - target).days)
+        if best_diff is None or diff < best_diff:
+            best_diff, best_v = diff, v
+    if best_v is None or best_diff is None or best_diff > window_days or not best_v:
         return None
-    return round((latest_val / prior - 1.0) * 100.0, 2)
+    return round((latest_v / best_v - 1.0) * 100.0, 2)
 
 
 def build_features(dbs: CamelDbs, series: Dict[str, str] = None,

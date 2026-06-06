@@ -7,6 +7,34 @@
 
 ## 2026-06-06
 
+**QA/QC hardening pass (independent line-by-line review of S6.5→S9) — 409 → 419 tests green.** An
+independent review audited every new module; the real findings were fixed, each with a regression test
+(`tests/test_qa_hardening.py`):
+- **Regime `_yoy` was month-over-month, not year-over-year** (HIGH) — now matches the observation closest to
+  exactly 1 year back (±60d) or returns None; wrong inflation/commodity inputs no longer misclassify regime.
+- **Regime feature builder ignored data vintages → look-ahead** (HIGH) — `_points` now filters
+  `reported_at <= as_of` and keeps the latest vintage per `event_date` (point-in-time honest).
+- **Connector base `_stamp` fabricated `event_date` for dateless records** (HIGH) — it no longer invents a
+  date; a record the parser couldn't date is dropped as unprovenanced (also fixes a UNIQUE-key collapse).
+- **BLS `M13` (annual average) produced month-13 dates** → mapped to year-end; month validated 1–12.
+- **Unguarded `float()` in fred/treasury/world_bank/bls** — one bad value aborted a whole run; now skips
+  the bad row. World Bank `None-12-31` date guarded. EIA quarterly periods mapped to quarter-end.
+- **`register_asset` silently un-delisted assets** on a partial update (survivorship) — `delisted` is now
+  tri-state (None = leave untouched) with COALESCE.
+- **Beginner-mode "only-tightens" guarantee** now validates against the full `DEFAULT_LIMITS` (rolling +
+  illiquidity rails) and the cash-buffer tiers, not just the YAML.
+- **Sanitiser injection match** now runs on whitespace/markdown-collapsed text ("ignore   previous" no
+  longer slips through). *(Homoglyph/zero-width evasion noted for a future hardening.)*
+- **ETF `netassets` weight-alias** dropped (could capture a dollar-AUM column).
+- **Regime classifier tie-break** is now an explicit risk-first priority, not insertion order.
+- **Deferred (documented backlog):** `broker/paper.py` writes orders + ledger + positions in three
+  separate transactions with no positions↔ledger reconcile — acceptable for Phase-0 single-process, but
+  a single-transaction submit + a positions reconcile is added to the **S12** backlog (realistic execution).
+
+---
+
+## 2026-06-06
+
 **Sprint 9 (Knowledge Graph + Regime Engine) — slice 2 (Regime Engine) — 395 → 409 tests green.** New
 `trader/regime/` package: `features.py` builds point-in-time macro features from `macro_observations`
 (fed funds, 10y−2y curve, CPI YoY, unemployment, HY spread, VIX, USD, oil YoY); `classifier.py` is a

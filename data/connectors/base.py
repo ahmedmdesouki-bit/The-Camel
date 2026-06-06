@@ -83,8 +83,12 @@ class SourceConnector:
 
     def _stamp(self, rec: dict, raw: str, url: str, now: str) -> dict:
         r = dict(rec)
-        r["event_date"] = r.get("event_date") or now
-        r["reported_at"] = r.get("reported_at") or r["event_date"]
+        # Do NOT fabricate event_date: a record the parser couldn't date is not point-in-time
+        # honest, so leave it empty and let validate (missing_provenance) drop it. (Fabricating
+        # `now` here also collapsed UNIQUE(... event_date ...) and silently dropped real rows.)
+        ed = r.get("event_date")
+        r["event_date"] = ed
+        r["reported_at"] = r.get("reported_at") or ed
         r["ingested_at"] = now
         r["known_at"] = now                         # Phase 0: known when ingested
         r["source_id"] = self.spec.source_id

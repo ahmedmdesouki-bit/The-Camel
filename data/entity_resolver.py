@@ -49,8 +49,12 @@ def _utcnow() -> str:
 
 def register_asset(dbs: CamelDbs, symbol: str, *, cik: str = None, name: str = None,
                    sector: str = None, isin: str = None, cusip: str = None,
-                   active_from: str = None, active_to: str = None, delisted: bool = False) -> None:
-    """Upsert identity into `assets` (fundamentals DB)."""
+                   active_from: str = None, active_to: str = None,
+                   delisted: Optional[bool] = None) -> None:
+    """Upsert identity into `assets` (fundamentals DB). `delisted` is tri-state: None leaves the
+    existing flag untouched on update (so a partial identity refresh can't silently un-delist a
+    name — survivorship control); True/False set it explicitly."""
+    delisted_val = None if delisted is None else (1 if delisted else 0)
     with connection(dbs.fundamentals) as conn:
         conn.execute(
             "INSERT INTO assets (symbol, cik, isin, cusip, name, sector, active_from, active_to, "
@@ -61,9 +65,10 @@ def register_asset(dbs: CamelDbs, symbol: str, *, cik: str = None, name: str = N
             "sector=COALESCE(excluded.sector, assets.sector), "
             "active_from=COALESCE(excluded.active_from, assets.active_from), "
             "active_to=COALESCE(excluded.active_to, assets.active_to), "
-            "delisted_flag=excluded.delisted_flag, updated_at=excluded.updated_at",
+            "delisted_flag=COALESCE(excluded.delisted_flag, assets.delisted_flag), "
+            "updated_at=excluded.updated_at",
             (symbol.upper(), cik, isin, cusip, name, sector, active_from, active_to,
-             1 if delisted else 0, _utcnow()),
+             delisted_val, _utcnow()),
         )
 
 

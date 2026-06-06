@@ -81,10 +81,19 @@ def classify(f: Dict[str, Optional[float]]) -> RegimeResult:
             return RegimeResult(Regime.RECOVERY, 0.4, ["benign: no stress signals"], dict(f))
         return RegimeResult(Regime.UNKNOWN, 0.0, ["no macro data"], dict(f))
 
-    regime = max(s, key=lambda k: s[k])
+    # winner = highest score; ties broken by an explicit risk-first priority (not insertion order)
+    regime = max(s, key=lambda k: (s[k], -_TIE_PRIORITY.index(k)))
     total = sum(s.values())
     confidence = round(s[regime] / total, 2) if total else 0.0
     return RegimeResult(regime, confidence, sig, dict(f))
+
+
+# tie-break order: most risk-relevant regimes win an equal-score tie
+_TIE_PRIORITY = [
+    Regime.RECESSION_RISK, Regime.GEOPOLITICAL_RISK_OFF, Regime.INFLATION_SHOCK,
+    Regime.COMMODITY_SUPPLY_SHOCK, Regime.LIQUIDITY_TIGHTENING, Regime.USD_STRENGTH_EM_PRESSURE,
+    Regime.LIQUIDITY_EXPANSION, Regime.DISINFLATION_GROWTH, Regime.RECOVERY,
+]
 
 
 # regime → favoured sectors/themes (consumed by the S9 regime→theme mapper / S11 strategy selection)

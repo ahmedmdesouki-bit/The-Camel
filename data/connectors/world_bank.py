@@ -26,12 +26,17 @@ class WorldBankConnector(MacroConnector):
         out = []
         for row in rows:
             v = row.get("value")
-            if v is None:
+            d = row.get("date")
+            if v is None or not d:
+                continue
+            try:
+                value = float(v)
+            except (TypeError, ValueError):
                 continue
             ind = (row.get("indicator") or {}).get("id", "")
             ctry = (row.get("country") or {}).get("id", "WLD")
             out.append({
                 "series_id": f"{ind}:{ctry}", "indicator": ind, "region": ctry,
-                "value": float(v), "event_date": f'{row.get("date")}-12-31',
+                "value": value, "event_date": f"{d}-12-31",
             })
         return out
