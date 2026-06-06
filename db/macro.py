@@ -37,6 +37,16 @@ CREATE TABLE IF NOT EXISTS macro_observations (
     data_quality_score  REAL,
     UNIQUE(source_id, series_id, event_date, reported_at)
 );
+
+-- S9: regime classifications over time (append-only audit of the regime engine's calls)
+CREATE TABLE IF NOT EXISTS regime_history (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    classified_at   TEXT,
+    regime          TEXT,
+    confidence      REAL,
+    signals         TEXT,    -- JSON array
+    features        TEXT     -- JSON object
+);
 """ + SOURCE_DOCUMENTS_DDL
 
 

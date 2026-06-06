@@ -124,10 +124,11 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   (conflict → news). Slice 5 added the ETF issuer-holdings connector (CSV; `etf_holdings.py` → sharia DB
   look-through). **10 connectors live; all 3 stub DBs hold real data.** → **389 passed**. Remaining:
   ~10 more connectors (OFAC/USGS/disclosures/French/SEC-RSS) + market-data + paid vendors.
-- **Sprint 9 IN PROGRESS — slice 1 (entity resolution).** `assets` table (ticker/CIK/ISIN/CUSIP/name/
-  sector/delisted) in fundamentals DB + `data/entity_resolver.py` (`resolve(ticker)` joins assets +
-  company_facts + etf_holdings look-through + whitelist Sharia status). → **395 passed**. Remaining S9:
-  regime engine, event intelligence, Sharia cross-check (multi-state).
+- **Sprint 9 IN PROGRESS — slices 1–2.** (1) Entity resolution: `assets` table + `data/entity_resolver.py`
+  (`resolve(ticker)` joins assets + company_facts + etf_holdings look-through + whitelist Sharia status).
+  (2) Regime Engine: `trader/regime/` — feature builder over `macro_observations`, deterministic 10-state
+  classifier (regime + confidence + signals; `regime_to_themes`), `regime_history` audit table. → **409
+  passed**. Remaining S9: event intelligence, Sharia cross-check (multi-state).
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -234,6 +235,9 @@ ledger/           writer.py — append_entry + SHA-256 hash chain (→ camel_por
 entrepreneur/     product_gate.py — 17-field ProductThesis + evaluate_gate (S7)
                   constitution.py — EntrepreneurConstitution (separate rails; code-gen-only autonomy)
                   build_pipeline.py — 10-stage state machine (no skip; PRODUCTION needs founder approval)
+
+trader/regime/    features.py (macro features from macro_observations), classifier.py (10-state
+                  regime + confidence + themes), history.py + regime_history table (S9)
 
 capital/          allocator.py — Allocator.request() routes through Constitution
 
@@ -367,7 +371,7 @@ Optimize for **evidence density, not feature count.**
 | S6.6 OK | Position accounting + Ops hardening + Beginner Mode | positions table on every fill (avg cost, realized P&L, exact phantom guard, reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode; broker matrix (331 tests) |
 | S7 OK | Entrepreneur Product Engine (engine; agent scope = code-gen only) | 17-field gate + separate Entrepreneur Constitution + 10-stage pipeline; no launch without founder approval (352 tests) |
 | S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slices 1–5 done** (framework + provenance + 10 connectors incl. ETF look-through + news injection-hardening + scraping policy, 389 tests; all 3 stub DBs real); ~10 connectors + market-data + paid remain |
-| S9 ~ | Knowledge Graph + Regime Engine | **slice 1 done** (entity resolver: ticker → identity/CIK/sector/Sharia/filings/ETF look-through, 395 tests); regime engine + event intelligence + Sharia cross-check remain |
+| S9 ~ | Knowledge Graph + Regime Engine | **slices 1–2 done** (entity resolver + 10-state Regime Engine over real macro, 409 tests); event intelligence + Sharia cross-check (multi-state) remain |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
 | S11 | Strategy Registry + Learning Engine | >=3 strategies (trio) pass Edge Proof; DCA guardrails; never auto-edits the Constitution |
 | S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
