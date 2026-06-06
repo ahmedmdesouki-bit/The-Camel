@@ -27,6 +27,25 @@ live dress rehearsal that produces the track record gating micro-live.)*
 > but dormant until capital/edge justify the spend*; (4) **dividends** → a dividends connector (S8 backlog) +
 > a `dividend_growth` strategy (S11). Plus: *many independent sources per data category, cross-checked* — an
 > explicit S8 goal. A cited data-resource research pass is the agreed next task after this fold.
+> **Cross-build harvest — Alaa's Camel (2026-06-06), founder-facing layer folded in** (full review:
+> `docs/CAMEL_ALAA_REVIEW.md`). A friend's parallel Camel built the *cockpit + coach* to our *engine + rails*.
+> Independent validation of the framing; net gift is a mature founder-facing surface we'd deprioritized. Folded:
+> (a) **founder-panic "RED ALERT" protocol** (breathe→assess→act; human-factors guardrail) → Constitution
+> human-factors + S13 approval gate + daily-brief auto-fire on drop >3%; (b) **screenshot-OCR manual entry**
+> (paste a Sahm screenshot → prices/positions; still writes the append-only ledger + must reconcile) → S13
+> ManualBroker + broker matrix; (c) **strategy-fit selector + fit-metadata** (risk/horizon/research/capital/
+> priority scores; sharia flag+note) → S11 Strategy Registry; (d) **strategy "mix" coherence UX** (explain
+> *why* a pick is off-strategy) → S11 strategy-portfolio matrix rendering; (e) **interactive dashboard** (his
+> single-file HTML as the visual starting point) → S10 decision-quality dashboard + S11 portfolio views,
+> re-wired to our real DBs and to surface *rejections-with-reasons*; (f) **daily brief + WhatsApp/CallMeBot**
+> 2nd alert channel (always show Live-Money-Gate X/10) → S6 alerts; (g) **LLM-output eval harness** → S12.5
+> agents + the coach skill; (h) a **founder-tools `camel-coach` skill** (read-only Q&A over our governed
+> state; proposes, never executes) → new founder-tools workstream. Harvested frameworks: **cash-drag ratio**
+> (S11), **yield-on-cost** (S11 dividend_growth), **moat matrix** (Edge-Proof #14 / fundamentals agent),
+> **sector-concentration cap ≤40% incl. ETF look-through** (S11 risk budgets), **SAR/USD-peg monitor** (S9
+> macro). **Declined:** his looser "debt÷assets <33%" Sharia screen (keep full AAOIFI), hardcoded analysis
+> data, no-enforcement posture, localStorage persistence, Yahoo/stooq as a decision-grade source.
+
 Guiding principle reaffirmed: **Safety first. Evidence second. Autonomy last.**
 Optimize for **evidence density, not feature count.**
 

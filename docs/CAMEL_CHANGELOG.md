@@ -7,6 +7,24 @@
 
 ## 2026-06-06
 
+**Cross-build review — Alaa's parallel Camel (founder-facing layer) reviewed file-by-file + harvested
+(docs-only).** A friend's Camel that built the *cockpit + coach* (interactive dashboard, packaged
+`camel-coach` Claude skill, daily-brief script, OCR manual entry) to our *engine + rails*. Same vocabulary,
+no enforcement layer — independent validation of the framing. Full review → `docs/CAMEL_ALAA_REVIEW.md`.
+**Adopted/folded:** RED-ALERT founder-panic protocol (→ Constitution human-factors + S13 gate + daily brief);
+screenshot-OCR manual entry (→ S13 ManualBroker + broker matrix); strategy-fit selector + fit-metadata (→ S11
+registry); strategy "mix" coherence UX (→ S11 matrix rendering); his interactive dashboard as the S10/S11 UI
+starting point (re-wired to our DBs, must surface rejections-with-reasons); WhatsApp/CallMeBot 2nd alert
+channel + brief format (→ S6); LLM-output eval harness (→ S12.5 + coach skill); a founder-tools `camel-coach`
+skill (read-only, proposes-never-executes); frameworks: cash-drag ratio, yield-on-cost, moat matrix, sector
+cap ≤40% incl. ETF look-through, SAR/USD-peg monitor. **Declined:** his looser debt÷assets<33% Sharia screen
+(keep full AAOIFI), hardcoded analysis data, no-enforcement posture, localStorage, Yahoo/stooq as
+decision-grade. No code; 419 tests unchanged.
+
+---
+
+## 2026-06-06
+
 **Consultant review round #7 (portfolio/strategy/data/research-agent expansion) folded (docs-only).** Two
 consultant docs that *independently validated* the architecture we'd already built/planned (~70% already
 done or folded). **Adopted (5 additive items):**

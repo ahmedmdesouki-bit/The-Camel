@@ -341,6 +341,7 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 | `docs/CAMEL_MACHINE_HARDENING.md` | S6 founder machine-setup checklist (Tailscale, BitLocker, secrets, backups, NTFS config lock, dead-man's-switch) |
 | `docs/CAMEL_BROKER_MATRIX.md` | Broker capability comparison + resolved direction (Alpaca + Sahm manual + IBKR Phase 2) |
 | `docs/CAMEL_DATA_SOURCES.md` | Verified data-feed catalogue + connector build-list (deep-research output; drives S8/S8.5/S9 Sharia ratios) |
+| `docs/CAMEL_ALAA_REVIEW.md` | Review of Alaa's parallel Camel (founder-facing dashboard + coach skill); adopt/adapt/decline + sprint mapping |
 | `docs/CAMEL_CHANGELOG.md` | Sprint & decision history |
 | `docs/source-materials/` | Archived original PRDs/specs/playbook (provenance only) |
 | `HANDOFF.md` | Current status + tech stack + how to run |
