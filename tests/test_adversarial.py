@@ -45,7 +45,7 @@ def test_adv_stale_data_blocked():
 
 # 4 — agent attempts a duplicate order
 def test_adv_duplicate_order_blocked(dbs):
-    broker = PaperBroker(dbs.portfolio, dbs.market)
+    broker = PaperBroker(dbs.portfolio, dbs.market, allow_fallback_price=True)
     from guardrail.constitution import Decision
     ok = Decision(allow=True, reason="ok")
     broker.submit(_buy(), ok, client_order_id="dup")

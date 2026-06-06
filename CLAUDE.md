@@ -93,6 +93,13 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   test + backup + reconcile). → **289 passed**. *Machine-setup half (Tailscale, BitLocker,
   dedicated user, UPS, MFA, secrets migration) is the founder checklist in
   `docs/CAMEL_MACHINE_HARDENING.md`.*
+- **Sprint 6.5 COMPLETE (Roadmap v3 — first code sprint).** Safety & accounting hotfix:
+  phantom-sell guard + close-only/reduce-only exits for frozen/non-compliant holdings (in
+  `guardrail/constitution.py`), Edge Proof now mandatory for buys by default while sells are
+  exempt (`capital/allocator.py`, `require_edge=None` → resolves to True for buy/increase), and
+  the PaperBroker refuses the $1 fallback price outside opted-in unit tests
+  (`broker/paper.py`, `NoMarketPriceError`; fallback fills stamped `fill_model="fallback_dollar"`).
+  → **309 passed**.
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -293,8 +300,8 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur moved earlier):
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK ->
-S6.5 <- NEXT -> S7 (Entrepreneur) -> S8 (Data Backbone) -> S9 (Knowledge Graph + Regime)
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK ->
+S7 (Entrepreneur) <- NEXT -> S8 (Data Backbone) -> S9 (Knowledge Graph + Regime)
 -> S10 (Full Edge Proof) -> S11 (Strategy Registry) -> S12 (Edge Lab + realistic paper)
 -> S13 (Micro-Live) -> S14 (Restructure)
 ```
@@ -311,7 +318,7 @@ Optimize for **evidence density, not feature count.**
 | S5 OK | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof (253 tests) |
 | S5.5 OK | Minimal ops visibility | daily report w/ status; kill-switch self-test; backup restore verified (263 tests) |
 | S6 OK | Dashboard + Telegram + monitoring (code) | dashboard reflects paper trade; weekly checks pass; loss-stop sim halts (289 tests) + machine checklist |
-| S6.5 | Safety & Accounting hotfix | phantom sell blocked; frozen-name close-only; no $1 fallback in non-test paths |
+| S6.5 OK | Safety & Accounting hotfix | phantom sell blocked; frozen-name close-only; buy needs edge; no $1 fallback in non-test paths (309 tests) |
 | S7 | Entrepreneur Product Engine (moved earlier) | no build without 17-field gate + Sharia check + approval; live payment-capable URL |
 | S8 | Data Intelligence Backbone (top-20 connectors) | no record without full provenance + point-in-time; ≥16 free connectors live; raw text never reaches the LLM |
 | S9 | Knowledge Graph + Regime Engine | ticker → identity/Sharia/filings/events/exposure; regime classified from real macro; Sharia disagreement freezes buys |

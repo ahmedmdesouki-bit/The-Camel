@@ -5,8 +5,8 @@
 > reading anything else. Repo links are provided if you want to go deeper.
 >
 > **Snapshot date:** 2026-06-06 · **Repo:** https://github.com/ahmedmdesouki-bit/The-Camel
-> (branch `main`) · **Status:** Sprints S1–S6 complete · 289 tests green · paper-mode only ·
-> on Roadmap v3 (S1–S14).
+> (branch `main`) · **Status:** Sprints S1–S6.5 complete · 309 tests green · paper-mode only ·
+> on Roadmap v3 (S1–S14), next S7 (Entrepreneur).
 
 > ⚠️ **What this is:** a personal, educational, decision-support / engineering project for the
 > founder's **own** capital. It is **not** financial, legal, or Sharia advice, and **not** a
@@ -182,7 +182,7 @@ Learning Ledger, an append-only op log, and a GREEN/YELLOW/RED/BLACK health moni
 
 ---
 
-## 7. What's built — Phase 0, 289 tests green
+## 7. What's built — Phase 0, 309 tests green
 
 The **safety and evidence core is done.** Everything below runs in paper/simulation behind a human gate.
 
@@ -196,6 +196,7 @@ The **safety and evidence core is done.** Everything below runs in paper/simulat
 | **S5** | Operator OS | 11-state machine, Opportunity Router (leans to *Wait*), task queue, Learning Ledger, op log, health monitor | 253 |
 | **S5.5** | Minimal Ops | Daily report, kill-switch self-test, plaintext-secret scan, verified backup/restore | 263 |
 | **S6** | Dashboard + Monitoring | Read-only HTML dashboard, credential-safe Telegram alerts, heartbeat, log rotation, hard secrets refusal, off-box archive, weekly scheduled checks + a founder machine-hardening checklist | 289 |
+| **S6.5** | Safety & accounting hotfix | Phantom-sell + oversell guard, close-only/reduce-only exits for frozen/non-compliant holdings, Edge Proof mandatory for buys (sells exempt), no $1 fallback fill in production | 309 |
 
 **Notable engineering choices already proven by tests:** the agent has no write path to founder
 config (`config_guard`); the ledger is a cash-account convention with a hash chain that detects
@@ -261,8 +262,7 @@ cash-flow (Entrepreneur) arm earlier.** Optimize for *evidence density, not feat
 
 | Sprint | Theme | One-line goal |
 |---|---|---|
-| **S6.5** *(next)* | Safety & accounting hotfix | No phantom sells; close-only exits for frozen/non-compliant holdings; Edge Proof mandatory for buys; no $1 fallback price in prod |
-| **S7** | Entrepreneur Product Engine *(moved earlier)* | Ship one compliant product behind a 17-field gate + Entrepreneur Constitution (lead: Arabic complaint/SLA assistant for Saudi travel/hospitality) |
+| **S7** *(next)* | Entrepreneur Product Engine *(moved earlier)* | Ship one compliant product behind a 17-field gate + Entrepreneur Constitution (lead: Arabic complaint/SLA assistant for Saudi travel/hospitality) |
 | **S8** | Data Intelligence Backbone | `SourceConnector` framework + **top-20 connectors** (SEC EDGAR/XBRL, FRED + ALFRED vintage, World Bank, GDELT, BLS, BEA, Treasury, EIA, ACLED, OFAC, ETF holdings, …), full provenance + point-in-time, recorded-fixture tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); fills the stub DBs |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution (ticker↔CIK↔ISIN↔CUSIP), ETF look-through, event intelligence, 10-state regime classifier from real macro, Sharia cross-check (multi-state status; disagreement → freeze new buys) |
 | **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay) + a decision-quality dashboard (shows *why*: rejected signals + reason, regime, beating-benchmark, edge decay) |
