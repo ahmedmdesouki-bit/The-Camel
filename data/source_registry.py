@@ -73,3 +73,9 @@ BLS = register(SourceSpec(
     source_id="bls", source_name="US Bureau of Labor Statistics", source_type="macro",
     base_url="https://api.bls.gov/publicAPI", requires_api_key=False, reliability_tier=1,
 ))
+
+GDELT = register(SourceSpec(
+    source_id="gdelt", source_name="GDELT 2.0 (global news/events)", source_type="news",
+    base_url="https://api.gdeltproject.org", requires_api_key=False,
+    requires_cross_check=True, reliability_tier=2,   # news → needs source quorum >=2
+))

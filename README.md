@@ -11,12 +11,12 @@ autonomy is earned through a paper track record, never granted.
 > **Safety first. Evidence second. Autonomy last.**
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · Sprints **S1–S7 complete**, **S8 in progress (slice 1)** · **371 tests green** ·
+**Status:** Phase 0 (paper) · Sprints **S1–S7 complete**, **S8 in progress (slice 1)** · **379 tests green** ·
 7-DB architecture live · on **Roadmap v3** (S1–S14).
 
 ---
 
-## What's built (Phase 0 — paper, 371 tests green)
+## What's built (Phase 0 — paper, 379 tests green)
 
 The **safety and evidence core** is done. Everything runs in paper mode behind a human gate.
 
@@ -33,7 +33,7 @@ The **safety and evidence core** is done. Everything runs in paper mode behind a
 | ✅ | **S6.5** Safety & accounting hotfix | Phantom-sell guard, close-only exits for frozen/non-compliant holdings, Edge Proof mandatory for buys, no $1 fallback price in production |
 | ✅ | **S6.6** Position accounting + ops hardening | Positions table on every fill (avg cost, realized P&L, exact phantom guard, ledger reconcile); illiquidity fail-closed in live; dead-man's-switch; SQLite WAL; beginner mode; broker matrix |
 | ✅ | **S7** Entrepreneur Product Engine | 17-field Product Gate + separate Entrepreneur Constitution (code-gen-only autonomy; privacy/rights/budget/approval gates; banned claim wording) + 10-stage build pipeline (no launch without founder approval) |
-| ◑ | **S8** Data backbone (slice 1) | `SourceConnector` framework + provenance + `source_documents`; FRED → real macro observations, SEC EDGAR → real company facts; scraping policy. Injectable transport (no live web in tests, zero new deps) |
+| ◑ | **S8** Data backbone (slices 1–3) | `SourceConnector` framework + provenance + `source_documents`; **6 connectors** (FRED, SEC EDGAR, Treasury, World Bank, BLS, GDELT) filling all 3 stub DBs; news pipeline with injection-redaction; scraping policy. Injectable transport (no live web in tests, zero new deps) |
 
 Plus the **7-database SQLite architecture** (market / macro / fundamentals / news / sharia / portfolio / learning)
 with **point-in-time discipline** (`event_date · reported_at · ingested_at · known_at`) so backtests can't cheat.
@@ -46,7 +46,7 @@ with **point-in-time discipline** (`event_date · reported_at · ingested_at · 
 
 | Sprint | Theme | One-line goal |
 |---|---|---|
-| **S8** ◑ in progress | Data Intelligence Backbone | **slice 1 done**: `SourceConnector` + provenance + FRED (macro) + SEC EDGAR (fundamentals) + scraping policy. **Next:** ~18 more connectors (BLS/BEA/Treasury/World Bank/GDELT…), news pipeline, paid vendors |
+| **S8** ◑ in progress | Data Intelligence Backbone | **slices 1–3 done**: framework + provenance + 6 connectors (FRED/SEC/Treasury/World Bank/BLS/GDELT) + news pipeline (injection-hardened); all 3 stub DBs real. **Next:** ~14 more connectors, market-data adapter, paid vendors |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution, event intelligence, 10-state regime classifier, Sharia cross-check |
 | **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (multiple-testing penalty, signal decay, regime-filtered sample) + decision-quality dashboard |
 | **S11** | Strategy Registry + Learning | Trio: `core_dca` / `quality_momentum` / `etf_regime_rotation`; 4-tier learning engine |
