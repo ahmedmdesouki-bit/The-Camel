@@ -7,6 +7,19 @@
 
 ## 2026-06-06
 
+**Sprint 9 (Knowledge Graph + Regime Engine) — slice 1 (entity resolution) — 389 → 395 tests green.**
+New `assets` table (ticker ↔ CIK ↔ ISIN ↔ CUSIP ↔ name ↔ sector, `active_from/to`, `delisted_flag` for
+survivorship control) in the fundamentals DB, and `data/entity_resolver.py`: `resolve(ticker)` returns a
+`ResolvedAsset` by joining `assets` (identity) + `company_facts` (latest SEC filing) + `etf_holdings` (which
+compliant ETFs hold the name — single-name look-through) + the Sharia whitelist (status/frozen). `register_asset`
+upserts identity (COALESCE so partial updates don't wipe fields). Delivers the gate's identity half. Remaining
+S9: Regime Engine (classifier over macro_observations), event intelligence (over news_events), Sharia
+cross-check + multi-state status. Also: S8 connector remainder formally deferred to a backlog (founder decision).
+
+---
+
+## 2026-06-06
+
 **Sprint 8 (Data Intelligence Backbone) — slices 1–5 — 352 → 389 tests green.** The long pole begins.
 *Slice 5:* `data/connectors/etf_holdings.py` — Sharia-ETF issuer holdings (SPUS/HLAL/MNZL) from CSV →
 `camel_sharia.db.etf_holdings`, so the portfolio can look *through* an ETF to its single-name exposure
