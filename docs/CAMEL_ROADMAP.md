@@ -520,8 +520,9 @@ failed-source count · stale-source warnings · data-quality panel.
 **Gate:** no ingested record without full provenance + point-in-time fields; ≥16 free connectors live
 with recorded-fixture tests; macro/fundamentals/news DBs hold real data; raw text never reaches the LLM.
 
-**STATUS: IN PROGRESS — slices 1–3 (352 → 379 tests); 6 connectors live (FRED, SEC EDGAR, Treasury, World Bank,
-BLS, GDELT) — all three stub DBs (macro/fundamentals/news) now hold real data.** Slice 3 added the
+**STATUS: IN PROGRESS — slices 1–4 (352 → 384 tests); 9 connectors live (FRED, SEC EDGAR, Treasury, World Bank,
+BLS, GDELT, BEA, EIA, ACLED) — all three stub DBs (macro/fundamentals/news) now hold real data.** Slice 4
+added BEA + EIA (macro) and ACLED (conflict events → news, structured-only, notes never stored). Slice 3 added the
 **news/events pipeline**: `data/connectors/news_base.py` (`NewsConnector` — every title sanitised; injection-
 flagged titles **redacted + marked unsafe + quality-downgraded**, raw string never persisted; structured
 events only, no raw-body column) + `data/connectors/gdelt.py`, with the reviewers' **news adversarial tests**. Framework + provenance + first 2 connectors:

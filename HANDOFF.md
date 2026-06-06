@@ -1,10 +1,10 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S7 complete**, **S8 in progress (slice 1)** · **379 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S7 complete**, **S8 in progress (slice 1)** · **384 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
-(S1–S14) · **In S8:** slices 1–3 done (framework + 6 connectors + news pipeline; all 3 stub DBs real); next ~14 more connectors + market-data + paid vendors
+(S1–S14) · **In S8:** slices 1–4 done (framework + 9 connectors + news pipeline; all 3 stub DBs real); next ~11 more connectors + market-data + paid vendors
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's

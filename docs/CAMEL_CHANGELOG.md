@@ -7,7 +7,10 @@
 
 ## 2026-06-06
 
-**Sprint 8 (Data Intelligence Backbone) — slices 1–3 — 352 → 379 tests green.** The long pole begins.
+**Sprint 8 (Data Intelligence Backbone) — slices 1–4 — 352 → 384 tests green.** The long pole begins.
+*Slice 4:* `bea.py` (BEA GDP/income) + `eia.py` (EIA energy) → macro_observations; `acled.py` (armed
+conflict / protests) → news_events as structured events built only from `event_type`+`country` (free-text
+`notes` never stored). **9 connectors live** (FRED, SEC, Treasury, World Bank, BLS, GDELT, BEA, EIA, ACLED).
 *Slice 3 (news/events pipeline):* `data/connectors/news_base.py` (`NewsConnector` — every title runs through
 the sanitiser; **injection-flagged titles are redacted, marked `safe=0`, and quality-downgraded** so the raw
 hostile string never persists; only structured events land, no raw-body column) + `data/connectors/gdelt.py`
