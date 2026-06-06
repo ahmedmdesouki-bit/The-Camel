@@ -7,6 +7,20 @@
 
 ## 2026-06-06
 
+**Sprint 5.5 (Minimal Ops Visibility) COMPLETE — 253 → 263 tests green.**
+- `ops/daily_report.py` — assembles the GREEN/YELLOW/RED/BLACK status + live counts into the
+  founder daily report (console/text; Telegram delivery in S6).
+- `ops/kill_switch_test.py` — runnable self-test: halted → loop tick does not run (no run row),
+  resumed → loop completes. (S6 schedules it weekly.)
+- `ops/secrets_check.py` — startup scan; warns when a sensitive key is a real plaintext env
+  var (hard refusal arrives with the secrets manager in S6).
+- `ops/backup.py` — verified (SHA-256) local backup + restore of all seven DBs; a silent
+  partial copy fails verification. (Off-box encrypted backup is S6.)
+
+---
+
+## 2026-06-06
+
 **Sprint 5 (Operator OS) COMPLETE — 217 → 253 tests green.**
 New `operator_os/` package — **named `operator_os` not `operator` to avoid shadowing the
 Python stdlib `operator` module** (a real collision that would break dependencies). Contents:

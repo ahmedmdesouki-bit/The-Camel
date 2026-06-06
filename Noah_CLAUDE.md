@@ -80,6 +80,10 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   (5 paths, leans to Wait, no Trader without Edge Proof), persistent task queue, Learning
   Ledger, append-only op log, and a health monitor with the GREEN/YELLOW/RED/BLACK classifier.
   → **253 passed**.
+- **Sprint 5.5 COMPLETE.** Minimal Ops Visibility: `ops/daily_report.py` (status + counts),
+  `ops/kill_switch_test.py` (halt stops the tick, resume restores), `ops/secrets_check.py`
+  (plaintext-secret startup scan), `ops/backup.py` (verified backup + restore of all 7 DBs).
+  → **263 passed**.
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `NoahDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -279,8 +283,8 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 
 Sequence:
 ```
-S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 (Minimal Ops) <- NEXT
--> S6 -> S7 -> S8 -> S9 -> S10 -> S11 -> S12
+S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 <- NEXT
+-> S7 -> S8 -> S9 -> S10 -> S11 -> S12
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
 
@@ -292,6 +296,7 @@ Guiding principle: **Safety first. Evidence second. Autonomy last.**
 | S4 OK | Hardening + Budget Kernel + freshness | config-immutability proven; stale data blocks; no dup orders (197 tests) |
 | S4.5 OK | Edge Proof v0 | no trade without an EdgeReport (217 tests) |
 | S5 OK | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof (253 tests) |
+| S5.5 OK | Minimal ops visibility | daily report w/ status; kill-switch self-test; backup restore verified (263 tests) |
 | S5.5 | Minimal ops visibility | health report w/ GREEN/YELLOW/RED/BLACK; kill-switch test |
 | S6 | Dashboard + Telegram + Tailscale kill switch | kill switch stops next tick; backup restore verified |
 | S7 | Edge Proof Engine (13 checks) | no edge proof = no trade; model disagreement -> human |

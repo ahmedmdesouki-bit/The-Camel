@@ -255,6 +255,11 @@ from S6, brought forward so the loop is observable as soon as it's running.*
 **Gate:** Health report emits a GREEN/YELLOW/RED/BLACK status; kill-switch test passes;
 backup restore verified; no plaintext secret goes undetected.
 
+**STATUS: COMPLETE** (263 tests). `ops/daily_report.py`, `ops/kill_switch_test.py`,
+`ops/secrets_check.py`, `ops/backup.py`. The status classifier itself shipped early in S5
+(`ops/health_monitor.py`). Remaining for S6: Telegram delivery, scheduled weekly kill-switch
+test, secrets-manager hard refusal, off-box encrypted backup, dashboard, Tailscale.
+
 ---
 
 ### S6 — Dashboard + Monitoring + Kill Switch over Tailscale + Ops Hardening
