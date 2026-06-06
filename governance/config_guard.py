@@ -38,7 +38,7 @@ def agent_write_config(target: str, *_args, **_kwargs) -> None:
     """
     The ONLY config-write entry point reachable from agent code. It always refuses —
     there is deliberately no path for the agent to mutate founder-owned config.
-    Constitution rule #7: "Noah cannot change its own rules."
+    Constitution rule #7: "Camel cannot change its own rules."
     """
     raise ConfigImmutableError(
         f"Agent process cannot write founder-owned config ({target!r}). "

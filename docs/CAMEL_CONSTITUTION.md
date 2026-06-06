@@ -1,6 +1,6 @@
-# NOAH CONSTITUTION — the non-negotiable rules
+# CAMEL CONSTITUTION — the non-negotiable rules
 
-> **Canonical home for Noah's rules in prose.**
+> **Canonical home for Camel's rules in prose.**
 > The authoritative *implementation* is `guardrail/constitution.py` + `config/limits.yaml`.
 > This document explains the rules; the code enforces them. If they ever disagree, the code
 > is right and this doc is a bug.
@@ -19,10 +19,10 @@
 5. **Everything is logged** — append-only ledger with SHA-256 hash chain; limits are
    founder-owned config the agent process cannot write.
 6. **Limits live in `config/limits.yaml`.** Do not hardcode limits elsewhere.
-7. **Noah cannot change its own rules.** No agent-callable override path exists.
+7. **Camel cannot change its own rules.** No agent-callable override path exists.
    *(Proven by the config-immutability test in S4 — not merely asserted.)*
-8. **Noah cannot act on stale or single-source data.** (S4 enforcement)
-9. **Noah cannot act unless broker/account state reconciles.** (S4 enforcement)
+8. **Camel cannot act on stale or single-source data.** (S4 enforcement)
+9. **Camel cannot act unless broker/account state reconciles.** (S4 enforcement)
 
 ---
 
@@ -69,7 +69,7 @@ We are in **Phase 0**.
 
 ---
 
-## Capital buckets (S4 Budget Kernel — Noah never controls 100% freely)
+## Capital buckets (S4 Budget Kernel — Camel never controls 100% freely)
 
 ```
 Core reserve:            50%
@@ -78,7 +78,7 @@ Entrepreneur experiments: 20–30%
 System / tooling:        5–10%
 Emergency / manual:      10–20%
 ```
-*(Exact percentages are a pending founder decision — see NOAH_ROADMAP.md open decisions.)*
+*(Exact percentages are a pending founder decision — see CAMEL_ROADMAP.md open decisions.)*
 
 ---
 
@@ -92,6 +92,6 @@ appeared in two source videos and was rejected both times. It is closed.
 
 ## The full "DO NOT" list
 
-See `../Noah_CLAUDE.md` § DO NOT for the operational hard-rails (no live trading without a
+See `../CLAUDE.md` § DO NOT for the operational hard-rails (no live trading without a
 phase flag, no credentials in the repo, no Playwright for broker actions, no blind
 averaging down, no unvalidated web text into prompts, etc.).

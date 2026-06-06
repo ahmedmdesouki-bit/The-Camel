@@ -1,5 +1,5 @@
 """
-Operator State Machine (S5) — Noah is not a loose loop.
+Operator State Machine (S5) — Camel is not a loose loop.
 
 Eleven formal states with explicit, enforced transitions. The key safety rules:
   - cannot jump FORMING_THESIS -> ACTING (must prove edge + get approval first)

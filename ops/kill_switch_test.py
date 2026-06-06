@@ -9,7 +9,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from typing import Dict
 
-from db.paths import NoahDbs
+from db.paths import CamelDbs
 from loop.runner import LoopConfig, LoopRunner
 from ops.kill_switch import halt, resume, is_halted
 
@@ -25,7 +25,7 @@ def _run_count(portfolio_db: str) -> int:
         return conn.execute("SELECT COUNT(*) FROM runs").fetchone()[0]
 
 
-def run_kill_switch_test(dbs: NoahDbs) -> KillSwitchTestResult:
+def run_kill_switch_test(dbs: CamelDbs) -> KillSwitchTestResult:
     detail: Dict[str, str] = {}
     resume()  # ensure a clean start
 

@@ -1,8 +1,8 @@
-# CLAUDE.md — Noah operator (context for Claude Code)
+# CLAUDE.md — Camel operator (context for Claude Code)
 
-> You are working on **Noah**, a guardrailed autonomous AI operator that runs a
+> You are working on **Camel**, a guardrailed autonomous AI operator that runs a
 > continuous Observe→Thesis→Choose→Act→Measure→Learn loop across two domains:
-> **Trader Noah** (Sharia-compliant markets) and **Entrepreneur Noah** (Sharia-compliant
+> **Trader Camel** (Sharia-compliant markets) and **Entrepreneur Camel** (Sharia-compliant
 > AI products). Founder: Chiko (Riyadh). Runtime: Windows PC.
 > This file is the **operating manual** — how to work in the repo. The full sprint plan,
 > rules-in-prose, data contracts, testing, and go-live checklist live in `docs/` (see the
@@ -12,9 +12,9 @@
 
 ## North Star
 
-> Noah is a Sharia-compliant autonomous operator with a deterministic constitution,
+> Camel is a Sharia-compliant autonomous operator with a deterministic constitution,
 > an edge-proof engine, a budget kernel, and a learning ledger.
-> Noah is not a stock-picking chatbot.
+> Camel is not a stock-picking chatbot.
 > LLM proposes. Math tests. Guardrails decide. Human approves high-risk actions.
 
 ## Priority hierarchy (never invert this)
@@ -48,11 +48,11 @@ make a feature work. If a task would require bypassing the Constitution, stop an
 5. **Everything is logged** — append-only ledger with SHA-256 hash chain; limits are
    founder-owned config the agent process cannot write.
 6. Limits live in `config/limits.yaml`. Do not hardcode limits elsewhere.
-7. **Noah cannot change its own rules.** No agent-callable override path exists.
-8. **Noah cannot act on stale or single-source data.** (Sprint 4 enforcement)
-9. **Noah cannot act unless broker/account state reconciles.** (Sprint 4 enforcement)
+7. **Camel cannot change its own rules.** No agent-callable override path exists.
+8. **Camel cannot act on stale or single-source data.** (Sprint 4 enforcement)
+9. **Camel cannot act unless broker/account state reconciles.** (Sprint 4 enforcement)
 
-> Full rules in prose (phase gates, AAOIFI thresholds, capital buckets): `docs/NOAH_CONSTITUTION.md`.
+> Full rules in prose (phase gates, AAOIFI thresholds, capital buckets): `docs/CAMEL_CONSTITUTION.md`.
 > Authoritative implementation: `guardrail/constitution.py` + `config/limits.yaml`.
 
 ---
@@ -71,7 +71,7 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   → **197 passed**. Two items deferred by dependency: max cancel/replace (→ S11 LiveBroker),
   earnings blackout (→ S7 earnings data).
 - **Sprint 4.5 COMPLETE.** Edge Proof v0 (`engine/edge_proof_v0.py`): historical hit-rate +
-  forward-return vs benchmark from `noah_market.db`; `gate()` wired into the allocator — no
+  forward-return vs benchmark from `camel_market.db`; `gate()` wired into the allocator — no
   trade proceeds without a passing `EdgeReport`; missing/weak/stale → `trade_allowed=false`.
   → **217 passed**.
 - **Sprint 5 COMPLETE.** Operator OS in `operator_os/` (named to avoid the stdlib `operator`
@@ -84,7 +84,7 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   `ops/kill_switch_test.py` (halt stops the tick, resume restores), `ops/secrets_check.py`
   (plaintext-secret startup scan), `ops/backup.py` (verified backup + restore of all 7 DBs).
   → **263 passed**.
-- **7-DB architecture live.** All modules now use domain-specific SQLite files via `NoahDbs`.
+- **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
 > and hits Windows MAX_PATH without the virtual drive. `git config --global core.longpaths true`
@@ -94,27 +94,27 @@ make a feature work. If a task would require bypassing the Constitution, stop an
 
 ## Seven-database architecture (Phase 0 — SQLite)
 
-Each domain owns its own SQLite file. Callers construct `NoahDbs.from_dir(base_dir)` and
+Each domain owns its own SQLite file. Callers construct `CamelDbs.from_dir(base_dir)` and
 pass the right sub-path to each module.
 
 | DB file | Owner module(s) | Content |
 |---|---|---|
-| `noah_market.db` | `data/` | prices, dividends, splits |
-| `noah_macro.db` | stub → Sprint 7 | rates, PMIs, yield curve, GDP |
-| `noah_fundamentals.db` | stub → Sprint 7 | revenue, margins, EPS, FCF, debt |
-| `noah_news.db` | stub → Sprint 7 | structured event objects (never raw text) |
-| `noah_sharia.db` | `sharia/` | whitelist (versioned), sharia_events |
-| `noah_portfolio.db` | `broker/`, `ledger/`, `loop/` | orders, positions, ledger, runs |
-| `noah_learning.db` | Sprint 5 | decisions, outcomes, mistake log, lessons |
+| `camel_market.db` | `data/` | prices, dividends, splits |
+| `camel_macro.db` | stub → Sprint 7 | rates, PMIs, yield curve, GDP |
+| `camel_fundamentals.db` | stub → Sprint 7 | revenue, margins, EPS, FCF, debt |
+| `camel_news.db` | stub → Sprint 7 | structured event objects (never raw text) |
+| `camel_sharia.db` | `sharia/` | whitelist (versioned), sharia_events |
+| `camel_portfolio.db` | `broker/`, `ledger/`, `loop/` | orders, positions, ledger, runs |
+| `camel_learning.db` | Sprint 5 | decisions, outcomes, mistake log, lessons |
 
 Migrate to Supabase when multi-device / dashboard / remote access is needed (Sprint 6+).
 
 **Point-in-time discipline (S4):** every decision-relevant table carries four timestamps —
 `event_date` (when it happened), `reported_at` (when the public learned it), `ingested_at`
-(when Noah collected it), `known_at` (when Noah was allowed to use it). This is what makes
+(when Camel collected it), `known_at` (when Camel was allowed to use it). This is what makes
 backtests honest. Added in S4, before data accumulates — it cannot be retrofitted later.
 
-> Full schemas, data quality scoring, and contracts: `docs/NOAH_DATA_CONTRACTS.md`.
+> Full schemas, data quality scoring, and contracts: `docs/CAMEL_DATA_CONTRACTS.md`.
 
 ---
 
@@ -126,16 +126,16 @@ guardrail/        constitution.py — evaluate(action, state) -> Decision. The g
 
 config/           limits.yaml — founder-owned (phase, caps, envelope, cash tiers)
 
-db/               paths.py — NoahDbs dataclass + init_all()
+db/               paths.py — CamelDbs dataclass + init_all()
                   market.py / sharia.py / portfolio.py / learning.py (DDL)
                   macro.py / fundamentals.py / news.py (stubs)
                   sqlite.py — connect() helper
 
-sharia/           whitelist.py — load/add/freeze/unfreeze (→ noah_sharia.db)
+sharia/           whitelist.py — load/add/freeze/unfreeze (→ camel_sharia.db)
                   screener.py — quarterly AAOIFI re-screen job
                   classifier.py — business-model haram classifier
 
-data/             store.py — store_price / get_prices (→ noah_market.db)
+data/             store.py — store_price / get_prices (→ camel_market.db)
                   triangulation.py — cross-source disagreement (>0.5% flags)
                   alpaca.py — Alpaca paper EOD ingestion adapter
                   freshness.py — stale-data gate (S4)
@@ -168,15 +168,15 @@ learning/         base_rate_updater.py — L1: update strategy base-rates after 
                   improvement_proposer.py — L3: write proposed changes for founder approval
                                             (proposes only — never auto-applies)
 
-loop/             runner.py — LoopRunner (takes LoopConfig with dbs: NoahDbs)
-                  state.py — RunState + begin/update/finish_run (→ noah_portfolio.db)
+loop/             runner.py — LoopRunner (takes LoopConfig with dbs: CamelDbs)
+                  state.py — RunState + begin/update/finish_run (→ camel_portfolio.db)
                   scheduler.py — Windows Task Scheduler entrypoint (EOD, once daily)
                   intraday_monitor.py — 5-min position manager during market hours (S8)
 
 broker/           paper.py — PaperBroker(portfolio_db, market_db)
                   live.py — LiveBroker stub (Phase 1+)
 
-ledger/           writer.py — append_entry + SHA-256 hash chain (→ noah_portfolio.db)
+ledger/           writer.py — append_entry + SHA-256 hash chain (→ camel_portfolio.db)
                   reconcile.py — verify_hash_chain + balance diff
 
 capital/          allocator.py — Allocator.request() routes through Constitution
@@ -230,7 +230,7 @@ Observe
 Do not enable live trading outside an explicit founder-owned phase flag.
 Do not add real broker credentials to the repo or any committed file.
 Do not weaken or bypass a guardrail for convenience or to make a feature work.
-Do not let Noah edit config, limits, whitelist, approval rules, or tool permissions.
+Do not let Camel edit config, limits, whitelist, approval rules, or tool permissions.
 Do not merge to main without approval.
 Do not use Playwright (or any browser automation) for broker actions or money movement.
 Do not add options / derivatives / margin / shorting strategies (the Wheel included).
@@ -264,22 +264,22 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 |---|---|
 | `README.md` | Repo entry point (top-level orientation) |
 | `docs/README.md` | Documentation index |
-| `docs/NOAH_BRIEF.md` | Project context: why/who, real capital, open questions |
-| `docs/NOAH_ROADMAP.md` | Full sprint plan S1-S12 + open decisions + definition of done |
-| `docs/NOAH_CONSTITUTION.md` | The rules in prose (Sharia, risk, phase gates) |
-| `docs/NOAH_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
-| `docs/NOAH_TESTING.md` | Test strategy, adversarial + integration suites |
-| `docs/NOAH_LIVE_READINESS.md` | Phase 1 go-live checklist + definition of done |
-| `docs/NOAH_CHANGELOG.md` | Sprint & decision history |
+| `docs/CAMEL_BRIEF.md` | Project context: why/who, real capital, open questions |
+| `docs/CAMEL_ROADMAP.md` | Full sprint plan S1-S12 + open decisions + definition of done |
+| `docs/CAMEL_CONSTITUTION.md` | The rules in prose (Sharia, risk, phase gates) |
+| `docs/CAMEL_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
+| `docs/CAMEL_TESTING.md` | Test strategy, adversarial + integration suites |
+| `docs/CAMEL_LIVE_READINESS.md` | Phase 1 go-live checklist + definition of done |
+| `docs/CAMEL_CHANGELOG.md` | Sprint & decision history |
 | `docs/source-materials/` | Archived original PRDs/specs/playbook (provenance only) |
 | `HANDOFF.md` | Current status + tech stack + how to run |
 
-**Rule:** a fact has ONE home. Changing a sprint? Edit `docs/NOAH_ROADMAP.md`, not here.
+**Rule:** a fact has ONE home. Changing a sprint? Edit `docs/CAMEL_ROADMAP.md`, not here.
 Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authoritative.
 
 ---
 
-## Build roadmap - summary  (full detail: `docs/NOAH_ROADMAP.md`)
+## Build roadmap - summary  (full detail: `docs/CAMEL_ROADMAP.md`)
 
 Sequence:
 ```
@@ -297,7 +297,6 @@ Guiding principle: **Safety first. Evidence second. Autonomy last.**
 | S4.5 OK | Edge Proof v0 | no trade without an EdgeReport (217 tests) |
 | S5 OK | State machine + router + learning ledger | router returns Wait; no Trader path without Edge Proof (253 tests) |
 | S5.5 OK | Minimal ops visibility | daily report w/ status; kill-switch self-test; backup restore verified (263 tests) |
-| S5.5 | Minimal ops visibility | health report w/ GREEN/YELLOW/RED/BLACK; kill-switch test |
 | S6 | Dashboard + Telegram + Tailscale kill switch | kill switch stops next tick; backup restore verified |
 | S7 | Edge Proof Engine (13 checks) | no edge proof = no trade; model disagreement -> human |
 | S8 | Strategy Models + Learning Engine | >=3 strategies pass Edge Proof; DCA guardrails enforced |
@@ -307,4 +306,4 @@ Guiding principle: **Safety first. Evidence second. Autonomy last.**
 | S12 | Module Restructure | full suite green after restructure |
 
 **Open decisions, full sprint detail, and Definition of Done:**
-`docs/NOAH_ROADMAP.md` + `docs/NOAH_LIVE_READINESS.md`.
+`docs/CAMEL_ROADMAP.md` + `docs/CAMEL_LIVE_READINESS.md`.

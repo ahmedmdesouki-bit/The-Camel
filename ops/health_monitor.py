@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List
 
 from db.sqlite import connection
-from db.paths import NoahDbs
+from db.paths import CamelDbs
 from ops.kill_switch import is_halted
 
 
@@ -33,7 +33,7 @@ def _db_ok(path: str) -> bool:
         return False
 
 
-def check(dbs: NoahDbs, mode: str = "paper", min_disk_gb: float = 1.0) -> HealthReport:
+def check(dbs: CamelDbs, mode: str = "paper", min_disk_gb: float = 1.0) -> HealthReport:
     checks: Dict[str, str] = {}
     issues: List[str] = []
 
@@ -89,7 +89,7 @@ def check(dbs: NoahDbs, mode: str = "paper", min_disk_gb: float = 1.0) -> Health
 def daily_report_text(report: HealthReport, open_cards: int = 0, open_positions: int = 0,
                       paper_at_risk: float = 0.0) -> str:
     return (
-        "Noah Daily Health Report\n"
+        "Camel Daily Health Report\n"
         f"System status: {report.status} | Mode: {report.mode} | "
         f"Broker: {report.checks.get('broker','?')} | DB: "
         f"{'Connected' if all(report.checks.get(f'db_{n}')=='ok' for n in ('market','sharia','portfolio','learning')) else 'DEGRADED'}\n"

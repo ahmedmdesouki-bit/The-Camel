@@ -1,5 +1,5 @@
 """
-Portfolio DB — noah_portfolio.db
+Portfolio DB — camel_portfolio.db
 Stores: orders (with client_order_id), positions, ledger, runs,
 guardrail_events, approvals.
 Extended schema per Feedback 1: client_order_id on orders.

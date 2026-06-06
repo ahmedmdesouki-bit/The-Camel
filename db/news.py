@@ -1,5 +1,5 @@
 """
-News/Events DB — noah_news.db  [Sprint 7 stub]
+News/Events DB — camel_news.db  [Sprint 7 stub]
 Stores structured event objects — never raw web text.
 Raw strings are sanitised to JSON via data/sanitiser.py before landing here.
 """

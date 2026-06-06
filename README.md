@@ -1,4 +1,4 @@
-# Noah
+# The Camel
 
 A guardrailed autonomous AI operator for Sharia-compliant trading and AI-product building.
 Every consequential action passes through a deterministic Constitution the agent cannot modify.
@@ -14,16 +14,16 @@ Every consequential action passes through a deterministic Constitution the agent
 
 | You want to… | Read |
 |---|---|
-| Understand the project (why, who, context) | [`docs/NOAH_BRIEF.md`](docs/NOAH_BRIEF.md) |
+| Understand the project (why, who, context) | [`docs/CAMEL_BRIEF.md`](docs/CAMEL_BRIEF.md) |
 | Get current status + run it | [`HANDOFF.md`](HANDOFF.md) |
-| Work in the repo (build a sprint) | [`Noah_CLAUDE.md`](Noah_CLAUDE.md) — the operating manual |
-| See the full plan | [`docs/NOAH_ROADMAP.md`](docs/NOAH_ROADMAP.md) |
+| Work in the repo (build a sprint) | [`CLAUDE.md`](CLAUDE.md) — the operating manual |
+| See the full plan | [`docs/CAMEL_ROADMAP.md`](docs/CAMEL_ROADMAP.md) |
 | Everything else | [`docs/README.md`](docs/README.md) — the documentation index |
 
 ## Source of truth
 
-- **Docs:** `Noah_CLAUDE.md` (operating manual) + `docs/` (one canonical doc per topic).
-  A fact has exactly one home — change a sprint in `docs/NOAH_ROADMAP.md`, not elsewhere.
+- **Docs:** `CLAUDE.md` (operating manual) + `docs/` (one canonical doc per topic).
+  A fact has exactly one home — change a sprint in `docs/CAMEL_ROADMAP.md`, not elsewhere.
 - **Code beats docs:** `guardrail/constitution.py` + `config/limits.yaml` are authoritative.
 - **History/origin:** the original PRDs, specs, and the StockSense playbook are archived in
   [`docs/source-materials/`](docs/source-materials/).
@@ -38,4 +38,4 @@ cd N:\
 python -m pytest -q          # 110 passed
 ```
 
-*(For future work, cloning to a short path like `C:\noah` removes this friction.)*
+*(For future work, cloning to a short path like `C:\camel` removes this friction.)*

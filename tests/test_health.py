@@ -19,7 +19,7 @@ def test_black_when_halted(dbs):
         resume()
 
 def test_red_when_db_unreachable(dbs):
-    dbs.portfolio = "Z:/nonexistent/path/noah_portfolio.db"   # force a DB failure
+    dbs.portfolio = "Z:/nonexistent/path/camel_portfolio.db"   # force a DB failure
     r = check(dbs, mode="paper")
     assert r.status == "RED" and any("portfolio" in i for i in r.issues)
 
@@ -31,7 +31,7 @@ def test_yellow_when_low_disk(dbs):
 def test_daily_report_text_contains_status(dbs):
     r = check(dbs, mode="paper")
     txt = daily_report_text(r, open_cards=3, open_positions=2, paper_at_risk=430)
-    assert "Noah Daily Health Report" in txt
+    assert "Camel Daily Health Report" in txt
     assert f"System status: {r.status}" in txt
     assert "Paper capital at risk: $430" in txt
 

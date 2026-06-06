@@ -1,5 +1,5 @@
 """
-Sprint 2 — Data ingestion + triangulation tests.  DB: dbs.market (noah_market.db).
+Sprint 2 — Data ingestion + triangulation tests.  DB: dbs.market (camel_market.db).
 """
 import pytest
 from data.store import store_price, get_prices

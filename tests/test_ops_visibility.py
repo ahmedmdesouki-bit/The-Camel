@@ -78,7 +78,7 @@ def test_kill_switch_self_test_passes(dbs):
 
 def test_daily_report_renders_status(dbs):
     txt = build_daily_report(dbs, mode="paper")
-    assert "Noah Daily Health Report" in txt
+    assert "Camel Daily Health Report" in txt
     assert "System status: GREEN" in txt          # fresh empty DBs, kill switch off
     assert "Open paper positions: 0" in txt
 

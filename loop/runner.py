@@ -1,7 +1,7 @@
 """
 Hermes loop runner — Observe → Thesis → Choose → Act → Measure → Learn.
 
-LoopConfig now takes a NoahDbs object instead of a single db_path,
+LoopConfig now takes a CamelDbs object instead of a single db_path,
 enabling the seven-database architecture.  Callers pass dbs.portfolio
 to state functions; dbs.sharia to whitelist; etc.
 """
@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from db.paths import NoahDbs
+from db.paths import CamelDbs
 from guardrail.constitution import Constitution, PortfolioState
 from loop.state import RunState, begin_run, finish_run, update_run
 from ops.kill_switch import is_halted
@@ -37,7 +37,7 @@ def _noop_learn(m)   -> None:           return None
 
 @dataclass
 class LoopConfig:
-    dbs: NoahDbs
+    dbs: CamelDbs
     phase: int = 0
     observe:             Optional[_ObserveFn]   = None
     generate_theses:     Optional[_ThesisFn]    = None

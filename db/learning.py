@@ -1,6 +1,6 @@
 """
-Learning DB — noah_learning.db
-Stores: every Noah decision with its expected + actual outcome,
+Learning DB — camel_learning.db
+Stores: every Camel decision with its expected + actual outcome,
 mistake classification, lesson, and reusable pattern.
 This is the shared learning ledger for Trader and Entrepreneur arms.
 """

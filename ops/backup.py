@@ -1,5 +1,5 @@
 """
-Backup / restore (S5.5) — local verified backup of all seven Noah DBs.
+Backup / restore (S5.5) — local verified backup of all seven Camel DBs.
 
 S5.5 is the local, verified copy + restore. The off-box encrypted backup is S6. Verification
 is a SHA-256 compare so a silent partial copy is caught.
@@ -11,10 +11,10 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from db.paths import NoahDbs
+from db.paths import CamelDbs
 
 
-def _db_items(dbs: NoahDbs) -> List[Tuple[str, str]]:
+def _db_items(dbs: CamelDbs) -> List[Tuple[str, str]]:
     return [("market", dbs.market), ("macro", dbs.macro),
             ("fundamentals", dbs.fundamentals), ("news", dbs.news),
             ("sharia", dbs.sharia), ("portfolio", dbs.portfolio),
@@ -27,7 +27,7 @@ def _sha256(path: str):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def backup(dbs: NoahDbs, dest_dir: str) -> Dict[str, str]:
+def backup(dbs: CamelDbs, dest_dir: str) -> Dict[str, str]:
     """Copy every existing DB file to dest_dir; return {db_name: sha256}."""
     os.makedirs(dest_dir, exist_ok=True)
     result: Dict[str, str] = {}
@@ -38,7 +38,7 @@ def backup(dbs: NoahDbs, dest_dir: str) -> Dict[str, str]:
     return result
 
 
-def verify_backup(dbs: NoahDbs, dest_dir: str) -> bool:
+def verify_backup(dbs: CamelDbs, dest_dir: str) -> bool:
     """True iff every existing source DB has a byte-identical copy in dest_dir."""
     for _name, path in _db_items(dbs):
         if os.path.exists(path):
@@ -48,7 +48,7 @@ def verify_backup(dbs: NoahDbs, dest_dir: str) -> bool:
     return True
 
 
-def restore(dbs: NoahDbs, dest_dir: str) -> List[str]:
+def restore(dbs: CamelDbs, dest_dir: str) -> List[str]:
     """Copy backups back over the live DBs. Returns the list of restored db names."""
     restored: List[str] = []
     for name, path in _db_items(dbs):

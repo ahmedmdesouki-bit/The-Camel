@@ -24,7 +24,7 @@ def test_is_founder_owned_recognises_limits():
     assert is_founder_owned("approval_thresholds")
 
 def test_is_founder_owned_false_for_app_data():
-    assert not is_founder_owned("noah_market.db")
+    assert not is_founder_owned("camel_market.db")
     assert not is_founder_owned("some_random_file.txt")
 
 def test_find_writable_founder_config_ignores_nonexistent():

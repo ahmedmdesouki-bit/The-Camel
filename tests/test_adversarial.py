@@ -2,7 +2,7 @@
 S4 — Adversarial suite. Every "agent tries to cheat" case must be BLOCKED.
 The remaining cases (prompt-injection override, broker mismatch, ledger tamper, no-EdgeProof
 signal, DCA into deteriorating name, model disagreement, future-data backtest) land in
-S4.5 / S5 / S7 / S8 / S10 as those modules arrive. (See docs/NOAH_TESTING.md.)
+S4.5 / S5 / S7 / S8 / S10 as those modules arrive. (See docs/CAMEL_TESTING.md.)
 """
 import pytest
 

@@ -1,5 +1,5 @@
 """
-Business-model Sharia classifier for Entrepreneur ADAM.
+Business-model Sharia classifier for Entrepreneur Camel.
 
 Returns categorised flags with reasons — richer than the substring check in
 constitution.py. The Constitution's _has_haram is the hard gate; this module

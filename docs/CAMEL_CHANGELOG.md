@@ -1,4 +1,4 @@
-# NOAH CHANGELOG — sprint & decision history
+# CAMEL CHANGELOG — sprint & decision history
 
 > **Canonical home for what happened when.** Derived from git history; one entry per
 > meaningful change. Newest first.
@@ -39,7 +39,7 @@ Python stdlib `operator` module** (a real collision that would break dependencie
 
 **Sprint 4.5 (Edge Proof v0) COMPLETE — 197 → 217 tests green.**
 `engine/edge_proof_v0.py`: forward-return distribution + hit rate + benchmark excess from
-`noah_market.db`; every missing/weak/stale input defaults to `trade_allowed=false`. `gate()`
+`camel_market.db`; every missing/weak/stale input defaults to `trade_allowed=false`. `gate()`
 wired into `Allocator.request(..., edge_report=, require_edge=)` — with `require_edge=True`, a
 trade with no/failing EdgeReport is rejected (`no_edge_proof`) before the Constitution.
 Backward compatible with S3 allocator calls; decisions log to the learning ledger.
@@ -87,9 +87,9 @@ Deferred by dependency: max cancel/replace → S11 (LiveBroker); earnings blacko
 ## 2026-06-06
 
 **Consolidation: one source of truth, clean repo.**
-Folded `Noah_Project_Brief.md` → `docs/NOAH_BRIEF.md` (canonical "why/who" doc: founder
+Folded `Camel_Project_Brief.md` → `docs/CAMEL_BRIEF.md` (canonical "why/who" doc: founder
 constraints, real capital ~$126 + $100/mo, $10K target, origin, open questions). Added a
-top-level `README.md` entry point. Archived all legacy source docs (ADAM/Noah PRDs & specs,
+top-level `README.md` entry point. Archived all legacy source docs (ADAM/Camel PRDs & specs,
 StockSense playbook/dashboard/tracker generator) to `docs/source-materials/` via git-tracked
 renames (history preserved, nothing deleted). Removed junk (pytest cache `adam/`, stale
 placeholder, stray zip) and gitignored transients. Root now holds only code + the canonical
@@ -125,7 +125,7 @@ permanently excluded.
 **Roadmap: 25 + Playwright items from external feedback docs 1 & 2** mapped into S4–S12.
 
 **Architecture: seven-database split.** Replaced the single SQLite file with seven
-domain databases via `NoahDbs`. Schema extensions added. 110 tests stay green.
+domain databases via `CamelDbs`. Schema extensions added. 110 tests stay green.
 
 ---
 

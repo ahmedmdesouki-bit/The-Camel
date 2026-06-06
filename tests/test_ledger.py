@@ -1,5 +1,5 @@
 """
-Sprint 3 — Ledger + reconciliation tests.  DB: dbs.portfolio (noah_portfolio.db).
+Sprint 3 — Ledger + reconciliation tests.  DB: dbs.portfolio (camel_portfolio.db).
 """
 import pytest
 import sqlite3

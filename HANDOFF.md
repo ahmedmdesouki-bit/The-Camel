@@ -1,27 +1,27 @@
-# Noah — Project Handoff
+# The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
 **Status:** Sprints **S1 → S5.5 complete** · **263 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** 30 commits on `master`, clean working tree · **Next: S6** (Dashboard + Telegram + Tailscale)
 
-> For the live sprint-by-sprint detail and module list see `docs/NOAH_ROADMAP.md` and the
-> `## Current status` section of `Noah_CLAUDE.md` — both are kept current. This file's
+> For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
+> `## Current status` section of `CLAUDE.md` — both are kept current. This file's
 > sprint table below shows the S1–S3 core; S4–S5.5 detail lives in the roadmap.
 
-> Companion docs: [`Noah_CLAUDE.md`](Noah_CLAUDE.md) is the source of truth for how to work
+> Companion docs: [`CLAUDE.md`](CLAUDE.md) is the source of truth for how to work
 > in this repo and the full sprint roadmap. This file is the orientation handoff —
-> read it first, then `Noah_CLAUDE.md`, then the code.
+> read it first, then `CLAUDE.md`, then the code.
 
 ---
 
-## 1. What Noah Is
+## 1. What Camel Is
 
-Noah is a **guardrailed autonomous AI operator** that runs a continuous
+Camel is a **guardrailed autonomous AI operator** that runs a continuous
 Observe→Thesis→Choose→Act→Measure→Learn loop across two arms:
 
-- **Trader Noah** — Sharia-compliant market trading (paper first, live only when earned).
-- **Entrepreneur Noah** — Sharia-compliant AI products (build/deploy/sell).
+- **Trader Camel** — Sharia-compliant market trading (paper first, live only when earned).
+- **Entrepreneur Camel** — Sharia-compliant AI products (build/deploy/sell).
 
 The defining idea: **every consequential action passes through a deterministic constraint
 engine (the Constitution) that the LLM cannot edit.** The agent proposes; the Constitution
@@ -29,7 +29,7 @@ disposes. Autonomy is aggressive *inside* the rails and mechanically impossible 
 them.
 
 ### North Star
-> Noah is a Sharia-compliant autonomous operator with a deterministic constitution,
+> Camel is a Sharia-compliant autonomous operator with a deterministic constitution,
 > an edge-proof engine, a budget kernel, and a learning ledger.
 > **LLM proposes. Math tests. Guardrails decide. Human approves high-risk actions.**
 
@@ -86,29 +86,29 @@ guardrail/        constitution.py  — evaluate(action, state) -> Decision. THE 
 
 config/           limits.yaml      — founder-owned limits (phase, caps, envelope, cash tiers)
 
-db/               paths.py         — NoahDbs dataclass + init_all()  ← entry point for all DBs
-                  market.py        — noah_market.db DDL (prices, dividends, splits)
-                  sharia.py        — noah_sharia.db DDL (whitelist, sharia_events)
-                  portfolio.py     — noah_portfolio.db DDL (orders, positions, ledger, runs)
-                  learning.py      — noah_learning.db DDL (decisions, outcomes, lessons)
-                  macro.py         — noah_macro.db DDL (stub → S7)
-                  fundamentals.py  — noah_fundamentals.db DDL (stub → S7)
-                  news.py          — noah_news.db DDL (stub → S7)
+db/               paths.py         — CamelDbs dataclass + init_all()  ← entry point for all DBs
+                  market.py        — camel_market.db DDL (prices, dividends, splits)
+                  sharia.py        — camel_sharia.db DDL (whitelist, sharia_events)
+                  portfolio.py     — camel_portfolio.db DDL (orders, positions, ledger, runs)
+                  learning.py      — camel_learning.db DDL (decisions, outcomes, lessons)
+                  macro.py         — camel_macro.db DDL (stub → S7)
+                  fundamentals.py  — camel_fundamentals.db DDL (stub → S7)
+                  news.py          — camel_news.db DDL (stub → S7)
                   sqlite.py        — connect() helper
                   schema.sql       — Postgres/Supabase migration target
 
-sharia/           whitelist.py     — load/add/freeze/unfreeze  (→ noah_sharia.db)
+sharia/           whitelist.py     — load/add/freeze/unfreeze  (→ camel_sharia.db)
                   screener.py      — quarterly AAOIFI re-screen job
                   classifier.py    — business-model haram classifier (7 categories)
 
-data/             store.py         — store_price / get_prices  (→ noah_market.db)
+data/             store.py         — store_price / get_prices  (→ camel_market.db)
                   triangulation.py — cross-source disagreement (>0.5% close flags)
                   alpaca.py        — Alpaca paper EOD ingestion adapter
 
 engine/           thesis.py        — ThesisCard + BaseRateCard (pure, no I/O)
 
 loop/             runner.py        — LoopRunner (Observe→…→Learn, Constitution gate at Act)
-                  state.py         — RunState persistence (→ noah_portfolio.db)
+                  state.py         — RunState persistence (→ camel_portfolio.db)
                   scheduler.py     — Windows Task Scheduler entrypoint (EOD)
 
 broker/           paper.py         — PaperBroker(portfolio_db, market_db)
@@ -125,7 +125,7 @@ tests/            test_guardrail.py (28)  test_sharia.py (23)   test_data.py (11
                   test_engine.py (12)     test_loop.py (11)     test_broker.py (7)
                   test_ledger.py (11)     test_capital.py (7)   = 110 total
 
-conftest.py       sys.path fix + shared `dbs` fixture (fresh NoahDbs per test)
+conftest.py       sys.path fix + shared `dbs` fixture (fresh CamelDbs per test)
 pyproject.toml    pytest pythonpath = ["."]
 ```
 
@@ -133,18 +133,18 @@ pyproject.toml    pytest pythonpath = ["."]
 
 ## 4. The Seven Databases
 
-Each domain owns its own SQLite file. Callers build `NoahDbs.from_dir(base_dir)` and pass
+Each domain owns its own SQLite file. Callers build `CamelDbs.from_dir(base_dir)` and pass
 the relevant path to each module. `init_all(dbs)` creates all seven.
 
 | File | Owner | Content | Status |
 |---|---|---|---|
-| `noah_market.db` | `data/` | prices, dividends, splits | **Live** |
-| `noah_sharia.db` | `sharia/` | whitelist (+`historical_drift_count`, +`purification_ratio`), sharia_events (+`trigger_period`, +`reasoning_summary`) | **Live** |
-| `noah_portfolio.db` | `broker/`, `ledger/`, `loop/` | orders (+`client_order_id`), positions, ledger, runs, guardrail_events, approvals | **Live** |
-| `noah_learning.db` | S8 learning engine | decisions, outcomes, mistake log, lessons | Schema live, unused |
-| `noah_macro.db` | S7 | rates, PMIs, yield curve, GDP | Stub |
-| `noah_fundamentals.db` | S7 | revenue, margins, EPS, FCF, debt | Stub |
-| `noah_news.db` | S7 | structured event objects (never raw text) | Stub |
+| `camel_market.db` | `data/` | prices, dividends, splits | **Live** |
+| `camel_sharia.db` | `sharia/` | whitelist (+`historical_drift_count`, +`purification_ratio`), sharia_events (+`trigger_period`, +`reasoning_summary`) | **Live** |
+| `camel_portfolio.db` | `broker/`, `ledger/`, `loop/` | orders (+`client_order_id`), positions, ledger, runs, guardrail_events, approvals | **Live** |
+| `camel_learning.db` | S8 learning engine | decisions, outcomes, mistake log, lessons | Schema live, unused |
+| `camel_macro.db` | S7 | rates, PMIs, yield curve, GDP | Stub |
+| `camel_fundamentals.db` | S7 | revenue, margins, EPS, FCF, debt | Stub |
+| `camel_news.db` | S7 | structured event objects (never raw text) | Stub |
 
 ---
 
@@ -208,12 +208,12 @@ python -m pytest -q
 ```
 
 `git config --global core.longpaths true` is already set (needed for `git init` to succeed).
-**For future sprints, clone to a short path like `C:\noah` to avoid this entirely.**
+**For future sprints, clone to a short path like `C:\camel` to avoid this entirely.**
 
 ### Running the loop manually
 ```powershell
 cd N:\
-python loop\scheduler.py        # env: NOAH_DB_DIR (default repo root), NOAH_PHASE (default 0)
+python loop\scheduler.py        # env: CAMEL_DB_DIR (default repo root), CAMEL_PHASE (default 0)
 ```
 
 ### Kill switch
@@ -226,7 +226,7 @@ python ops\kill_switch.py resume    # removes flag
 
 ## 7. What Is Planned (Sprints 4–12)
 
-> Full detail with module names and gate criteria is in [`Noah_CLAUDE.md`](Noah_CLAUDE.md).
+> Full detail with module names and gate criteria is in [`CLAUDE.md`](CLAUDE.md).
 
 | Sprint | Theme | Key deliverables |
 |---|---|---|
@@ -258,7 +258,7 @@ Appeared in two source videos; rejected both times. Do not revisit.
 - **Raw external text is sanitised to structured JSON before reaching the LLM.** Never pass
   scraped content directly to the reasoning engine (prompt-injection defense).
 - **Learning never edits rules.** The 4-tier learning engine (S8) proposes; the founder
-  approves Level 3+ changes. Noah cannot change the Constitution, risk limits, or the
+  approves Level 3+ changes. Camel cannot change the Constitution, risk limits, or the
   ±weight band.
 
 ---
@@ -286,7 +286,7 @@ Appeared in two source videos; rejected both times. Do not revisit.
    (Wheel strategy from this source rejected.)
 
 All three were gap-analyzed line-by-line against the roadmap; every actionable item is
-mapped to a sprint. Memory files: `feedback_noah_arch_1.md`, `feedback_noah_arch_2.md`.
+mapped to a sprint. Memory files: `feedback_camel_arch_1.md`, `feedback_camel_arch_2.md`.
 
 ---
 

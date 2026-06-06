@@ -1,5 +1,5 @@
 """
-Macro DB — noah_macro.db  [Sprint 7 stub]
+Macro DB — camel_macro.db  [Sprint 7 stub]
 Stores: rates, inflation, GDP, PMIs, yield curve, credit spreads, USD index,
 commodity proxies, recession indicators.
 Point-in-time snapshots to avoid look-ahead bias in backtesting.

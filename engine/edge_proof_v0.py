@@ -2,7 +2,7 @@
 Edge Proof v0 (S4.5) — the evidence gate, pulled forward.
 
 The full 13-check Edge Proof Engine lands in S7. v0 is the cheapest first filter: using only
-the price data already in noah_market.db, it proves a signal has basic historical support
+the price data already in camel_market.db, it proves a signal has basic historical support
 versus a benchmark after estimated cost. No macro / fundamentals / news needed.
 
 Hard rule: NO trade proceeds without an EdgeReport, and every missing/weak/stale input
@@ -121,7 +121,7 @@ def evaluate_signal(
     data_fresh: bool = True,
 ) -> EdgeReport:
     """
-    Read prices from noah_market.db, compute the signal's forward-return distribution, and
+    Read prices from camel_market.db, compute the signal's forward-return distribution, and
     compare to the benchmark's median forward return over the same horizon.
     """
     closes = _load_closes(market_db, symbol)

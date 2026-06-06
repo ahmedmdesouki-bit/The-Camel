@@ -1,5 +1,5 @@
 """
-Sprint 2 — Sharia gate tests.  DB: dbs.sharia (noah_sharia.db).
+Sprint 2 — Sharia gate tests.  DB: dbs.sharia (camel_sharia.db).
 """
 import pytest
 from sharia.classifier import classify_business_model
