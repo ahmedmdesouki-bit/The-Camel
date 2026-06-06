@@ -354,9 +354,10 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur moved earlier):
 ```
 S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK -> S6.6 OK -> S7 OK ->
-S8 ~CORE (10 connectors; rest deferred) -> S9 (Knowledge Graph + Regime) <- NEXT
--> S10 (Full Edge Proof; shadow/enforcing) -> S11 (Strategy Registry)
--> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S13 (Micro-Live) -> S14 (Restructure)
+S8 ~CORE (10 connectors; rest deferred) -> S8.5 (Real-Time Data Tier) -> S9 (Knowledge Graph + Regime) <- IN PROGRESS
+-> S10 (Full Edge Proof; shadow/enforcing) -> S11 (Strategy Registry + Portfolio Engine)
+-> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S12.5 (Research Desk; design, dormant)
+-> S13 (Micro-Live) -> S14 (Restructure)
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
 Optimize for **evidence density, not feature count.**
@@ -375,10 +376,12 @@ Optimize for **evidence density, not feature count.**
 | S6.6 OK | Position accounting + Ops hardening + Beginner Mode | positions table on every fill (avg cost, realized P&L, exact phantom guard, reconcile); illiquidity fail-closed in live; disk-test mocked + unknown→YELLOW; dead-man's-switch; SQLite WAL; beginner-mode; broker matrix (331 tests) |
 | S7 OK | Entrepreneur Product Engine (engine; agent scope = code-gen only) | 17-field gate + separate Entrepreneur Constitution + 10-stage pipeline; no launch without founder approval (352 tests) |
 | S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slices 1–5 done** (framework + provenance + 10 connectors incl. ETF look-through + news injection-hardening + scraping policy, 389 tests; all 3 stub DBs real); ~10 connectors + market-data + paid remain |
+| S8.5 | Real-Time Data Tier *(founder)* | streaming quotes + live-news + real-time monitor/alerts; separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
 | S9 ~ | Knowledge Graph + Regime Engine | **slices 1–2 done** (entity resolver + 10-state Regime Engine over real macro) + QA hardening pass, 419 tests; event intelligence + Sharia cross-check (multi-state) remain |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
-| S11 | Strategy Registry + Learning Engine | >=3 strategies (trio) pass Edge Proof; DCA guardrails; never auto-edits the Constitution |
+| S11 | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth) pass Edge Proof; **multi-portfolio (strategy-per-portfolio, portfolio-scoped positions/ledger reconciling to fund)**; never auto-edits the Constitution |
 | S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
+| S12.5 | Research Desk / Analyst Agents *(founder; design now, dormant)* | per-vertical research agents (Agent SDK) write evidence only, never act; token budget; master switch defaults OFF |
 | S13 | Micro-Live Readiness (Phase 1) | all live-readiness boxes pass |
 | S14 | Module Restructure | full suite green after restructure |
 

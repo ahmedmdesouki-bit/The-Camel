@@ -13,12 +13,20 @@
 ```
 S1 ✅ → S2 ✅ → S3 ✅ → S4 ✅ → S4.5 ✅ (Edge Proof v0) → S5 ✅ → S5.5 ✅ (Minimal Ops) → S6 ✅ →
 S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hardening + Beginner Mode) → S7 ✅ (Entrepreneur engine) →
-S8 (Data Backbone) → S9 (Knowledge Graph + Regime) → S10 (Full Edge Proof, 17-check; shadow/enforcing) →
-S11 (Strategy Registry) → S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) →
+S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 (Knowledge Graph + Regime) →
+S10 (Full Edge Proof, 17-check; shadow/enforcing) → S11 (Strategy Registry + Portfolio Engine) →
+S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 (Research Desk — design, dormant) →
 S13 (Micro-Live) → S14 (Restructure)
 ```
 *(⭐ **Sandbox Mode** = the full system on live real-time data with virtual money — the founder-requested
 live dress rehearsal that produces the track record gating micro-live.)*
+
+> **Founder direction (2026-06-06) — four additions folded in:** (1) **multi-portfolio + strategy-per-portfolio**
+> → Portfolio Engine in S11; (2) **real-time / streaming data tier** → new S8.5 (ingestion + monitoring;
+> execution stays EOD); (3) **dedicated per-vertical research agents** → new S12.5 Research Desk, *designed now
+> but dormant until capital/edge justify the spend*; (4) **dividends** → a dividends connector (S8 backlog) +
+> a `dividend_growth` strategy (S11). Plus: *many independent sources per data category, cross-checked* — an
+> explicit S8 goal. A cited data-resource research pass is the agreed next task after this fold.
 Guiding principle reaffirmed: **Safety first. Evidence second. Autonomy last.**
 Optimize for **evidence density, not feature count.**
 
@@ -528,9 +536,13 @@ SPUS/HLAL/MNZL constituents → `camel_sharia.db.etf_holdings` for single-name l
 **S8 CORE DELIVERED — remaining connectors DEFERRED (founder decision).** The framework is proven across
 JSON + CSV, macro/fundamentals/news/sharia domains; 10 connectors give enough breadth for S9 to proceed.
 **Parked backlog (revisit as an S8 continuation):** OFAC sanctions, USGS minerals, congress/senate
-disclosures, Kenneth French factors, SEC RSS/8-K, GPR/EPU indices, a market-data adapter, and the paid
-vendors (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); markets US → Saudi → EGX. These are new-connector
-work on an established pattern, not blockers for S9–S12. Slice 3 added the
+disclosures, Kenneth French factors, SEC RSS/8-K, GPR/EPU indices, a market-data adapter, a **dividends /
+corporate-actions connector** (ex-div date, yield, payout ratio, growth streak — feeds `dividend_growth` in
+S11), and the paid vendors (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); markets US → Saudi → EGX.
+**Founder goal: many independent sources per category, cross-checked** (the source-quorum ≥2 rule already in
+the design) — so historical prices, news, geopolitics, and market-reaction data each have multiple feeds,
+no single point of failure or bias. (A cited data-resource research pass will choose the specific feeds.)
+These are new-connector work on an established pattern, not blockers for S9–S12. Slice 3 added the
 **news/events pipeline**: `data/connectors/news_base.py` (`NewsConnector` — every title sanitised; injection-
 flagged titles **redacted + marked unsafe + quality-downgraded**, raw string never persisted; structured
 events only, no raw-body column) + `data/connectors/gdelt.py`, with the reviewers' **news adversarial tests**. Framework + provenance + first 2 connectors:
@@ -544,6 +556,30 @@ ingestion; records missing provenance are dropped. *Dependency-light call: defer
 feedparser/vcrpy until a connector genuinely needs them (e.g. feedparser for RSS).* **Remaining slices:**
 the other ~18 free connectors (BLS/BEA/Treasury/World Bank/EIA/GDELT/ACLED/OFAC/disclosures/ETF/French),
 GDELT/news pipeline + adversarial tests, market-data adapter, then paid vendors; markets US → Saudi → EGX.
+
+---
+
+### S8.5 — Real-Time Data Tier  (founder direction — streaming ingestion + monitoring)
+*Adds a streaming/real-time path alongside the EOD connectors. Scope is **ingestion + monitoring**, NOT
+real-time execution: positional execution stays EOD (Sahm / whole-share) until at least Phase 1.*
+- **Streaming market data:** a websocket/streaming adapter (e.g. Alpaca's free IEX stream) for live
+  quotes/trades on whitelisted names → a separate `realtime_quotes` store, point-in-time stamped. It
+  **never overwrites the official EOD bars** that backtests depend on.
+- **Live news/event stream:** short-interval polling of the news connectors (GDELT / RSS) through the same
+  sanitiser → structured-events path (no raw text to the LLM).
+- **Real-time monitor + charts:** extends the S6 dashboard with a live, read-only view (positions, intraday
+  P&L, current regime, rejected signals, data freshness); refreshes on the stream.
+- **Alerting:** Telegram pushes on material moves / guardrail-relevant events.
+- **Many sources, cross-checked:** a single live feed is **monitoring-only**; a real-time signal is not
+  decision-grade until corroborated by source quorum ≥2.
+
+**Honest note:** this is real infrastructure (streaming, reconnects, backpressure) and delivers **latency for
+monitoring**, not a mandate to trade intraday. Real-time *execution* is a separate Phase-2+ decision. Build it
+so unreviewed live ticks can never contaminate the EOD/backtest data set.
+
+**Gate:** the live stream lands in a separate real-time store with point-in-time stamps; the EOD bar set is
+untouched; the real-time monitor renders live; no real-time feed is decision-grade without quorum; execution
+remains EOD.
 
 ---
 
@@ -644,8 +680,9 @@ rejected-signal-with-reason.
 
 ---
 
-### S11 — Strategy Registry + Learning Engine
-*Was S8. Starter trio updated (now feasible because the data backbone exists).*
+### S11 — Strategy Registry + Portfolio Engine + Learning Engine
+*Was S8. Starter trio updated (now feasible because the data backbone exists). Founder direction folds in a
+multi-portfolio layer + a dividend-growth strategy.*
 
 **Starter trio (build first):** `core_dca` (monthly DCA into approved core ETF/basket; benchmark SPUS;
 no timing unless regime risk is extreme — likely beats most overactive systems after costs) ·
@@ -653,7 +690,12 @@ no timing unless regime risk is extreme — likely beats most overactive systems
 revisions, revenue growth, FCF margin, low leverage, liquidity, valuation-not-extreme) ·
 `etf_regime_rotation` (SPUS/HLAL/MNZL/cash by regime — **only if it beats simple DCA after costs**).
 
-Then `earnings_guidance_drift` (after the earnings calendar + fundamentals are clean).
+Then `dividend_growth` (founder direction — Sharia-screened **quality income**: compliant business, low
+debt, durable + growing payout, sane payout ratio; purification of any impure portion via `purification_ratio`.
+This is dividend-*growth*, **not** dividend-*capture* — capture buy-before/sell-after-ex-div rarely survives
+costs + whole-share constraints and the Edge Proof will likely reject it; build the dividend data, treat
+capture as a hypothesis to test, not a strategy to trust) and `earnings_guidance_drift` (after the earnings
+calendar + fundamentals are clean).
 **Delay (revisit after Edge Lab):** `congress_signal`, complex `mean_reversion`, intraday active
 management beyond monitoring, single-name `dca_ladder`, ML / LLM strategy discovery.
 **Reject permanently:** day trading, options/Wheel, crypto derivatives, shorting, leverage,
@@ -670,8 +712,24 @@ condition (no infinite averaging down); inside position + sector caps. **Intrada
 L3 propose-only (founder approves activate/deactivate + regime affinity) · L4 founder-only
 (Constitution / new strategies / the band itself). Regime→strategy affinity learned at N≥20 per regime.
 
+**Portfolio Engine (founder direction — multiple portfolios, strategy-per-portfolio).** Today the Camel runs
+one implicit portfolio; this adds a first-class multi-portfolio layer under the single Camel Fund:
+- `portfolios` table (id · name · mandate · capital_allocation · assigned_strategies · per-portfolio risk
+  limits · benchmark). Positions + ledger become **portfolio-scoped** (`portfolio_id` everywhere; the S6.6
+  position accounting extends to per-portfolio).
+- `PortfolioManager`: allocates fund capital across portfolios, assigns each a strategy set, runs every
+  action through Edge Proof + Constitution **per portfolio**, and aggregates risk/P&L up to the fund level.
+- Each portfolio carries its own strategies (e.g. a Core-DCA portfolio, a Quality-Momentum portfolio, a
+  Dividend-Growth portfolio). **Trust inversion unchanged** — every action in every portfolio passes the same
+  deterministic gates; the engine just runs them N times.
+- Built for **breadth at scale** (N portfolios/strategies handled concurrently and cleanly); **execution
+  stays EOD-positional**. Fund-level caps (total exposure, sector, cash buffer) sit *above* per-portfolio caps,
+  and per-portfolio positions/ledger must reconcile to the fund.
+
 **Gate:** ≥3 strategies (the trio) all passing Edge Proof; learning updating base-rates; improvement
-proposals land in the Learning Ledger; DCA guardrails enforced; never auto-edits the Constitution.
+proposals land in the Learning Ledger; DCA guardrails enforced; never auto-edits the Constitution;
+**≥2 portfolios run independent strategy sets with portfolio-scoped positions/ledger that reconcile to the
+fund, and every per-portfolio action passes Edge Proof + Constitution.**
 
 ---
 
@@ -732,6 +790,27 @@ pandas, numpy, scipy, statsmodels, scikit-learn, vectorbt, quantstats.
 **Gate:** every strategy tested out-of-sample on two engines; delisted handled; full benchmark
 hierarchy compared; weak signals killed; all performance from realistic_paper fills; Camel beats
 simple DCA before any live execution; backtest using future/restated data blocked by `known_at`.
+
+---
+
+### S12.5 — Research Desk / Analyst Agents  (founder direction — DESIGN NOW, run later)
+*Dedicated agents that each own an information vertical and run study → analyze → store cycles, feeding the
+knowledge graph + Learning Ledger for decision-making. **Architecture built now; kept dormant until capital
+and a proven edge justify the token spend** — founder decision: "design it, defer running it.")*
+- **Vertical analyst agents** (Claude Agent SDK — the planned "real tool-use autonomy" trigger): macro,
+  sector, single-name/fundamentals, geopolitics, Sharia, and per-strategy desks. Each: gather (via the S8
+  connectors) → analyze → write a **structured, sourced research note + confidence** into `camel_learning.db` /
+  the knowledge graph. **Agents propose/analyze; they never decide** — Edge Proof + Constitution still gate
+  every consequential action (trust inversion intact).
+- **Orchestration:** **on-demand by default** (an analyst spins up when an opportunity/decision needs its
+  vertical); an always-on fleet is a later, explicit cost decision. A hard **research token budget**.
+- **Guardrails:** research agents are read-only to config/limits/whitelist; their notes are *evidence, never
+  instructions*; raw external text passes the sanitiser; every note carries provenance.
+- **Dormancy:** ships with the wiring + tests but a **master switch defaulting OFF**; turning it on is a
+  founder action gated on capital/edge (sits at "autonomy last" in the priority hierarchy).
+
+**Gate:** the analyst-agent framework exists with ≥1 vertical desk + tests; agents can only write evidence
+(never act); a budget/token cap is enforced; the master switch defaults OFF.
 
 ---
 

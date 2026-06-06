@@ -7,6 +7,28 @@
 
 ## 2026-06-06
 
+**Founder direction folded into the roadmap (docs-only; no code).** Four additions + a data goal:
+- **Portfolio Engine** (multi-portfolio, strategy-per-portfolio) → folded into **S11**: `portfolios` table,
+  `PortfolioManager`, portfolio-scoped positions/ledger reconciling to the fund, fund-level caps above
+  per-portfolio caps. Trust inversion unchanged (gates run per portfolio).
+- **Real-Time Data Tier** → new **S8.5**: streaming quotes (Alpaca IEX websocket), live-news polling through
+  the sanitiser, a real-time monitor/charts + alerts. Scope is **ingestion + monitoring**; a live feed is
+  monitoring-only unless corroborated (quorum ≥2); **execution stays EOD** (Sahm/positional) — real-time
+  execution is a separate Phase-2+ call. (Founder chose to add the streaming tier now.)
+- **Research Desk / Analyst Agents** → new **S12.5**: per-vertical agents (macro/sector/single-name/
+  geopolitics/Sharia/strategy) that study→analyze→store evidence via the Claude Agent SDK. **Designed now,
+  kept dormant** (master switch OFF, token budget) until capital/edge justify the spend — founder decision.
+  Agents propose/analyze, never decide.
+- **Dividends** → a dividends/corporate-actions connector (S8 backlog) + a `dividend_growth` strategy (S11,
+  Sharia-screened quality income; *not* dividend-capture, which the Edge Proof will likely reject).
+- **Many independent sources per data category, cross-checked** (source quorum ≥2) — reaffirmed S8 goal.
+- **Agreed next task:** a cited data-resource research pass (best historical/news/geopolitical/market-reaction
+  feeds, free + paid) to choose the specific connectors.
+
+---
+
+## 2026-06-06
+
 **QA/QC hardening pass (independent line-by-line review of S6.5→S9) — 409 → 419 tests green.** An
 independent review audited every new module; the real findings were fixed, each with a regression test
 (`tests/test_qa_hardening.py`):

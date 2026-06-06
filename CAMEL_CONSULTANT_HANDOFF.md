@@ -265,11 +265,13 @@ cash-flow (Entrepreneur) arm earlier.** Optimize for *evidence density, not feat
 | Sprint | Theme | One-line goal |
 |---|---|---|
 | **S8** *(in progress — slice 1 done)* | Data Intelligence Backbone | `SourceConnector` framework + **top-20 connectors** (SEC EDGAR/XBRL, FRED + ALFRED vintage, World Bank, GDELT, BLS, BEA, Treasury, EIA, ACLED, OFAC, ETF holdings, …), full provenance + point-in-time, recorded-fixture tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); fills the stub DBs |
+| **S8.5** *(founder)* | Real-Time Data Tier | Streaming quotes + live-news + real-time monitor/alerts → separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution (ticker↔CIK↔ISIN↔CUSIP), ETF look-through, event intelligence, 10-state regime classifier from real macro, Sharia cross-check (multi-state status; disagreement → freeze new buys) |
 | **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay) + a decision-quality dashboard (shows *why*: rejected signals + reason, regime, beating-benchmark, edge decay) |
-| **S11** | Strategy Registry + Learning | Trio: `core_dca` / `quality_momentum` / `etf_regime_rotation`; StrategyMixer; DCA guardrails; 4-tier learning engine (auto base-rates → auto-weight-in-band → propose-only → founder-only) |
+| **S11** | Strategy Registry + **Portfolio Engine** + Learning | Trio + `dividend_growth` (Sharia quality-income); **multi-portfolio** (portfolios table, PortfolioManager, strategy-per-portfolio, portfolio-scoped positions/ledger reconciling to fund); StrategyMixer; DCA guardrails; 4-tier learning |
 | **S12** | Edge Lab + realistic paper + ⭐ **Sandbox Mode** | Three run modes incl. **`sandbox`** (full system on live data + virtual money — the dress rehearsal that produces the micro-live track record); walk-forward; crisis tests; **two-engine cross-check**; Sharia-drag quantified; **No-Edge protocol → DCA**; delisted handling; must beat simple DCA after costs |
-| **S13** | Micro-Live Readiness (Phase 1) | Telegram approval channel (timeout = veto), LiveBroker, limit-orders-only, $100–500 human-approved per trade; ≥28-day paper track record + zero guardrail breaches as prerequisites |
+| **S12.5** *(founder; design now, dormant)* | Research Desk / Analyst Agents | Per-vertical agents (macro/sector/single-name/geopolitics/Sharia/strategy) study→analyze→store **evidence only, never act** (Agent SDK); on-demand; token budget; master switch OFF until capital/edge justify |
+| **S13** | Micro-Live Readiness (Phase 1) | Telegram approval channel (timeout = veto), LiveBroker + ManualBroker (Sahm), limit-orders-only, $100–500 human-approved per trade; ≥28-day paper track record + zero guardrail breaches as prerequisites |
 | **S14** | Module Restructure | Flat layout → clean domain hierarchy (`governance/ operator_os/ trader/ entrepreneur/ data/ security/ alerts/ dashboard/`); tests stay green |
 
 ---
