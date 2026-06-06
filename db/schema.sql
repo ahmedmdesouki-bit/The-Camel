@@ -1,4 +1,4 @@
--- ADAM × StockSense v11 — Supabase / Postgres schema (Sprint 1)
+-- The Camel × StockSense v11 — Supabase / Postgres schema (Sprint 1)
 -- Second wall after the Guardrail Service: DB permissions make the ledger
 -- append-only and limits read-only to the agent role.
 
@@ -80,9 +80,9 @@ create table if not exists runs (
 
 create table if not exists config (key text primary key, value jsonb);
 
--- ============ RLS sketch (enforce with the 'adam' role) ============
+-- ============ RLS sketch (enforce with the 'camel' role) ============
 -- alter table ledger enable row level security;
--- create policy adam_ledger_insert on ledger for insert to adam with check (true);
--- revoke update, delete on ledger from adam;            -- append-only
--- revoke insert, update, delete on config from adam;    -- founder-owned limits
--- grant select on config to adam;
+-- create policy camel_ledger_insert on ledger for insert to camel with check (true);
+-- revoke update, delete on ledger from camel;            -- append-only
+-- revoke insert, update, delete on config from camel;    -- founder-owned limits
+-- grant select on config to camel;

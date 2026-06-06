@@ -185,7 +185,7 @@ Includes the full **rogue-action suite** — every prohibited action is provably
 - `capital/allocator.py` — routes through Constitution; rejects (never clamps) with `notional=0`
 
 ### Post-S3 — Architecture + Roadmap
-- **7-database split** — domain isolation (replaced the single `adam.db`)
+- **7-database split** — domain isolation (replaced the original single SQLite file)
 - **Schema extensions** — `client_order_id`, `historical_drift_count`, `purification_ratio`,
   `trigger_period`, `reasoning_summary`
 - **Consolidated roadmap** — all items from 3 external feedback sources mapped into S4–S12

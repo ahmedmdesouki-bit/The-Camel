@@ -16,6 +16,5 @@ dist/
 alpaca_paper.json
 # transient/junk artifacts
 pytest-cache-files-*/
-adam/
 zi0Yq9dR
 _commitmsg.txt

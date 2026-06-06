@@ -46,13 +46,13 @@ until Camel earns trust through a paper-trading track record.
    gate, a base-rate engine (never "this will go up"; instead sample size, hit rate, what's
    priced in, counter-signals), a written-invalidation-point rule, a research log, and
    three-market scaffolding (US live; Saudi/Egypt later).
-2. **The "ADAM" stack** — a 6-layer blueprint for an autonomous operator living on a real
+2. **A 6-layer "autonomous operator" stack** — a 6-layer blueprint for an autonomous operator living on a real
    machine. Renamed **Camel** and made ours.
 
 **Camel = StockSense v11 (the investing conscience / Sharia auditor) running inside an
-ADAM-style autonomous harness, wrapped by a guardrail layer the original blueprint lacked.**
+operator-stack-style autonomous harness, wrapped by a guardrail layer the original blueprint lacked.**
 
-*(The original source materials — ADAM/Camel PRDs & specs, the StockSense playbook, dashboard,
+*(The original source materials — the original PRDs & specs, the StockSense playbook, dashboard,
 and tracker — are archived under `docs/source-materials/`.)*
 
 ---
