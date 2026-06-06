@@ -12,7 +12,7 @@ autonomy is earned through a paper track record, never granted.
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
 **Status:** Phase 0 (paper) · Sprints **S1–S6.5 complete** · **309 tests green** · 7-DB architecture live ·
-on **Roadmap v3** (S1–S14), next **S7** (Entrepreneur).
+on **Roadmap v3** (S1–S14), next **S6.6** (Ops hardening + Beginner Mode).
 
 ---
 
@@ -43,12 +43,13 @@ with **point-in-time discipline** (`event_date · reported_at · ingested_at · 
 
 | Sprint | Theme | One-line goal |
 |---|---|---|
-| **S7** → next | Entrepreneur Product Engine *(moved earlier)* | Ship one compliant product behind a 17-field gate (lead: Arabic complaint/SLA assistant for Saudi travel/hospitality) |
+| **S6.6** → next | Ops hardening + Beginner Mode | Illiquidity-gate fail-loud; prompt-injection tests; dead-man's-switch; SQLite WAL; OS-level config immutability; beginner-mode profile; broker matrix |
+| **S7** | Entrepreneur Product Engine *(moved earlier)* | Ship one compliant product behind a 17-field gate (lead: Arabic complaint/SLA assistant for Saudi travel/hospitality); agent scope = code-gen only |
 | **S8** | Data Intelligence Backbone | `SourceConnector` + **top-20 connectors** (SEC/XBRL, FRED+ALFRED, World Bank, GDELT…), provenance + point-in-time, recorded-fixture tests; fills the stub DBs |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution, event intelligence, 10-state regime classifier, Sharia cross-check |
 | **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (multiple-testing penalty, signal decay, regime-filtered sample) + decision-quality dashboard |
 | **S11** | Strategy Registry + Learning | Trio: `core_dca` / `quality_momentum` / `etf_regime_rotation`; 4-tier learning engine |
-| **S12** | Edge Lab + realistic paper | Two-engine backtest cross-check, delisted handling, must beat simple DCA after costs |
+| **S12** | Edge Lab + ⭐ Sandbox Mode | **`sandbox`**: full system on live data + virtual money (the dress rehearsal that earns micro-live); two-engine cross-check; Sharia-drag quantified; **No-Edge protocol → DCA** |
 | **S13** | Micro-Live Readiness | Telegram approval channel, LiveBroker, limit-orders-only, $100–500 human-approved |
 | **S14** | Module Restructure | Flat layout → clean domain hierarchy (tests stay green) |
 

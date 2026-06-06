@@ -12,10 +12,13 @@
 **Sequence (Roadmap v3 — data backbone before the proof engine; Entrepreneur moved earlier):**
 ```
 S1 ✅ → S2 ✅ → S3 ✅ → S4 ✅ → S4.5 ✅ (Edge Proof v0) → S5 ✅ → S5.5 ✅ (Minimal Ops) → S6 ✅ →
-S6.5 (Safety/Accounting hotfix) → S7 (Entrepreneur) → S8 (Data Backbone) → S9 (Knowledge Graph + Regime) →
-S10 (Full Edge Proof, 17-check) → S11 (Strategy Registry) → S12 (Edge Lab + realistic paper) →
+S6.5 ✅ (Safety/Accounting hotfix) → S6.6 (Ops hardening + Beginner Mode) → S7 (Entrepreneur) →
+S8 (Data Backbone) → S9 (Knowledge Graph + Regime) → S10 (Full Edge Proof, 17-check; shadow/enforcing) →
+S11 (Strategy Registry) → S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) →
 S13 (Micro-Live) → S14 (Restructure)
 ```
+*(⭐ **Sandbox Mode** = the full system on live real-time data with virtual money — the founder-requested
+live dress rehearsal that produces the track record gating micro-live.)*
 Guiding principle reaffirmed: **Safety first. Evidence second. Autonomy last.**
 Optimize for **evidence density, not feature count.**
 
@@ -346,6 +349,36 @@ direct-`evaluate` loop path.)*
 
 ---
 
+### S6.6 — Ops & Safety Hardening + Beginner Mode  (adopted from external review round #5)
+Cheap, real items surfaced by two independent technical reviews. All small; each closes a verified gap.
+- **Illiquidity-gate fail-loud** — the spread/ADV gate in `constitution.py` currently **skips silently
+  when its data is absent**, so an illiquid trade can pass unchecked. Log every skip + raise a
+  dashboard/alert flag; **fail-closed (block) in live mode** when the data needed to clear the gate is
+  missing. *(Verified against the code — real gap.)*
+- **Prompt-injection adversarial tests** — add to the red-team suite: agent claims "the founder told me
+  to ignore the Constitution" → REJECT; "an emergency justifies breaking a rule" → REJECT; agent
+  supplies fabricated data to justify a trade → REJECT after triangulation.
+- **Dead-man's-switch** — an external heartbeat (e.g. healthchecks.io ping) the EOD loop must hit inside
+  a window; a missed ping alerts the founder. Fixes the bootstrapping gap: the internal health monitor
+  can't catch a failure if it isn't running (power cycle, forced Windows Update restart, sleep, logout).
+- **SQLite WAL mode** — `PRAGMA journal_mode=WAL` on all 7 DBs to reduce locking under concurrent
+  read/write; document crash-during-write behaviour and confirm reconciliation handles it.
+- **OS-level config immutability** — move `config/limits.yaml` to an NTFS path the agent process user can
+  only read; immutability enforced by the OS, not merely by code. (Founder machine-hardening checklist.)
+- **Beginner Mode** (`config/beginner_mode.yaml`) — a founder-selectable profile for the real small
+  account: small fixed position cap, fewer positions, tighter daily-loss stop, DCA-first, manual approval
+  on. Sits on top of the existing fund-size cash tiers; **never relaxes a Sharia or capital-preservation
+  rail** (it can only tighten).
+- **Broker capability matrix** (`docs/CAMEL_BROKER_MATRIX.md`) — Alpaca / IBKR / Sahm / (later EGX):
+  markets, API availability, Sharia screening, fractional shares, minimum capital, fees, PDT rule,
+  automation. Resolves the live-broker direction.
+
+**Gate:** illiquidity-gate skip is logged and blocks in live; the three prompt-injection tests pass;
+the dead-man's-switch alerts on a missed ping; all DBs run WAL mode; the beginner-mode profile loads and
+can never widen a rail; broker matrix documented.
+
+---
+
 ### S7 — Entrepreneur Product Engine  (MOVED EARLIER — cash flow first)
 *Moved ahead of the trading-data build (founder decision): for year one the Entrepreneur arm has
 higher expected cash-flow + learning than trading a small account. Trader compounds; Entrepreneur
@@ -368,6 +401,11 @@ is a real domain fit.
   human approval; no sensitive-data collection without privacy review; no copyrighted assets without
   a rights check; no production launch without founder approval; no paid ads without Budget Kernel
   approval; no "official compliance guarantee" wording.
+- **Autonomous scope is code-generation only (reviewer-validated).** The agent may draft PRDs, write
+  code, open issues, and prepare assets — but **customer discovery, pricing, payment setup, support,
+  and any launch or spend decision require founder approval.** Both external reviews flagged this as the
+  highest-risk, least-proven arm; keeping it at S7 (founder's call, for cash flow) is paired with this
+  hard scope limit so "move it earlier" doesn't mean "let the agent launch a product."
 - Ship one compliant product (Stripe test mode for Phase 0).
 
 **Gate:** no build without all 17 gate fields + Sharia check + approval; no paid spend without budget
@@ -430,6 +468,17 @@ let scraped text instruct the LLM.**
 article text reaches the reasoning engine). **No backtest is valid unless adjusted/unadjusted prices,
 splits, dividends, delistings, and ticker changes are handled.**
 
+**News-pipeline adversarial tests (reviewer-validated)** — before any news ingestion goes live: malformed
+structured events; instruction text injected into an event's narrative field; events crafted to trip a
+specific Constitution rule via their data content. The structured-event design (never raw text to the
+LLM) is the mitigation; these tests prove it.
+
+**Market expansion order (founder decision): US → Saudi → EGX.** The US connectors above are the focus.
+**Saudi (Tadawul)** market-data + Sharia-list adapters come next as a sub-track. **EGX (Egypt)** is a
+*later* adapter (Mubasher / EGX official / a manual-entry broker), **not a P0** — adopted only once the
+US/Saudi core is solid. *(An external reviewer pushed EGX-first; declined — it's the reviewer's home
+market, not the founder's primary one. The founder trades US ETFs via Sahm from Riyadh.)*
+
 **Dashboard extension (data-pipeline health):** connector status · last successful ingestion ·
 failed-source count · stale-source warnings · data-quality panel.
 
@@ -460,6 +509,13 @@ with recorded-fixture tests; macro/fundamentals/news DBs hold real data; raw tex
   methodology (AAOIFI/MSCI/S&P/FTSE/DowJones/custom) + confidence + business/financial screen results
   + purification_ratio + screened_at/known_at/next_review_at + source_hash. **Rule: canonical vs
   cross-check disagree → freeze for new buys, allow reduce-only exits, route to human review.**
+- **AAOIFI drift detection (reviewer-validated)** — ratios re-screen quarterly; flag when a *held*
+  position's debt/interest ratios have moved toward the doubtful zone *since purchase* — an early
+  warning before an outright freeze.
+- **Local-board override (configurable; AAOIFI default).** Some markets' local Sharia boards differ
+  from AAOIFI (Saudi/Egypt especially). Authority stack: **local board > AAOIFI > founder judgment >
+  agent (never)**. Default AAOIFI; per-market overrides land with the Saudi/EGX adapters. Recorded in
+  the multi-state status's `methodology`/authority field.
 
 **Gate:** given a ticker, Camel returns company identity, CIK, sector, Sharia status (multi-state),
 latest filings, latest events, ETF exposure, and benchmark; the regime classifier labels the current
@@ -490,7 +546,14 @@ Company → Candidate.
 **Minimum thresholds:** sample ≥ 50 · regime-filtered sample ≥ 20 · median excess ≥ +2.5% over
 benchmark for the horizon · worst forward return no worse than −25% unless position ≤ 2% · data
 quality ≥ 0.80 · source quorum ≥ 2 for non-price events · fail if last-24-month edge materially
-underperforms the full sample (decay).
+underperforms the full sample (decay). **Pre-registered:** these thresholds are written down *before*
+the Edge Lab (S12) runs — never tuned after seeing results.
+
+**Shadow vs enforcing mode (reviewer-validated).** The Edge Proof gate runs in `shadow` (log the
+decision it *would* make, don't block) or `enforcing` (block). A new strategy on a freshly-fed backbone
+starts in **shadow** so thresholds calibrate against real outcomes before they can block live trades;
+promote to **enforcing** only after the shadow window. *(S6.5 already enforces edge for buys by default —
+correct while no live strategy runs; shadow mode is how real strategies calibrate before going live in S11.)*
 
 **Decision-quality dashboard (extends the S6 state dashboard — shows *why*, not just *what*):**
 current regime + confidence (from S9) · active strategy + weight · **signals rejected this cycle and
@@ -542,11 +605,23 @@ proposals land in the Learning Ledger; DCA guardrails enforced; never auto-edits
 *Was S10. Adds the realistic-paper engine + survivorship + two-engine cross-check. Mandatory before any
 live automation. Run after ≥28 days of paper data.*
 
-**Realistic paper execution (two modes):** `loop_test` (last-close fills; $1 fallback only in unit
-tests) vs `realistic_paper` (no fallback; limit orders only; spread model; slippage model; non-fill +
-partial-fill logic; market hours; corporate-action awareness). Modules: `execution_simulator`,
-`fill_model`, `slippage_model`, `order_book_snapshot`, `partial_fill`. **No performance report may use
-loop_test fills.**
+**Run modes (three):**
+- `loop_test` — historical / last-close fills; $1 fallback unit-tests only.
+- `realistic_paper` — no fallback; limit orders only; spread + slippage models; non-fill + partial-fill
+  logic; market hours; corporate-action awareness.
+- **`sandbox` — the full system on LIVE real-time data with VIRTUAL money (founder request).** ⭐
+  Sandbox runs the *entire* loop — Observe → strategies (S11) → Edge Proof (shadow or enforcing) →
+  Constitution → **virtual fills via the realistic-paper engine** — against the **live market feed**,
+  with the decision-quality dashboard showing every accept/reject in real time. It is the live dress
+  rehearsal: full system power, no real money. **The ≥28-day (and the reviewers' 90-day shadow) track
+  record that gates micro-live (S13) is produced in sandbox.** This is the truest test of "can the whole
+  thing actually trade" short of risking a dollar.
+
+Modules: `execution_simulator`, `fill_model`, `slippage_model`, `order_book_snapshot`, `partial_fill`,
+`sandbox_runner` (live-feed driver). **No performance report may use loop_test fills.**
+*(Dependency note: a minimal sandbox — live price feed + virtual money + Edge Proof v0, no strategies —
+is possible once Alpaca live-data is wired; the **full** "full-system-power" sandbox needs the strategy
+registry (S11) and the realistic-paper engine, hence its home here in S12.)*
 
 **Honest backtesting:** look-ahead / survivorship / data-leakage / overfitting prevention; walk-forward
 (out-of-sample); transaction-cost + slippage + spread; whole-share constraints (Sahm); point-in-time
@@ -556,6 +631,16 @@ Sharia status; **delisted-company handling (EODHD delisted dataset; CRSP later)*
 **Benchmark hierarchy:** Cash · monthly DCA into SPUS · SPUS B&H · HLAL B&H · MNZL · equal-weight
 Sharia basket · Camel active. If Camel doesn't beat simple DCA on risk-adjusted terms after costs, it
 does not trade actively.
+
+**Sharia-drag quantification (reviewer-validated)** — explicitly measure the filtered (compliant)
+universe vs the unfiltered universe over the test window, so we know exactly what the screen costs in
+return. Combined with the pre-registered thresholds (S10), this makes the edge verdict honest.
+
+**⭐ The "No-Edge Found" protocol (both reviews; founder-adopted).** If the Edge Lab does **not** find a
+defensible, cost-and-Sharia-drag-survived, out-of-sample-robust signal, that is **the system working,
+not failing.** The pre-registered fallback is **scheduled DCA into SPUS/HLAL** managed by a simplified
+`core_dca` + DCA guardrails, and **Phase 1 active trading does not proceed.** This branch is defined in
+advance — in `docs/CAMEL_LIVE_READINESS.md` — so a disappointing result can't be rationalised away.
 
 **Strategy kill criteria** (disable / research-only if ANY): out-of-sample < benchmark · drawdown >
 threshold · hit rate below base rate · depends on one outlier · costs erase edge · works only in one
@@ -579,11 +664,21 @@ reconciles with the broker paper statement · every position had thesis + invali
 tested over Tailscale · broker key trade-only/withdrawals-disabled · margin + options disabled · key
 scoped to minimum permissions · Edge Proof has approved ≥1 signal · approval flow tested · manual
 dry-run · one **rejected** trade test live (no order placed) · one **approved** micro trade done
-manually before automation · emergency broker login tested.
+manually before automation · emergency broker login tested · **the Edge Lab (S12) found a defensible
+edge** — if it did not, the No-Edge protocol applies and Phase 1 active trading does **not** proceed
+(DCA-only; this is a success state, not a failure).
 
-**Deliverables:** Approval Channel (Telegram one-tap approve/veto, timeout = veto) · LiveBroker
-(Alpaca paper → live, behind the phase flag) · limit orders only · no pre-market/after-hours · live
-key-scope verification at startup.
+**Broker direction (founder-resolved):** **Alpaca** for the autonomous US paper→micro-live path
+(API-first; trade-only key, withdrawals disabled; limit-only). **`ManualBroker` (Sahm)** for the
+founder's real Saudi/US-ETF account, which has **no API**: Camel proposes → founder executes in the Sahm
+app → logs the fill (price/shares/timestamp) back to the append-only ledger under the same Constitution
+checks + reconciliation. **IBKR deferred to Phase 2.** Full comparison in `docs/CAMEL_BROKER_MATRIX.md`.
+*(PDT note: Alpaca live's $25K pattern-day-trader rule is largely N/A — Camel is cash-account, long-only,
+positional, not day-trading; documented in the matrix.)*
+
+**Deliverables:** Approval Channel (Telegram one-tap approve/veto, timeout = veto) · LiveBroker — Alpaca
+(paper → live, behind the phase flag) · `ManualBroker` (Sahm) manual-entry mode · limit orders only · no
+pre-market/after-hours · live key-scope verification at startup.
 
 **Initial live permissions:** human approval on every live trade · no autonomous execution · max
 $100–500 · limit orders only · whitelist only · no pre-market/after-hours.
@@ -609,19 +704,28 @@ dashboard/   generate
 
 **Gate:** full test suite green after restructure; all imports updated; CLAUDE.md updated.
 
-## Open decisions (ask the founder before assuming)
+## Open decisions
 
-1. Live broker for Phase 1: Alpaca vs IBKR.
-2. Notification channel: Telegram (default) vs Pushover.
-3. First Entrepreneur product to ship. *(Note: the v1 proposal suggested an Arabic
-   travel/hospitality SLA assistant, but that assumed a founder background we have no record
-   of — treat as an example, not a recommendation. Founder to decide from actual domain.)*
-4. Canonical Sharia screener: Musaffa vs Zoya (use one canonical, the other as cross-check).
-5. Starting limit values in `config/limits.yaml` (start very low; approval for all paid spend).
-6. Capital bucket percentages (defaults in S4 Budget Kernel).
-7. DCA ladder: ETFs only at first, or also individual equities with Edge Proof?
-8. `congress_signal`: delay until after S10, or build in S8?
-9. Default benchmark: SPUS primary, HLAL secondary, Cash + DCA as controls — confirm?
+**Resolved (founder + review round #5):**
+1. ✅ **Live broker:** Alpaca for the autonomous US paper→micro-live path; `ManualBroker` (Sahm) for the
+   real Saudi/US-ETF account (no API); IBKR deferred to Phase 2. (S13 + `CAMEL_BROKER_MATRIX.md`.)
+2. ✅ **Notification channel:** Telegram (bidirectional approve/veto, free).
+3. ✅ **First Entrepreneur product:** Arabic complaint/SLA assistant for Saudi travel/hospitality —
+   **validated** (the founder works full-time in travel-tech). Built behind the S7 gate, human approval
+   on every launch/spend; agent scope = code-gen only.
+4. ✅ **Canonical Sharia screener:** Musaffa primary, Zoya cross-check (S9 cross-check).
+7. ✅ **DCA ladder:** ETFs only until Edge Proof passes for individual equities.
+8. ✅ **`congress_signal`:** delayed to post-Edge-Lab (S11 "delay" list), signal-only, never blind copy.
+9. ✅ **Default benchmark:** SPUS primary, HLAL secondary, Cash + DCA as controls.
+10. ✅ **Markets:** US → Saudi → EGX (EGX a later S8 connector, not a P0).
+
+**Still open (founder to set values):**
+5. Starting limit values in `config/limits.yaml` — recommend **starting at ~50% of documented values**
+   (paper passes don't prove live behaviour; scale up after ~60 clean live days). Beginner-mode profile
+   (S6.6) is the conservative default for the real small account.
+6. Capital bucket percentages (S4 Budget Kernel) — reviewer suggestion given the unproven edge:
+   Core 60 / Trader 10 / Entrepreneur 15 / System 5 / Emergency 10. Founder to confirm.
+11. Capital path to the $10K Camel Fund (savings / income / Entrepreneur revenue) — affects pace, not architecture.
 
 ---
 

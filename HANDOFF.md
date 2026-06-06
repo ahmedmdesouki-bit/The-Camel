@@ -4,7 +4,7 @@
 **Status:** Sprints **S1 → S6.5 complete** · **309 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
-(S1–S14) · **Next: S7** (Entrepreneur Product Engine → then S8 Data Backbone)
+(S1–S14) · **Next: S6.6** (Ops hardening + Beginner Mode → then S7 Entrepreneur)
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's
@@ -228,7 +228,7 @@ python ops\kill_switch.py resume    # removes flag
 
 ---
 
-## 7. What Is Planned (Sprints 6.5–14, Roadmap v3)
+## 7. What Is Planned (Sprints 6.6–14, Roadmap v3)
 
 > Full detail with module names and gate criteria is in [`docs/CAMEL_ROADMAP.md`](docs/CAMEL_ROADMAP.md).
 > **Roadmap v3** restructure: build the data supply chain before the proof engine, move the
@@ -239,13 +239,14 @@ python ops\kill_switch.py resume    # removes flag
 | **S4** ✅ | Hardening | Rolling velocity stop (5d −8% / 14d −12%); illiquidity/slippage gate; Budget Kernel; Tool Permission Matrix; Data Freshness Checker; sanitiser; Playwright stub; idempotency; ThesisCard template |
 | **S5** ✅ | Operator OS | 11-state machine; Opportunity Router; task queue; Learning Ledger; op log; health monitor |
 | **S6** ✅ | Visibility + Control | Dashboard; daily Telegram health report; kill switch over Tailscale; weekly self-test; secrets manager; log rotation; off-box backup; machine hardening checklist |
-| **S6.5** | Safety & Accounting hotfix | No phantom sells; close-only/reduce-only for frozen/non-compliant holdings; Edge Proof mandatory for buy/increase; no $1 fallback price outside unit tests |
-| **S7** | Entrepreneur Product Engine *(moved earlier)* | 17-field Product Gate; build pipeline (thesis→PRD→issues→MVP→tests→approval→prod); Entrepreneur Constitution; ship one compliant product (Arabic complaint/SLA-response assistant for Saudi travel/hospitality — founder's domain) |
+| **S6.5** ✅ | Safety & Accounting hotfix | No phantom sells; close-only/reduce-only for frozen/non-compliant holdings; Edge Proof mandatory for buy/increase; no $1 fallback price outside unit tests (309 tests) |
+| **S6.6** → next | Ops hardening + Beginner Mode | Illiquidity-gate fail-loud (verified gap); prompt-injection adversarial tests; dead-man's-switch ping; SQLite WAL mode; OS-level config immutability; beginner-mode profile; broker capability matrix |
+| **S7** | Entrepreneur Product Engine *(moved earlier; agent scope = code-gen only)* | 17-field Product Gate; build pipeline (thesis→PRD→issues→MVP→tests→approval→prod); Entrepreneur Constitution; ship one compliant product (Arabic complaint/SLA-response assistant for Saudi travel/hospitality — founder's domain). Customer discovery/pricing/payments/launch all need founder approval |
 | **S8** | Data Intelligence Backbone | `SourceConnector` framework; **top-20 connectors** (SEC EDGAR/XBRL/RSS, FRED+ALFRED, BLS, BEA, Treasury, World Bank, EIA, USGS, GDELT, ACLED, GPR, EPU, OFAC, congress/senate, ETF holdings, French) w/ provenance + point-in-time + vcrpy tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); scraping policy; fills macro/fundamentals/news DBs |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution (ticker↔CIK↔ISIN↔CUSIP); ETF look-through; structured event intelligence; 10-state regime classifier from real macro; Sharia cross-check w/ multi-state status (disagreement → freeze new buys) |
 | **S10** | Full Edge Proof Engine | **17-check** signal-conditioned proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay); minimum thresholds; model-disagreement → human. **No edge proof = no trade.** |
 | **S11** | Strategy Registry + Learning | Trio: `core_dca`, `quality_momentum`, `etf_regime_rotation` (all pass Edge Proof); StrategyMixer; DCA guardrails; intraday monitor (5-min); 4-tier learning; regime→strategy affinity |
-| **S12** | Edge Lab + realistic paper | `loop_test` vs `realistic_paper` (limit-only, spread/slippage/partial-fill, market hours, corporate actions); bias prevention; walk-forward; crisis tests (2000/2008/2020/2022); benchmark hierarchy; two-engine cross-check; delisted handling; kill criteria |
+| **S12** | Edge Lab + realistic paper + ⭐ Sandbox Mode | Three run modes incl. **`sandbox`** (full system on live data + virtual money — the dress rehearsal that produces the micro-live track record); bias prevention; walk-forward; crisis tests; benchmark hierarchy; two-engine cross-check; delisted handling; Sharia-drag quantified; **No-Edge protocol → DCA**; kill criteria |
 | **S13** | Micro-Live Readiness | Approval Channel (Telegram one-tap, timeout=veto); LiveBroker; limit-orders-only; Phase 1 entry ($100–500, human-approved) |
 | **S14** | Module Restructure | Flat → `governance/ operator_os/ trader/ entrepreneur/ data/ security/ alerts/ dashboard/` (tests stay green) |
 
@@ -300,8 +301,14 @@ Appeared in two source videos; rejected both times. Do not revisit.
    by the founder's travel-tech day job; blind congress/social copy and paid-data-without-
    references rejected.)
 
-All four were gap-analyzed line-by-line against the roadmap; every actionable item is
-mapped to a sprint. Memory files: `feedback_camel_arch_1.md`, `feedback_camel_arch_2.md`.
+5. **Technical review round #5** — two independent external reviews (one current at S6.5/309, one at
+   S5.5/263). Drove **S6.6** (illiquidity-gate fail-loud, prompt-injection tests, dead-man's-switch,
+   SQLite WAL, OS-level config immutability, beginner mode, broker matrix), **Sandbox Mode** + shadow
+   Edge Proof (S12/S10), and the **"No-Edge Found" protocol** (S12). → S6.6–S13. *(Declined: EGX-first
+   restructure and the SaaS-for-the-masses items — they collide with personal-use-only.)*
+
+All were gap-analyzed line-by-line against the roadmap; every actionable item is mapped to a sprint.
+Memory files: `feedback_camel_arch_1.md`, `feedback_camel_arch_2.md`.
 
 ---
 

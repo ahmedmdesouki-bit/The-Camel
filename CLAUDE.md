@@ -301,9 +301,9 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur moved earlier):
 ```
 S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK ->
-S7 (Entrepreneur) <- NEXT -> S8 (Data Backbone) -> S9 (Knowledge Graph + Regime)
--> S10 (Full Edge Proof) -> S11 (Strategy Registry) -> S12 (Edge Lab + realistic paper)
--> S13 (Micro-Live) -> S14 (Restructure)
+S6.6 (Ops hardening + Beginner Mode) <- NEXT -> S7 (Entrepreneur) -> S8 (Data Backbone)
+-> S9 (Knowledge Graph + Regime) -> S10 (Full Edge Proof; shadow/enforcing) -> S11 (Strategy Registry)
+-> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S13 (Micro-Live) -> S14 (Restructure)
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
 Optimize for **evidence density, not feature count.**
@@ -319,12 +319,13 @@ Optimize for **evidence density, not feature count.**
 | S5.5 OK | Minimal ops visibility | daily report w/ status; kill-switch self-test; backup restore verified (263 tests) |
 | S6 OK | Dashboard + Telegram + monitoring (code) | dashboard reflects paper trade; weekly checks pass; loss-stop sim halts (289 tests) + machine checklist |
 | S6.5 OK | Safety & Accounting hotfix | phantom sell blocked; frozen-name close-only; buy needs edge; no $1 fallback in non-test paths (309 tests) |
-| S7 | Entrepreneur Product Engine (moved earlier) | no build without 17-field gate + Sharia check + approval; live payment-capable URL |
+| S6.6 | Ops hardening + Beginner Mode | illiquidity-gate fail-loud; prompt-injection tests; dead-man's-switch; SQLite WAL; OS-level config immutability; beginner-mode profile; broker matrix |
+| S7 | Entrepreneur Product Engine (moved earlier; agent scope = code-gen only) | no build without 17-field gate + Sharia check + approval; live payment-capable URL |
 | S8 | Data Intelligence Backbone (top-20 connectors) | no record without full provenance + point-in-time; ≥16 free connectors live; raw text never reaches the LLM |
 | S9 | Knowledge Graph + Regime Engine | ticker → identity/Sharia/filings/events/exposure; regime classified from real macro; Sharia disagreement freezes buys |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
 | S11 | Strategy Registry + Learning Engine | >=3 strategies (trio) pass Edge Proof; DCA guardrails; never auto-edits the Constitution |
-| S12 | Edge Lab + realistic paper execution | two-engine cross-check; delisted handled; beats simple DCA after costs; all perf from realistic_paper fills |
+| S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
 | S13 | Micro-Live Readiness (Phase 1) | all live-readiness boxes pass |
 | S14 | Module Restructure | full suite green after restructure |
 

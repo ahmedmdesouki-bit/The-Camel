@@ -6,7 +6,7 @@
 >
 > **Snapshot date:** 2026-06-06 · **Repo:** https://github.com/ahmedmdesouki-bit/The-Camel
 > (branch `main`) · **Status:** Sprints S1–S6.5 complete · 309 tests green · paper-mode only ·
-> on Roadmap v3 (S1–S14), next S7 (Entrepreneur).
+> on Roadmap v3 (S1–S14), next S6.6 (Ops hardening + Beginner Mode).
 
 > ⚠️ **What this is:** a personal, educational, decision-support / engineering project for the
 > founder's **own** capital. It is **not** financial, legal, or Sharia advice, and **not** a
@@ -262,12 +262,13 @@ cash-flow (Entrepreneur) arm earlier.** Optimize for *evidence density, not feat
 
 | Sprint | Theme | One-line goal |
 |---|---|---|
-| **S7** *(next)* | Entrepreneur Product Engine *(moved earlier)* | Ship one compliant product behind a 17-field gate + Entrepreneur Constitution (lead: Arabic complaint/SLA assistant for Saudi travel/hospitality) |
+| **S6.6** *(next)* | Ops hardening + Beginner Mode | Illiquidity-gate fail-loud (verified gap), prompt-injection tests, dead-man's-switch, SQLite WAL, OS-level config immutability, beginner-mode profile, broker matrix |
+| **S7** | Entrepreneur Product Engine *(moved earlier; agent scope = code-gen only)* | Ship one compliant product behind a 17-field gate + Entrepreneur Constitution (lead: Arabic complaint/SLA assistant for Saudi travel/hospitality) |
 | **S8** | Data Intelligence Backbone | `SourceConnector` framework + **top-20 connectors** (SEC EDGAR/XBRL, FRED + ALFRED vintage, World Bank, GDELT, BLS, BEA, Treasury, EIA, ACLED, OFAC, ETF holdings, …), full provenance + point-in-time, recorded-fixture tests; paid vendors phased in (EODHD/Polygon/Norgate/Sharadar/Quiver/Zoya/CRSP); fills the stub DBs |
 | **S9** | Knowledge Graph + Regime Engine | Entity resolution (ticker↔CIK↔ISIN↔CUSIP), ETF look-through, event intelligence, 10-state regime classifier from real macro, Sharia cross-check (multi-state status; disagreement → freeze new buys) |
 | **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (adds survivorship control, similar-regime filter, multiple-testing penalty, signal-decay) + a decision-quality dashboard (shows *why*: rejected signals + reason, regime, beating-benchmark, edge decay) |
 | **S11** | Strategy Registry + Learning | Trio: `core_dca` / `quality_momentum` / `etf_regime_rotation`; StrategyMixer; DCA guardrails; 4-tier learning engine (auto base-rates → auto-weight-in-band → propose-only → founder-only) |
-| **S12** | Edge Lab + realistic paper | `loop_test` vs `realistic_paper` (limit-only, spread/slippage/partial-fill, market hours, corporate actions); walk-forward; crisis tests (2000/2008/2020/2022); **two-engine backtest cross-check**; delisted handling; must beat simple DCA after costs |
+| **S12** | Edge Lab + realistic paper + ⭐ **Sandbox Mode** | Three run modes incl. **`sandbox`** (full system on live data + virtual money — the dress rehearsal that produces the micro-live track record); walk-forward; crisis tests; **two-engine cross-check**; Sharia-drag quantified; **No-Edge protocol → DCA**; delisted handling; must beat simple DCA after costs |
 | **S13** | Micro-Live Readiness (Phase 1) | Telegram approval channel (timeout = veto), LiveBroker, limit-orders-only, $100–500 human-approved per trade; ≥28-day paper track record + zero guardrail breaches as prerequisites |
 | **S14** | Module Restructure | Flat layout → clean domain hierarchy (`governance/ operator_os/ trader/ entrepreneur/ data/ security/ alerts/ dashboard/`); tests stay green |
 

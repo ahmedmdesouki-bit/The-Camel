@@ -7,6 +7,33 @@
 
 ## 2026-06-06
 
+**External review round #5 folded into the roadmap (docs-only; no code change).** Two independent
+technical reviews (one current at S6.5/309, one stale at S5.5/263). Founder decisions + adopted items:
+- **New S6.6 — Ops & Safety Hardening + Beginner Mode:** illiquidity-gate fail-loud (the spread/ADV gate
+  *silently skips* when data is absent — verified gap; now logs + blocks in live), prompt-injection
+  adversarial tests (founder-override / emergency / data-poisoning claims), dead-man's-switch external
+  ping, SQLite WAL mode, OS-level (NTFS) config immutability, beginner-mode profile (can only tighten
+  rails), broker capability matrix.
+- **⭐ Sandbox Mode (founder request) added to S12:** the full system on **live real-time data with
+  virtual money** — the live dress rehearsal that produces the ≥28-day (90-day shadow) track record
+  gating micro-live. Plus **shadow vs enforcing** Edge Proof modes (S10) for calibration.
+- **"No-Edge Found" protocol (both reviews):** if the Edge Lab finds no defensible edge, the
+  pre-registered fallback is scheduled DCA into SPUS/HLAL and Phase 1 does not proceed — a success state,
+  not a failure. Thresholds pre-registered before the lab runs; Sharia-drag quantified (S12).
+- **Markets US → Saudi → EGX (founder):** EGX is a *later* S8 connector, **not** a P0. Declined the
+  reviewer's EGX-first restructure of S7 (it's the reviewer's home market, not the founder's primary one)
+  and the SaaS-for-the-masses items (beginner-for-millions, multi-founder, open-source/enterprise) — they
+  collide with the locked personal-use-only constraint.
+- **Entrepreneur stays at S7 (founder)** but with the reviewers' concern adopted: **agent autonomous scope
+  = code-generation only**; customer discovery, pricing, payments, launch, and spend need founder approval.
+- **Broker resolved:** Alpaca (autonomous US path) + `ManualBroker` (Sahm, manual-entry for the real
+  no-API account) + IBKR deferred to Phase 2; documented in a broker matrix. Sharia drift detection +
+  local-board override (AAOIFI default) added to S9. News-pipeline adversarial tests added to S8.
+
+---
+
+## 2026-06-06
+
 **Sprint 6.5 (Safety & Accounting Hotfix) COMPLETE — 289 → 309 tests green.** First code sprint
 of Roadmap v3.
 - `guardrail/constitution.py` — **phantom-sell guard** (reject a sell with no holdings →

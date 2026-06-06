@@ -100,6 +100,13 @@ and tracker — are archived under `docs/source-materials/`.)*
 > roadmap's emphasis on the data backbone (S8), Edge Proof (S4.5/S10) and the Edge Lab
 > backtesting (S12) is the project's attempt to answer #1 honestly before risking capital —
 > and the Entrepreneur arm (now pulled earlier to S7) is the answer to #2 and #6.
+>
+> **The "No-Edge Found" protocol (pre-committed):** if the Edge Lab finds no defensible,
+> cost-and-Sharia-drag-survived edge, that is **the system working, not failing** — the
+> pre-registered fallback is scheduled DCA into SPUS/HLAL, and Phase 1 active trading does not
+> proceed. This answer is written down *before* the lab runs so a disappointing result can't be
+> rationalised away. (Broker for Phase 1 is resolved: Alpaca for the autonomous US path +
+> manual-entry mode for the real Sahm account; IBKR deferred to Phase 2.)
 
 ---
 
