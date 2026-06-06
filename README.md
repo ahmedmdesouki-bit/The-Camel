@@ -16,6 +16,42 @@ on **Roadmap v3** (S1–S14), next **S6.5**.
 
 ---
 
+## What's built (Phase 0 — paper, 289 tests green)
+
+The **safety and evidence core** is done. Everything runs in paper mode behind a human gate.
+
+| | Sprint | What shipped |
+|---|---|---|
+| ✅ | **S1** Guardrail Service | The deterministic **Constitution** — `evaluate(action, state) → Decision`; rogue-action suite 100% rejected |
+| ✅ | **S2** Sharia gate + data | Whitelist / re-screen / haram classifier; Alpaca market-data ingestion + cross-source triangulation |
+| ✅ | **S3** Loop + broker + ledger | LoopRunner, PaperBroker, append-only **SHA-256 hash-chain ledger**, capital allocator |
+| ✅ | **S4** Hardening + Budget Kernel | Rolling velocity stops, illiquidity gate, kill-switch in `evaluate`, **Budget Kernel**, Tool Permission Matrix, config immutability, data freshness/quality/sanitiser, point-in-time columns |
+| ✅ | **S4.5** Edge Proof v0 | Evidence gate wired into the allocator — **no trade without a passing EdgeReport** |
+| ✅ | **S5** Operator OS | 11-state machine, Opportunity Router (leans to *Wait*), persistent task queue, **Learning Ledger**, op log, health monitor |
+| ✅ | **S5.5** Minimal Ops | Daily report, kill-switch self-test, plaintext-secret scan, verified backup/restore |
+| ✅ | **S6** Dashboard + Monitoring | Read-only HTML dashboard, credential-safe Telegram alerts, heartbeat, log rotation, hard secrets refusal, off-box archive, weekly scheduled checks + machine-hardening checklist |
+
+Plus the **7-database SQLite architecture** (market / macro / fundamentals / news / sharia / portfolio / learning)
+with **point-in-time discipline** (`event_date · reported_at · ingested_at · known_at`) so backtests can't cheat.
+
+## What's planned (Roadmap v3 — S6.5 → S14)
+
+**Guiding insight:** build the **data supply chain before the proof engine**, and move the cash-flow
+(Entrepreneur) arm earlier. Optimize for *evidence density, not feature count*. Full detail in
+[`docs/CAMEL_ROADMAP.md`](docs/CAMEL_ROADMAP.md).
+
+| Sprint | Theme | One-line goal |
+|---|---|---|
+| **S6.5** → next | Safety & accounting hotfix | No phantom sells; close-only exits for frozen holdings; no $1 fallback in prod |
+| **S7** | Entrepreneur Product Engine *(moved earlier)* | Ship one compliant product behind a 17-field gate (lead: Arabic complaint/SLA assistant for Saudi travel/hospitality) |
+| **S8** | Data Intelligence Backbone | `SourceConnector` + **top-20 connectors** (SEC/XBRL, FRED+ALFRED, World Bank, GDELT…), provenance + point-in-time, recorded-fixture tests; fills the stub DBs |
+| **S9** | Knowledge Graph + Regime Engine | Entity resolution, event intelligence, 10-state regime classifier, Sharia cross-check |
+| **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (multiple-testing penalty, signal decay, regime-filtered sample) + decision-quality dashboard |
+| **S11** | Strategy Registry + Learning | Trio: `core_dca` / `quality_momentum` / `etf_regime_rotation`; 4-tier learning engine |
+| **S12** | Edge Lab + realistic paper | Two-engine backtest cross-check, delisted handling, must beat simple DCA after costs |
+| **S13** | Micro-Live Readiness | Telegram approval channel, LiveBroker, limit-orders-only, $100–500 human-approved |
+| **S14** | Module Restructure | Flat layout → clean domain hierarchy (tests stay green) |
+
 ## Where to start
 
 | You want to… | Read |
