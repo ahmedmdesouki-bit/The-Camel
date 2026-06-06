@@ -2,7 +2,7 @@
 Append-only operator action log (S5) — separate from the trade ledger.
 
 Records every state transition, tool invocation, and router decision so the operator's
-behaviour is fully auditable. Backed by `op_log` (noah_portfolio.db).
+behaviour is fully auditable. Backed by `op_log` (camel_portfolio.db).
 """
 from __future__ import annotations
 import json

@@ -1,6 +1,6 @@
 """
 Persistent task queue (S5) — every planned action is enqueued before execution, so intent
-is auditable and the operator can pause/resume. Backed by the `tasks` table (noah_portfolio.db,
+is auditable and the operator can pause/resume. Backed by the `tasks` table (camel_portfolio.db,
 canonical schema in db/portfolio.py).
 """
 from __future__ import annotations

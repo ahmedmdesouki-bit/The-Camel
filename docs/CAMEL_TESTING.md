@@ -1,7 +1,7 @@
-# NOAH TESTING — test strategy
+# CAMEL TESTING — test strategy
 
-> **Canonical home for how Noah is tested.** Per-sprint gate criteria live in
-> `NOAH_ROADMAP.md`; this is the cross-cutting test strategy, suite labels, and the
+> **Canonical home for how Camel is tested.** Per-sprint gate criteria live in
+> `CAMEL_ROADMAP.md`; this is the cross-cutting test strategy, suite labels, and the
 > adversarial + integration test plans.
 
 ---
@@ -87,5 +87,5 @@ refusal lands in S6 with the secrets manager.)
 ## Principle
 
 A safety claim that isn't tested is a liability, not a feature. Constitution rule #7
-("Noah cannot change its own rules") is only true once the config-immutability test proves
+("Camel cannot change its own rules") is only true once the config-immutability test proves
 it. Every new deterministic rule ships with the test that proves it holds at the boundary.

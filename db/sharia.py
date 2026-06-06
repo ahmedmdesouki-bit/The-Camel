@@ -1,5 +1,5 @@
 """
-Sharia DB — noah_sharia.db
+Sharia DB — camel_sharia.db
 Stores: versioned whitelist, sharia_events audit log.
 Extended schema per Feedback 1: historical_drift_count, purification_ratio,
 trigger_period, reasoning_summary.

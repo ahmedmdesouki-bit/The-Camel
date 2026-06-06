@@ -1,5 +1,5 @@
 """
-Fundamentals DB — noah_fundamentals.db  [Sprint 7 stub]
+Fundamentals DB — camel_fundamentals.db  [Sprint 7 stub]
 Stores: revenue, margins, EPS, FCF, debt, cash, capex,
 guidance, valuation multiples, filing dates, risk factor changes.
 """

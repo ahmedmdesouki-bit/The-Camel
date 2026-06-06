@@ -1,9 +1,9 @@
-# NOAH BRIEF — project context, founder constraints, open questions
+# THE CAMEL — BRIEF — project context, founder constraints, open questions
 
 > **Canonical home for the "why & who":** origin story, founder constraints, the real
 > capital situation, key decisions and their rationale, and the honest open questions.
-> For *current build status* see `../HANDOFF.md`; for the *plan* see `NOAH_ROADMAP.md`;
-> for the *rules* see `NOAH_CONSTITUTION.md`. This doc is the standalone brief you can
+> For *current build status* see `../HANDOFF.md`; for the *plan* see `CAMEL_ROADMAP.md`;
+> for the *rules* see `CAMEL_CONSTITUTION.md`. This doc is the standalone brief you can
 > hand to an outside reviewer.
 
 > ⚠️ Personal, educational decision-support / engineering project for the founder's **own**
@@ -13,15 +13,15 @@
 
 ## 1. TL;DR
 
-**Noah** is an always-on, guardrailed autonomous AI operator running a continuous loop
+**Camel** is an always-on, guardrailed autonomous AI operator running a continuous loop
 (Observe → Form Thesis → Choose Path → Act → Measure → Learn) across two arms:
-- **Trader Noah** — trades Sharia-compliant markets.
-- **Entrepreneur Noah** — builds/launches/sells Sharia-compliant AI products.
+- **Trader Camel** — trades Sharia-compliant markets.
+- **Entrepreneur Camel** — builds/launches/sells Sharia-compliant AI products.
 
 Defining idea: **every consequential action (Sharia compliance, real money, or the live
 internet) passes through a deterministic Guardrail Constitution the agent cannot modify.**
 Aggressive inside the rails, impossible outside them. Live money stays behind a human gate
-until Noah earns trust through a paper-trading track record.
+until Camel earns trust through a paper-trading track record.
 
 ---
 
@@ -34,7 +34,7 @@ until Noah earns trust through a paper-trading track record.
 - **Risk profile:** moderate; holds through dips, does not panic-sell.
 - **Real brokerage today:** the **Sahm** app — **whole shares only**, no fractional, US ETFs/equities.
 - **Real capital today:** ~**$126** deployed + **$100/month** contributions (small on purpose —
-  a learning-stage account). A separate **$10K "Noah Fund"** is the target working capital for
+  a learning-stage account). A separate **$10K "Camel Fund"** is the target working capital for
   the autonomous operator.
 - **Base currency:** SAR, pegged ~3.75/USD (USD holdings carry ~no FX risk for the founder).
 
@@ -47,12 +47,12 @@ until Noah earns trust through a paper-trading track record.
    priced in, counter-signals), a written-invalidation-point rule, a research log, and
    three-market scaffolding (US live; Saudi/Egypt later).
 2. **The "ADAM" stack** — a 6-layer blueprint for an autonomous operator living on a real
-   machine. Renamed **Noah** and made ours.
+   machine. Renamed **Camel** and made ours.
 
-**Noah = StockSense v11 (the investing conscience / Sharia auditor) running inside an
+**Camel = StockSense v11 (the investing conscience / Sharia auditor) running inside an
 ADAM-style autonomous harness, wrapped by a guardrail layer the original blueprint lacked.**
 
-*(The original source materials — ADAM/Noah PRDs & specs, the StockSense playbook, dashboard,
+*(The original source materials — ADAM/Camel PRDs & specs, the StockSense playbook, dashboard,
 and tracker — are archived under `docs/source-materials/`.)*
 
 ---
@@ -99,6 +99,6 @@ and tracker — are archived under `docs/source-materials/`.)*
 
 ## 7. One-line summary
 
-**Noah is StockSense v11's Sharia-compliant investing discipline, running inside an autonomous
+**Camel is StockSense v11's Sharia-compliant investing discipline, running inside an autonomous
 operator, contained by a deterministic guardrail constitution, earning the right to real
 capital through paper-mode evidence — Cowork-for-thinking, Claude-Code-for-doing, on a Windows PC.**

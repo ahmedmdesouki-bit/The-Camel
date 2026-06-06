@@ -1,10 +1,10 @@
 """
 Sprint 3 — Loop runner tests.  Uses dbs fixture (7-DB architecture).
-LoopConfig now takes dbs: NoahDbs instead of db_path: str.
+LoopConfig now takes dbs: CamelDbs instead of db_path: str.
 """
 import sqlite3
 import pytest
-from db.paths import NoahDbs
+from db.paths import CamelDbs
 from loop.runner import LoopConfig, LoopRunner
 from loop.state import begin_run, finish_run
 from guardrail.constitution import (
@@ -20,7 +20,7 @@ def clear_kill_switch():
     resume()
 
 
-def minimal_cfg(dbs: NoahDbs, **hooks) -> LoopConfig:
+def minimal_cfg(dbs: CamelDbs, **hooks) -> LoopConfig:
     return LoopConfig(dbs=dbs, **hooks)
 
 

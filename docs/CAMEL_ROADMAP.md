@@ -1,7 +1,7 @@
-# NOAH ROADMAP - Canonical sprint plan (S1-S12)
+# CAMEL ROADMAP - Canonical sprint plan (S1-S12)
 
 > **Canonical home for the build roadmap, open decisions, and definition of done.**
-> The operating manual (Noah_CLAUDE.md) carries only a one-line summary table and points here.
+> The operating manual (CLAUDE.md) carries only a one-line summary table and points here.
 > Last updated: 2026-06-05.
 
 ---
@@ -58,7 +58,7 @@ Guiding principle reaffirmed: **Safety first. Evidence second. Autonomy last.**
   wired in a later sprint for scraping/QA only.
 
 *Schema extensions (existing tables only):*
-- `whitelist`: +`historical_drift_count`, +`purification_ratio` ✅ (live in noah_sharia.db)
+- `whitelist`: +`historical_drift_count`, +`purification_ratio` ✅ (live in camel_sharia.db)
 - `sharia_events`: +`trigger_period`, +`reasoning_summary` ✅
 - `orders`: +`client_order_id` (UUID, idempotency) ✅
 - `broker/paper.py`: `pre_flight_execution_check()` — raises `DuplicateOrderException`.
@@ -68,8 +68,8 @@ historical rows is impossible):*
 - Add to `prices`, and to all future macro/fundamentals/news tables, four distinct timestamps:
   - `event_date` — when the thing actually happened
   - `reported_at` — when the market/public learned it
-  - `ingested_at` — when Noah collected it (exists today)
-  - `known_at` — when Noah was *allowed* to use it
+  - `ingested_at` — when Camel collected it (exists today)
+  - `known_at` — when Camel was *allowed* to use it
 - This is the foundation of honest backtesting (S10). Without it, look-ahead bias is
   baked in and every backtest lies. Cheap now; impossible to add retroactively.
 
@@ -78,7 +78,7 @@ historical rows is impossible):*
   path to `config/limits.yaml`, the whitelist, tool-permission config, budget config, or
   approval thresholds. On Windows, enforced via file ACL check + a runtime write-attempt test.
 - Test asserts: an agent-initiated write to any founder-owned config **raises and is logged**.
-  This makes Constitution rule #7 ("Noah cannot change its own rules") a *proven* invariant,
+  This makes Constitution rule #7 ("Camel cannot change its own rules") a *proven* invariant,
   not an asserted one.
 
 *Kill-switch hardening:*
@@ -141,13 +141,13 @@ fundamentals DB). Corporate-action check was already pre-deferred to S7.
 ### S4.5 — Edge Proof v0  (evidence gate, pulled forward)
 
 *Rationale: the paper loop starts running in S5–S6, but the full Edge Proof Engine isn't
-ready until S7. Without a v0 gate, Noah would make trade decisions on narrative alone for
+ready until S7. Without a v0 gate, Camel would make trade decisions on narrative alone for
 two+ sprints — exactly the failure mode the project exists to prevent. v0 closes that window
 using only the `market.db` price data we already have. No macro/fundamentals/news needed.*
 
 `engine/edge_proof_v0.py` (moves to `trader/edge_proof_v0.py` in S12 restructure):
 - `EdgeReport` dataclass
-- Simple historical hit-rate + forward-return calculator from `noah_market.db`
+- Simple historical hit-rate + forward-return calculator from `camel_market.db`
 - Benchmark comparator (vs SPUS DCA by default)
 - Basic confidence score
 - `trade_allowed` boolean output
@@ -170,7 +170,7 @@ Hard rules — all default to `trade_allowed=false`:
 - Missing sample size → rejected
 - Missing benchmark → rejected
 - Weak evidence (excess return not positive after estimated cost) → rejected
-- Every v0 decision logged to `noah_learning.db`
+- Every v0 decision logged to `camel_learning.db`
 
 The full 13-check Edge Proof Engine (S7) is built *on top of* v0 — v0 is never removed,
 it becomes the cheapest first filter.
@@ -183,7 +183,7 @@ strategy produces a signal without Edge Proof → blocked.
 **STATUS: COMPLETE** (217 tests). `engine/edge_proof_v0.py` + `Allocator.request(...,
 edge_report=, require_edge=)`; `require_edge=True` rejects a trade with no/weak/stale report
 (`limit_hit="no_edge_proof"`) before the Constitution is consulted. Backward compatible:
-existing S3 allocator calls (no edge_report) are unchanged. Logs to `noah_learning.db`.
+existing S3 allocator calls (no edge_report) are unchanged. Logs to `camel_learning.db`.
 
 ---
 
@@ -211,7 +211,7 @@ existing S3 allocator calls (no edge_report) are unchanged. Logs to `noah_learni
   The router can NOT recommend the Trader path without a passing Edge Proof v0.
 - `operator/task_queue.py` — persistent task queue; every planned action is enqueued before
   execution, enabling pause/resume and auditing of intent vs outcome.
-- `operator/learning_ledger.py` — writes to `noah_learning.db`:
+- `operator/learning_ledger.py` — writes to `camel_learning.db`:
   decision_type, thesis_summary, expected/actual outcome, mistake_type, lesson, pattern.
   Combines outcomes from Trader AND Entrepreneur arms (shared learning system).
 - `operator/append_op_log.py` — append-only operator action log (separate from the trade
@@ -267,7 +267,7 @@ test, secrets-manager hard refusal, off-box encrypted backup, dashboard, Tailsca
 - Dashboard reading live SQLite state (positions, P&L, ledger, guardrail events, Sharia flags).
 - Daily Telegram health report — exact format (§11.8):
   ```
-  Noah Daily Health Report
+  Camel Daily Health Report
   System status: GREEN | Mode: Paper | Broker: Connected | DB: Connected
   Guardrail Service: Passed | Open thesis cards: N | Open paper positions: N
   Live capital at risk: $0 | Paper capital at risk: $N | Issues: None
@@ -283,7 +283,7 @@ test, secrets-manager hard refusal, off-box encrypted backup, dashboard, Tailsca
 - **Off-box encrypted backup** — daily encrypted backup of all seven DB files to an
   external location; documented restore procedure tested at least once.
 - **Machine hardening ops checklist** (non-code, founder action):
-  BitLocker enabled · dedicated OS user for Noah · UPS/power backup · 5G/hotspot
+  BitLocker enabled · dedicated OS user for Camel · UPS/power backup · 5G/hotspot
   fallback internet · Tailscale ACLs locked to founder devices · MFA on all accounts.
 
 **Gate:** Kill switch stops next loop tick; daily-loss-stop simulation halts; dashboard
@@ -349,10 +349,10 @@ no edge proof = no trade; model disagreement routes to human approval.
 
 ### S8 — Strategy Models + Learning Engine
 
-Noah should not be locked into one approach. This sprint builds a **Strategy Registry** —
+Camel should not be locked into one approach. This sprint builds a **Strategy Registry** —
 a library of named, backtested, switchable strategy modules — plus a tiered learning engine
 that makes the system progressively smarter from real outcomes without violating the
-Constitution's "Noah cannot change its own rules" constraint.
+Constitution's "Camel cannot change its own rules" constraint.
 
 #### Strategy Registry (`strategies/`)
 
@@ -382,7 +382,7 @@ before a position is proposed. Strategies generate candidates; Edge Proof valida
 
 **Phased rollout within S8 (validate few before adding many):**
 - **First trio** — `momentum.py`, `mean_reversion.py`, `dca_ladder.py`. These are
-  self-contained: computable from `noah_market.db` price data alone, no external deps.
+  self-contained: computable from `camel_market.db` price data alone, no external deps.
 - **Then** — `etf_rotation.py` (needs regime classification → depends on the S7 macro DB,
   so it follows, not leads).
 - **Delayed** — `congress_signal.py` (delayed, noisy disclosures; easily narrative-driven —
@@ -532,7 +532,7 @@ live URL; payment-capable.
 - **Delisted companies** — exclude or account for names that were delisted in the test window.
 - Crisis tests: 2000 dot-com, 2008 GFC, 2020 COVID, 2022 inflation/rate shock.
 - Benchmark comparison vs **SPUS / HLAL / Cash / simple DCA**.
-  If Noah cannot beat simple DCA on risk-adjusted terms after costs, it should not trade actively.
+  If Camel cannot beat simple DCA on risk-adjusted terms after costs, it should not trade actively.
 - Signal leaderboard.
 
 - Per-strategy backtesting: every registered strategy in the registry is tested independently
@@ -541,8 +541,8 @@ live URL; payment-capable.
 
 **Benchmark hierarchy (compare against all, in order):**
 1. Cash · 2. Simple monthly DCA into SPUS · 3. SPUS buy-and-hold · 4. HLAL buy-and-hold ·
-5. MNZL where relevant · 6. Equal-weight Sharia ETF basket · 7. Noah active strategy.
-If Noah does not beat simple DCA on risk-adjusted terms after costs, Noah does not trade actively.
+5. MNZL where relevant · 6. Equal-weight Sharia ETF basket · 7. Camel active strategy.
+If Camel does not beat simple DCA on risk-adjusted terms after costs, Camel does not trade actively.
 
 **Strategy kill criteria — disable or move to research-only if ANY hold:**
 ```
@@ -558,7 +558,7 @@ A killed strategy is deactivated in the registry (Level 3 — logged, founder no
 
 **Gate:** Every strategy tested out-of-sample; delisted companies handled; full benchmark
 hierarchy compared; weak signals rejected; each strategy has a published base-rate record;
-StrategyMixer blend tested; kill criteria enforced; Noah beats simple DCA before any live
+StrategyMixer blend tested; kill criteria enforced; Camel beats simple DCA before any live
 execution. Adversarial case added: backtest attempts to use future / restated data → blocked
 by point-in-time `known_at` discipline.
 

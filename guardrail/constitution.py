@@ -1,8 +1,8 @@
 """
-ADAM Guardrail Service — the Constitution.
+Camel Guardrail Service — the Constitution.
 
-A deterministic gate between ADAM's intent and any consequential action.
-ADAM proposes; this disposes. There is no agent-callable override path:
+A deterministic gate between Camel's intent and any consequential action.
+Camel proposes; this disposes. There is no agent-callable override path:
 limits come from founder-owned config, not from the agent.
 
 Deterministic logic; the only I/O is the kill-switch file check (S4), which is

@@ -7,12 +7,12 @@ portfolio DB, and renders the founder-facing daily summary.
 from __future__ import annotations
 from typing import Tuple
 
-from db.paths import NoahDbs
+from db.paths import CamelDbs
 from db.sqlite import connection
 from ops.health_monitor import check, daily_report_text
 
 
-def _counts(dbs: NoahDbs) -> Tuple[int, float]:
+def _counts(dbs: CamelDbs) -> Tuple[int, float]:
     """(open paper positions, paper capital at risk)."""
     with connection(dbs.portfolio) as conn:
         positions = conn.execute("SELECT COUNT(*) FROM positions").fetchone()[0]
@@ -24,7 +24,7 @@ def _counts(dbs: NoahDbs) -> Tuple[int, float]:
     return positions, paper_at_risk
 
 
-def build_daily_report(dbs: NoahDbs, mode: str = "paper", open_cards: int = 0) -> str:
+def build_daily_report(dbs: CamelDbs, mode: str = "paper", open_cards: int = 0) -> str:
     report = check(dbs, mode=mode)
     positions, at_risk = _counts(dbs)
     return daily_report_text(report, open_cards=open_cards,

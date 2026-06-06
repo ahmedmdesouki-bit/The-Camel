@@ -2,8 +2,8 @@
 Learning Ledger (S5) — the shared memory of both arms.
 
 Records every consequential decision with its expected outcome; later, the actual outcome,
-mistake classification, and lesson are written back. This is how Noah learns across trading,
-products, research, and system-building. Backed by `learning_ledger` (noah_learning.db).
+mistake classification, and lesson are written back. This is how Camel learns across trading,
+products, research, and system-building. Backed by `learning_ledger` (camel_learning.db).
 """
 from __future__ import annotations
 from datetime import datetime, timezone

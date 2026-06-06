@@ -5,9 +5,9 @@ Usage:
     python loop/scheduler.py
 
 Environment variables:
-    NOAH_DB_DIR   directory that holds all seven noah_*.db files
+    CAMEL_DB_DIR   directory that holds all seven camel_*.db files
                   (default: repo root)
-    NOAH_PHASE    0 | 1 | 2 | 3  (default: 0)
+    CAMEL_PHASE    0 | 1 | 2 | 3  (default: 0)
 """
 import logging
 import os
@@ -18,19 +18,19 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
-log = logging.getLogger("noah.scheduler")
+log = logging.getLogger("camel.scheduler")
 
 
 def main() -> None:
     db_dir = os.environ.get(
-        "NOAH_DB_DIR",
+        "CAMEL_DB_DIR",
         str(Path(__file__).resolve().parent.parent),
     )
-    phase = int(os.environ.get("NOAH_PHASE", "0"))
+    phase = int(os.environ.get("CAMEL_PHASE", "0"))
     log.info("Scheduler fired. phase=%d db_dir=%s", phase, db_dir)
 
-    from db.paths import NoahDbs, init_all
-    dbs = NoahDbs.from_dir(db_dir)
+    from db.paths import CamelDbs, init_all
+    dbs = CamelDbs.from_dir(db_dir)
     init_all(dbs)
 
     from loop.runner import LoopConfig, LoopRunner

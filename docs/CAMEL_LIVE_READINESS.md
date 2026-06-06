@@ -1,8 +1,8 @@
-# NOAH LIVE READINESS — Phase 1 go-live checklist
+# CAMEL LIVE READINESS — Phase 1 go-live checklist
 
 > **Canonical home for the pre-live gate.** This is the operational checklist you tick
-> before any real money moves. The sprint that builds it is S11 (see `NOAH_ROADMAP.md`);
-> the rules behind it are in `NOAH_CONSTITUTION.md`. Nothing here is automatic — going
+> before any real money moves. The sprint that builds it is S11 (see `CAMEL_ROADMAP.md`);
+> the rules behind it are in `CAMEL_CONSTITUTION.md`. Nothing here is automatic — going
 > live is a deliberate founder act.
 
 ---
@@ -41,7 +41,7 @@
 - [ ] Every action logged
 - [ ] **No trade proceeds without an EdgeReport** (v0 from S4.5; full engine from S7)
 - [ ] Edge Proof Engine approved at least one signal
-- [ ] Adversarial test suite green (all 15 cases — see NOAH_TESTING.md)
+- [ ] Adversarial test suite green (all 15 cases — see CAMEL_TESTING.md)
 - [ ] Strategy Registry has ≥ 3 active strategies with live base-rates
 - [ ] Learning Engine updating base-rates autonomously
 - [ ] Improvement proposals landing in Learning Ledger (Level 3 — not auto-applied)
