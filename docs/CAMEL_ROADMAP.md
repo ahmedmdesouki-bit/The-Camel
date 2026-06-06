@@ -684,6 +684,15 @@ quality ≥ 0.80 · source quorum ≥ 2 for non-price events · fail if last-24-
 underperforms the full sample (decay). **Pre-registered:** these thresholds are written down *before*
 the Edge Lab (S12) runs — never tuned after seeing results.
 
+**Per-decision evidence bundle (consultant-adopted).** The 17 checks are the *full* battery; a given
+decision type assembles the **subset** that applies, fed by the S12.5 evidence objects. Worked example —
+an **open-long dividend-sleeve** bundle requires: (1) latest Sharia status · (2) dividend-event integrity
+(gross/withheld/net + ex-date rule resolved) · (3) corporate-action conflict check · (4) market-data
+freshness · (5) slippage estimate · (6) portfolio risk-budget fit · (7) benchmark interaction ·
+(8) macro-regime conflict check · (9) research-agent dissent summary. The bundle is what flows into the
+gate; `decision_type` (open/add/reduce/close/rebalance) selects which checks are mandatory — sells/closes
+stay edge-exempt (S6.5).
+
 **Shadow vs enforcing mode (reviewer-validated).** The Edge Proof gate runs in `shadow` (log the
 decision it *would* make, don't block) or `enforcing` (block). A new strategy on a freshly-fed backbone
 starts in **shadow** so thresholds calibrate against real outcomes before they can block live trades;
@@ -728,6 +737,11 @@ calendar + fundamentals are clean).
     adjust standing orders — broker-order state must reconcile, not assume orders persist; use **settle-date**
     accounting where broker practice requires. **Lot-level position accounting** for dividend/tax-sensitive
     strategies (weighted-average is too lossy for income work; dashboards still aggregate by symbol).
+    Process it as a **4-stage pipeline**: *announcement* (store dates/amount, no cash/P&L change) →
+    *entitlement* (freeze entitled qty at the ex/record rule, handle due-bills + 25%+ specials) →
+    *settlement* (post gross + withholding + net as separate ledger events, settle-date) → *attribution*
+    (split the event into income · tax · price effects, so a sleeve that looks strong on cash-received
+    isn't actually losing after the ex-date gap + withholding).
   - **Tax frame = NRA withholding, NOT US-person (founder is KSA-resident — corrected from the consultant
     docs):** model **gross → withholding (Form 1042-S / DIV vs DIVNRA split) → net**; the US **qualified-
     dividend 60-day-holding rule is largely N/A** for a non-US person, so do *not* build holding-period tax
@@ -746,6 +760,15 @@ condition (no infinite averaging down); inside position + sector caps. **Intrada
 (5-min; manages open positions only; every action through `Constitution.evaluate()`; trailing-stop
 50%-profit early-close).
 
+**Strategy promotion ladder (consultant-adopted) — per-strategy `mode`, distinct from the portfolio
+lifecycle:** `backtest` (proves idea viability / parameter sensitivity; does *not* prove latency, queue
+position, market impact) → `realistic_paper` (proves clock integrity, event/corp-action handling, fill
+logic; not true routing or broker outages) → `shadow` (proves signal quality vs the live market; not
+operational position accounting) → `live_small` (proves real slippage, broker behavior, the approval
+path; not full-capacity scale) → `live_scale` (production). A strategy moves **one rung at a time**;
+failure **demotes** (→ cooldown in `realistic_paper`), it doesn't delete. This `mode` is the registry's
+`mode` field and gates which portfolios/phases a strategy may run in.
+
 **4-tier Learning Engine:** L1 auto base-rate updates · L2 auto weight within founder-set ±band ·
 L3 propose-only (founder approves activate/deactivate + regime affinity) · L4 founder-only
 (Constitution / new strategies / the band itself). Regime→strategy affinity learned at N≥20 per regime.
@@ -763,6 +786,10 @@ one implicit portfolio; this adds a first-class multi-portfolio layer under the 
 - Built for **breadth at scale** (N portfolios/strategies handled concurrently and cleanly); **execution
   stays EOD-positional**. Fund-level caps (total exposure, sector, cash buffer) sit *above* per-portfolio caps,
   and per-portfolio positions/ledger must reconcile to the fund.
+- **Event-driven scheduling at scale (consultant-adopted):** rather than one monolithic loop, schedule work by
+  `(portfolio_id, strategy_id, event_window)` tuples — so one sleeve can pause without pausing all portfolios,
+  failures isolate, and research depth concentrates on the names/events that actually matter. (A scaling
+  refinement of the current single EOD loop; adopt when N portfolios make the monolithic tick wasteful.)
 - **Portfolio lifecycle (consultant-adopted):** incubate → qualify → pilot → scale → defend → retire, with
   per-phase gates (schema/data validated → realistic-paper fills/corp-actions → low-cap live + approval →
   normal → close-only/low-risk on drawdown → flatten & archive). A strategy that fails can **demote to

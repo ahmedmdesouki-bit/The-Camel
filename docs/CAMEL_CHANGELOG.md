@@ -27,6 +27,15 @@ done or folded). **Adopted (5 additive items):**
 - **Tax:** corrected the US-person qualified-dividend assumption to NRA withholding (see above).
 *Their stale sprint numbering (S5.6–S7) mapped onto our v3; "S5.6 hotfix" = our shipped S6.5. No code; 419 tests unchanged.*
 
+**Second-pass re-read of the deep-research report (`docs/source-materials/CONSULTANT_DEEP_RESEARCH_2026-06-06.md`,
+now archived).** Caught 3 additive items round #7 had missed, folded docs-only: (1) **composable per-decision
+Edge-Proof bundle** + the worked **dividend-sleeve example (9 checks)** → S10; (2) **per-strategy promotion
+ladder** (backtest→realistic_paper→shadow→live_small→live_scale, one rung at a time, failure demotes not
+deletes — distinct from the portfolio lifecycle) → S11 registry `mode`; (3) **event-driven scheduling** by
+`(portfolio_id, strategy_id, event_window)` tuples for N-portfolio scale → S11. Plus named the **dividend
+4-stage pipeline** (announcement→entitlement→settlement→attribution). Report saved as memory
+(`camel_consultant_deep_research.md`). No code; 419 tests unchanged.
+
 ---
 
 ## 2026-06-06
