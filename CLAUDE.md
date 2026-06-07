@@ -414,6 +414,7 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 | `docs/README.md` | Documentation index |
 | `docs/CAMEL_BRIEF.md` | Project context: why/who, real capital, open questions |
 | `docs/CAMEL_ROADMAP.md` | Full sprint plan S1-S14 (Roadmap v3) + open decisions + definition of done |
+| `docs/CAMEL_ARCHITECTURE.md` | Layered module map (S14) — how every package composes into the trust-inverted system |
 | `docs/CAMEL_CONSTITUTION.md` | The rules in prose (Sharia, risk, phase gates) |
 | `docs/CAMEL_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
 | `docs/CAMEL_TESTING.md` | Test strategy, adversarial + integration suites |

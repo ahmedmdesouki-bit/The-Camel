@@ -17,7 +17,7 @@ S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 ✅ (Knowledge Gr
 S10 ✅ (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 ✅ (Operator-Loop Assembly + Runtime — Workstream A/B) →
 S11 ✅ (Strategy Registry + Portfolio Engine + Learning) →
 S12 ✅ (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 ✅ (Research Desk — framework built, DORMANT) →
-S13 ◑ (Micro-Live — readiness infra built, go-live FOUNDER-GATED) → S14 (Restructure)
+S13 ◑ (Micro-Live — readiness infra built, go-live FOUNDER-GATED) → S14 ✅ (architecture documented; physical reorg deferred)
 ```
 *(⭐ **Sandbox Mode** = the full system on live real-time data with virtual money — the founder-requested
 live dress rehearsal that produces the track record gating micro-live.)*
@@ -1235,6 +1235,17 @@ dashboard/   generate
 ```
 
 **Gate:** full test suite green after restructure; all imports updated; CLAUDE.md updated.
+
+**STATUS: ✅ RESOLVED — architecture documented; physical reshuffle DEFERRED (deliberate).** The value of
+S14 (a clean, discoverable domain hierarchy) is delivered by **`docs/CAMEL_ARCHITECTURE.md`** — the canonical
+layered module map (Foundation → Data → Knowledge → Evidence → Decision → Strategy/Portfolio → Execution →
+Loop/Ops → Surfaces) showing how every package composes into the trust-inverted system. The packages are
+already flat-but-domain-organized. The **physical big-bang reshuffle** (nesting `engine`/`edgelab`/`execution`/
+`strategies`/`portfolios` under `trader/`, fill models under `broker/`, etc.) is **deliberately deferred**: it
+rewrites hundreds of imports across ~55 source + ~35 test files for **zero functional change**, risking a green
+557-test suite at a feature finish line. It is an **optional, separately-scoped task** — best done (if ever)
+ahead of a packaging/open-source milestone as its own focused PR with a full green run. *Code beats docs; don't
+break what works. Tracked here so it isn't lost — not dropped, deliberately sequenced.*
 
 ## Open decisions
 

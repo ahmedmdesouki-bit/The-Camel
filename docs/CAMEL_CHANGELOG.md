@@ -5,6 +5,21 @@
 
 ---
 
+## 2026-06-07 — S14 resolved: architecture documented; physical reorg deliberately deferred
+
+The last sprint. S14 was a pure cosmetic reorg (nest the flat packages deeper); its only gate is "tests stay
+green." **Engineering call: deliver the value (a clean, documented architecture), defer the churn.** New
+`docs/CAMEL_ARCHITECTURE.md` is the canonical **layered module map** — Foundation → Data → Knowledge → Evidence
+→ Decision → Strategy/Portfolio → Execution → Loop/Ops → Surfaces — showing how every package composes into the
+trust-inverted system (Observe → Router → Edge Proof → Constitution → Budget → Approval → Act), plus the 7-DB
+map. The **physical big-bang reshuffle** (hundreds of import rewrites across ~55 source + ~35 test files for zero
+functional change) is **deliberately deferred** as an optional, separately-scoped task — best done ahead of a
+packaging/open-source milestone, not bundled at a feature finish line where it risks a green 557-test suite.
+Registered the doc in the index. *Code beats docs; don't break what works.* **Roadmap v3 (S1–S14) is now fully
+worked through; the build is complete and fail-safe.**
+
+---
+
 ## 2026-06-07 — S12.5 (Research Desk, dormant) + S13 (Micro-Live readiness, founder-gated)
 
 The last build slices, both **fail-safe by default** (543 → **557 tests**). Nothing here puts real capital at risk.
