@@ -14,8 +14,8 @@
 S1 ✅ → S2 ✅ → S3 ✅ → S4 ✅ → S4.5 ✅ (Edge Proof v0) → S5 ✅ → S5.5 ✅ (Minimal Ops) → S6 ✅ →
 S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hardening + Beginner Mode) → S7 ✅ (Entrepreneur engine) →
 S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 ✅ (Knowledge Graph + Regime + Sharia cross-check) →
-S10 (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 (Operator-Loop Assembly + Runtime — Workstream A/B) →
-S11 (Strategy Registry + Portfolio Engine) →
+S10 ✅ (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 ✅ (Operator-Loop Assembly + Runtime — Workstream A/B) →
+S11 ✅ (Strategy Registry + Portfolio Engine + Learning) →
 S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 (Research Desk — design, dormant) →
 S13 (Micro-Live) → S14 (Restructure)
 ```
@@ -1013,6 +1013,23 @@ signals need ≥2 sources or human approval; data-quality failure blocks trades;
 proposals land in the Learning Ledger; DCA guardrails enforced; never auto-edits the Constitution;
 **≥2 portfolios run independent strategy sets with portfolio-scoped positions/ledger that reconcile to the
 fund, and every per-portfolio action passes Edge Proof + Constitution.**
+
+**STATUS: ✅ DONE (→ 513 tests).** **(a) Strategy framework** `strategies/` — `base.py` (`BaseStrategy` +
+`Signal`/`StrategyContext`/`StrategyMeta`, the **promotion ladder** backtest→…→live_scale one-rung-at-a-time,
+defence-in-depth `_is_tradeable` so a strategy never *proposes* a haram name), `registry.py` (`StrategyRegistry`
++ the **strategy-portfolio matrix** + regime filter + bounded weighting), the **starter trio** `core_dca` /
+`quality_momentum` (pure 12-1 momentum) / `etf_regime_rotation` (regime→ETF-or-cash) **+ `dividend_growth`**
+(quality income, not capture) + `dividends.py` (gross→**NRA withholding**→net + purification), and
+`mixer.py` (`StrategyMixer` blends overlapping convictions by weight). **(b) Portfolio Engine** `portfolios/`
+— `Portfolio` + lifecycle (incubate→…→retire), the **6 seed portfolios** (weights sum to 1.0), allocation,
+**tolerance-band rebalancing that emits *suggestions, not auto-trades***, 4-level risk budgets, multi-benchmark,
+`portfolios`/`portfolio_holdings` tables + persistence. **(c) 4-tier Learning Engine** `learning/` — L1 auto
+base-rate (`base_rate_updater`), L2 auto weight **within a founder band** (`strategy_scorer`), regime affinity
+gated at **N≥20** (`regime_matcher`), anomaly detector, **L3 propose-only** (`improvement_proposer` →
+`learning_proposals` table; **no agent-callable apply** — L4 founder approves). Tests: `test_strategies.py` (13)
++ `test_portfolios.py` (9) + `test_learning_engine.py` (5). *Strategies feed candidates to the S10.5 assembled
+loop → Edge Proof. Remaining: per-portfolio ledger reconciliation + intraday_monitor + congress_signal are
+backlog; the engine, registry, portfolios, and learning tiers are done.*
 
 ---
 

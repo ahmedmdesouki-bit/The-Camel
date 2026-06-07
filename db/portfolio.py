@@ -97,6 +97,33 @@ CREATE TABLE IF NOT EXISTS heartbeat (
     id          INTEGER PRIMARY KEY CHECK (id = 1),  -- single row
     ts          TEXT
 );
+
+-- S11: multi-portfolio layer under the single Camel Fund.
+CREATE TABLE IF NOT EXISTS portfolios (
+    portfolio_id             TEXT PRIMARY KEY,
+    name                     TEXT,
+    mandate                  TEXT,
+    phase                    TEXT,        -- incubate|qualify|pilot|scale|defend|retire
+    benchmark                TEXT,
+    target_weight            REAL,        -- share of the fund
+    cash_min_pct             REAL,
+    gross_exposure_limit_pct REAL,
+    max_drawdown_pct         REAL,
+    turnover_budget_pct      REAL,
+    assigned_strategies      TEXT,        -- JSON array of strategy ids
+    sharia_policy_version    TEXT,
+    updated_at               TEXT
+);
+
+CREATE TABLE IF NOT EXISTS portfolio_holdings (
+    portfolio_id    TEXT,
+    symbol          TEXT,
+    qty             REAL DEFAULT 0,
+    avg_cost        REAL DEFAULT 0,
+    market_value    REAL DEFAULT 0,
+    updated_at      TEXT,
+    PRIMARY KEY (portfolio_id, symbol)
+);
 """
 
 

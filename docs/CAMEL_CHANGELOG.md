@@ -5,6 +5,28 @@
 
 ---
 
+## 2026-06-07 — S11 SHIPPED: Strategy Registry + Portfolio Engine + 4-tier Learning
+
+Three new real packages (486 → **513 tests**); the `strategies/` and `learning/` repo-map phantoms are now
+actual code. Strategies PROPOSE; they never execute — candidates flow into the S10.5 assembled loop → Edge Proof.
+- **(a) `strategies/`** — `base.py` (`BaseStrategy` + `Signal`/`StrategyContext`/`StrategyMeta`, the promotion
+  ladder backtest→realistic_paper→shadow→live_small→live_scale one-rung-at-a-time, and a defence-in-depth
+  tradeable guard so a strategy never even *proposes* a non-Sharia-clear name), `registry.py` (`StrategyRegistry`
+  + the strategy-portfolio matrix + regime filter + band-bounded weighting + promote/demote), the **starter
+  trio** `core_dca` / `quality_momentum` (pure 12-1 momentum) / `etf_regime_rotation` (regime→ETF-or-cash) plus
+  **`dividend_growth`** (quality income, explicitly not capture) + `dividends.py` (gross→**NRA withholding**→net
+  + purification), and `mixer.py` (blends overlapping convictions by weight).
+- **(b) `portfolios/`** — `Portfolio` + lifecycle (incubate→…→retire), the **6 seed portfolios** (weights sum
+  to 1.0), capital allocation, **tolerance-band rebalancing that emits *suggestions, not auto-trades***, 4-level
+  risk budgets, multi-benchmark, `portfolios`/`portfolio_holdings` tables + persistence round-trip.
+- **(c) `learning/`** — the 4 tiers: **L1** auto base-rate update, **L2** auto weight **only within a founder
+  band**, regime affinity gated at **N≥20**, an anomaly detector, and **L3 propose-only** (writes to a new
+  `learning_proposals` table; **there is deliberately no agent-callable apply** — L4 founder approves out-of-band).
+- Tests: `test_strategies.py` (13) + `test_portfolios.py` (9) + `test_learning_engine.py` (5). Trust inversion
+  intact throughout. **Next = S12 (Edge Lab + realistic paper + Sandbox).**
+
+---
+
 ## 2026-06-07 — S10.5 SHIPPED: operator-loop assembled → Phase-1 blocker CLOSED
 
 `loop/assembled.py` (478 → **486 tests**). The §4 loop is now strung together for real:

@@ -47,6 +47,20 @@ CREATE TABLE IF NOT EXISTS edge_reports (
     reason                          TEXT,
     checks_json                     TEXT
 );
+
+-- S11 (L3): the learning engine PROPOSES changes here; it never auto-applies them. A human (L4)
+-- approves out-of-band. status: pending | approved | rejected.
+CREATE TABLE IF NOT EXISTS learning_proposals (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts              TEXT DEFAULT (datetime('now')),
+    proposal_type   TEXT,        -- activate | deactivate | regime_affinity | weight_band | ...
+    strategy_id     TEXT,
+    detail          TEXT,        -- JSON
+    rationale       TEXT,
+    status          TEXT DEFAULT 'pending',
+    decided_by      TEXT,
+    decided_at      TEXT
+);
 """
 
 
