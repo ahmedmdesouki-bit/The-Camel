@@ -5,6 +5,28 @@
 
 ---
 
+## 2026-06-07 — S12.5 (Research Desk, dormant) + S13 (Micro-Live readiness, founder-gated)
+
+The last build slices, both **fail-safe by default** (543 → **557 tests**). Nothing here puts real capital at risk.
+- **S12.5 `research/` — Research Desk framework, DORMANT by design.** `evidence.py` (the 13-field
+  **EvidenceObject** contract + strict validation), `desk.py` (`AnalystDesk` base with **no execute path**;
+  `ResearchDesk` orchestrator whose **master switch defaults OFF** + a token budget; writes to the new
+  `research_evidence` table), and two deterministic vertical desks (`ShariaDesk`, `MacroDesk`) standing in for
+  the future Agent-SDK desks. Tests prove: dormant by default (nothing runs/writes), the contract rejects
+  malformed notes, the budget caps the desks, and a desk literally has no `act`/`execute`/`trade` method.
+- **S13 micro-live readiness — the infra is built; going live is the founder's act.** `governance/approval.py`
+  (human approve/veto gate that **withholds by default**; `approval_fn` plugs into the loop's phase gate);
+  `broker/manual.py` (the Sahm path — `propose` moves no money, `record_fill` posts a founder-entered fill under
+  reconciliation); `broker/live.py` (the gated `LiveBroker` — **refuses unless phase ≥ 1 AND `live_enabled` AND
+  trade-only creds**, and even then raises rather than silently trading); `ops/live_readiness.py` (the checklist
+  as code — **NOT READY by default** because the founder's explicit `live_enabled` switch is a required box).
+  `tests/test_micro_live.py` proves every default is fail-safe.
+- **The whole build is now done.** What remains is deliberately the founder's: the machine-hardening checklist,
+  a ≥28-day paper/sandbox track record, a defensible Edge-Lab edge, and the explicit phase-flip with real money.
+  **No code crosses that line.** Then **S14** (a low-value/high-risk module reorg) is the only sprint left.
+
+---
+
 ## 2026-06-07 — S12 SHIPPED: Edge Lab + Realistic Paper + ⭐ Sandbox → the build is complete (S1–S12)
 
 The last big build sprint (519 → **543 tests**). Three new packages:

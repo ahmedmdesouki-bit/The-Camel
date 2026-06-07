@@ -170,7 +170,11 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   registry→full Edge Proof→assembled loop; `portfolios/holdings.py` reconciles to fund) · **S12 ✅ Edge Lab +
   Realistic Paper + ⭐ Sandbox** (`execution/` realistic fills + 4-stage dividends; `edgelab/` two-engine
   backtest + No-Edge→DCA; `sandbox/` full system on a live feed + virtual money — the micro-live track record).
-  **→ 543 tests. The whole build is done (S1–S12). NEXT = S13 micro-live readiness — founder-gated.**
+  **→ 543 tests** · **S12.5 ✅ Research Desk framework** (`research/` evidence-object contract + desks + master
+  switch DORMANT by default; evidence-only, no execute path) · **S13 ◑ Micro-Live readiness** (`governance/
+  approval.py` human gate withholds by default; `broker/manual.py` Sahm path; `broker/live.py` gated LiveBroker
+  refuses by default; `ops/live_readiness.py` not-ready by default). **→ 557 tests. The whole BUILD (S1–S13
+  infra) is done; going LIVE is the founder's explicit act (machine hardening + phase-flip). NEXT = S14.**
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars

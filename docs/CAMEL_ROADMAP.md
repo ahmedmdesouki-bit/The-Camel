@@ -16,8 +16,8 @@ S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hard
 S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 ✅ (Knowledge Graph + Regime + Sharia cross-check) →
 S10 ✅ (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 ✅ (Operator-Loop Assembly + Runtime — Workstream A/B) →
 S11 ✅ (Strategy Registry + Portfolio Engine + Learning) →
-S12 ✅ (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 (Research Desk — design, dormant) →
-S13 (Micro-Live) → S14 (Restructure)
+S12 ✅ (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 ✅ (Research Desk — framework built, DORMANT) →
+S13 ◑ (Micro-Live — readiness infra built, go-live FOUNDER-GATED) → S14 (Restructure)
 ```
 *(⭐ **Sandbox Mode** = the full system on live real-time data with virtual money — the founder-requested
 live dress rehearsal that produces the track record gating micro-live.)*
@@ -1151,6 +1151,16 @@ and a proven edge justify the token spend** — founder decision: "design it, de
 **Gate:** the analyst-agent framework exists with ≥1 vertical desk + tests; agents can only write evidence
 (never act); a budget/token cap is enforced; the master switch defaults OFF.
 
+**STATUS: ✅ FRAMEWORK DONE — DORMANT by design (→ 557 tests).** `research/` — `evidence.py` (the 13-field
+**EvidenceObject contract** + strict validation), `desk.py` (`AnalystDesk` base — **no execute path exists on
+it**; `ResearchDesk` orchestrator with the **master switch defaulting OFF** + a token budget; `write_evidence`
+→ the new `research_evidence` table), and **two vertical desks** (`ShariaDesk`, `MacroDesk`) producing evidence
+deterministically from the governed DBs (placeholders for the future Agent-SDK desks — when those land they
+implement `analyze` and return the same contract). `tests/test_research_desk.py` (6) prove: master switch off
+by default → nothing runs/writes; the contract rejects malformed notes; the budget caps the desks; and a desk
+**literally has no `act`/`execute`/`trade` method**. Evidence-only, never decides — turning it on is a founder
+action gated on capital/edge.
+
 ---
 
 ### S13 — Micro-Live Readiness (Phase 1)
@@ -1183,6 +1193,27 @@ pre-market/after-hours · live key-scope verification at startup.
 
 **Initial live permissions:** human approval on every live trade · no autonomous execution · max
 $100–500 · limit orders only · whitelist only · no pre-market/after-hours.
+
+**STATUS: ◑ READINESS INFRASTRUCTURE DONE — go-live is FOUNDER-GATED (→ 557 tests).** The code that makes
+micro-live *possible and safe* is built and fail-safe; the act of going live is deliberately NOT automatable:
+- **`governance/approval.py`** — the human approve/veto gate (one-tap Telegram). **Withholds by default**:
+  an action executes only on an explicit, recorded human approval; missing/pending/vetoed → not approved.
+  `approval_fn(dbs)` plugs straight into the assembled loop's phase-gated Human-Approval hook.
+- **`broker/manual.py`** — the **`ManualBroker` (Sahm)** path: `propose` emits an order ticket (moves NO money);
+  `record_fill` writes a founder-entered real-world fill to the append-only ledger + positions under the same
+  Constitution + reconciliation.
+- **`broker/live.py`** — the gated **`LiveBroker`** (Alpaca, Phase-2): `submit` **refuses unless all three**
+  founder-owned switches are set (phase ≥ 1 · `live_enabled` · trade-only credentials); and even fully enabled
+  it raises rather than silently trading (the real Alpaca integration is intentionally unwired — no creds in repo).
+  **There is no configuration in which it moves real money on its own.**
+- **`ops/live_readiness.py`** — the live-readiness checklist as code (`check_live_readiness`): kill-switch off,
+  guardrail imports, ledger hash-chain verifies, paper track record, and **the founder's explicit `live_enabled`
+  switch** — which is itself a required box, so the **default result is NOT READY**.
+- `tests/test_micro_live.py` (8) prove every default is fail-safe: the LiveBroker refuses, the readiness gate is
+  not ready, approval is withheld, and the Sahm path only moves money on a human-entered fill.
+**Remaining for an actual go-live (deliberately the founder's, not the code's):** the machine-hardening checklist
+(`CAMEL_MACHINE_HARDENING.md`), a ≥28-day paper/sandbox track record, a defensible Edge-Lab edge, and the explicit
+phase-flip with real (tiny) capital. *No code here crosses that line.*
 
 ---
 

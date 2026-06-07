@@ -61,6 +61,29 @@ CREATE TABLE IF NOT EXISTS learning_proposals (
     decided_by      TEXT,
     decided_at      TEXT
 );
+
+-- S12.5: the Research Desk writes EVIDENCE here and only here. It can never act — there is no
+-- execute path. Evidence flows into Edge Proof; it never bypasses a gate. The desk's master switch
+-- defaults OFF (dormant until capital + proven edge justify the token spend).
+CREATE TABLE IF NOT EXISTS research_evidence (
+    id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts                      TEXT DEFAULT (datetime('now')),
+    desk                    TEXT,        -- which vertical desk produced it
+    claim                   TEXT,
+    scope                   TEXT,        -- instrument / portfolio / sector
+    evidence_ids            TEXT,        -- JSON array of source_document ids
+    source_count            INTEGER,
+    freshness               TEXT,
+    disagreement_score      REAL,
+    confidence              REAL,
+    horizon                 TEXT,
+    direction               TEXT,        -- positive | negative | neutral
+    invalidation_conditions TEXT,
+    recommended_action      TEXT,        -- a PROPOSAL only — never executed
+    portfolio_fit           TEXT,
+    compliance_status       TEXT,
+    known_at                TEXT
+);
 """
 
 
