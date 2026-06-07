@@ -1,5 +1,9 @@
 # The Camel — Consultant Review Handoff
 
+> ⚠️ **FROZEN SNAPSHOT — 2026-06-06 (S9-in-progress / 557 tests).** Preserved as the exact context an
+> external reviewer was given. **The current build is S1–S14 COMPLETE (572 tests green, full QA/QC passed).**
+> For the live state see `HANDOFF.md`, `docs/CAMEL_ROADMAP.md`, and the `## Current status` section of `CLAUDE.md`.
+>
 > **Self-contained snapshot for an external reviewer.** You should be able to understand the
 > project, what's built, what's planned, and where your feedback is most valuable — without
 > reading anything else. Repo links are provided if you want to go deeper.

@@ -15,10 +15,19 @@ from engine.edge_proof_v0 import EdgeReport, gate as edge_gate
 log = logging.getLogger(__name__)
 
 
+# Sides that REDUCE/close exposure — de-risking, so they do NOT require an Edge Proof.
+_REDUCING_SIDES = {"sell", "close", "reduce", "exit", "trim", "sell_short", "short"}
+
+
 def _opens_or_increases(action: Action) -> bool:
-    """A market buy/increase needs an Edge Proof; a reduce-only/close (sell) does not."""
-    return (getattr(action, "type", None) == ActionType.TRADE
-            and str(getattr(action, "side", "")).lower() == "buy")
+    """Any opening/increasing TRADE needs an Edge Proof; only a reduce-only/close (sell) is exempt.
+
+    Default-to-require-edge: a TRADE whose side is not an explicit *reducing* side (so "buy", "increase",
+    "add", or anything unrecognised) requires proven edge. This closes a latent fail-open where a side
+    string other than the literal "buy" would have skipped the edge gate."""
+    if getattr(action, "type", None) != ActionType.TRADE:
+        return False
+    return str(getattr(action, "side", "")).strip().lower() not in _REDUCING_SIDES
 
 
 @dataclass

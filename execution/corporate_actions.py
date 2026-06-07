@@ -80,7 +80,7 @@ def attribute(settlement: DividendSettlement, ex_date_price_drop: float, positio
         "income_effect": settlement.net,
         "tax_effect": -settlement.withheld,
         "price_effect": price_effect,
-        "net_total": round(settlement.net - settlement.withheld * 0 + price_effect, 6),  # withheld already out of net
+        "net_total": round(settlement.net + price_effect, 6),  # withheld is already excluded from settlement.net
         "purification_owed": settlement.purification,
     }
 

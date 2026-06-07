@@ -79,6 +79,13 @@ def test_gate_sell_exempt_from_edge():
                             _state(positions={"SPUS": 1000.0}))
     assert r.approved
 
+def test_gate_non_buy_opening_side_still_requires_edge():
+    # hardening: a side string other than the literal "buy" (e.g. "increase"/"add") must NOT skip the
+    # edge gate — default-to-require-edge for any non-reducing TRADE.
+    for opening in ("increase", "add", "BUY", "long"):
+        r = Allocator().request(_trade(side=opening), _state())
+        assert not r.approved and r.decision.limit_hit == "no_edge_proof", opening
+
 
 # ---- gate 4: no fabricated fill prices in production ----
 

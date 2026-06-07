@@ -1155,7 +1155,7 @@ and a proven edge justify the token spend** — founder decision: "design it, de
 **Gate:** the analyst-agent framework exists with ≥1 vertical desk + tests; agents can only write evidence
 (never act); a budget/token cap is enforced; the master switch defaults OFF.
 
-**STATUS: ✅ FRAMEWORK DONE — DORMANT by design (→ 557 tests).** `research/` — `evidence.py` (the 13-field
+**STATUS: ✅ FRAMEWORK DONE — DORMANT by design (→ 557 at slice close; 572 current).** `research/` — `evidence.py` (the 13-field
 **EvidenceObject contract** + strict validation), `desk.py` (`AnalystDesk` base — **no execute path exists on
 it**; `ResearchDesk` orchestrator with the **master switch defaulting OFF** + a token budget; `write_evidence`
 → the new `research_evidence` table), and **two vertical desks** (`ShariaDesk`, `MacroDesk`) producing evidence
@@ -1198,7 +1198,7 @@ pre-market/after-hours · live key-scope verification at startup.
 **Initial live permissions:** human approval on every live trade · no autonomous execution · max
 $100–500 · limit orders only · whitelist only · no pre-market/after-hours.
 
-**STATUS: ◑ READINESS INFRASTRUCTURE DONE — go-live is FOUNDER-GATED (→ 557 tests).** The code that makes
+**STATUS: ◑ READINESS INFRASTRUCTURE DONE — go-live is FOUNDER-GATED (→ 557 at slice close; 572 current).** The code that makes
 micro-live *possible and safe* is built and fail-safe; the act of going live is deliberately NOT automatable:
 - **`governance/approval.py`** — the human approve/veto gate (one-tap Telegram). **Withholds by default**:
   an action executes only on an explicit, recorded human approval; missing/pending/vetoed → not approved.
@@ -1247,7 +1247,7 @@ Loop/Ops → Surfaces) showing how every package composes into the trust-inverte
 already flat-but-domain-organized. The **physical big-bang reshuffle** (nesting `engine`/`edgelab`/`execution`/
 `strategies`/`portfolios` under `trader/`, fill models under `broker/`, etc.) is **deliberately deferred**: it
 rewrites hundreds of imports across ~55 source + ~35 test files for **zero functional change**, risking a green
-557-test suite at a feature finish line. It is an **optional, separately-scoped task** — best done (if ever)
+572-test suite at a feature finish line. It is an **optional, separately-scoped task** — best done (if ever)
 ahead of a packaging/open-source milestone as its own focused PR with a full green run. *Code beats docs; don't
 break what works. Tracked here so it isn't lost — not dropped, deliberately sequenced.*
 

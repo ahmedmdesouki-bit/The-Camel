@@ -45,6 +45,11 @@ class ScreenResult:
     symbol: str
     passed: bool
     reasons: List[str] = field(default_factory=list)
+    # ⚠️ The compact path screens ONLY debt/liquid/haram-income (drift detection). The two AAOIFI screens
+    # the compact `Financials` snapshot cannot express are listed here so a `passed=True` from this path can
+    # NEVER be mistaken for a full compliance certification. Authoritative compliance = `sharia/cross_check.py`.
+    full_screen: bool = False
+    unscreened: List[str] = field(default_factory=lambda: ["receivables_ratio", "prohibited_sector"])
 
 
 def _to_aaoifi(f: Financials) -> AAOIFIFinancials:
@@ -82,12 +87,16 @@ def compute_aaoifi_ratios(f: Financials) -> dict:
 
 
 def screen_instrument(f: Financials) -> ScreenResult:
-    """Run the verified AAOIFI screen on one instrument. Hard fail → not passed; doubtful → passed+note."""
+    """Drift screen on one instrument via the verified AAOIFI ratios. Hard fail → not passed; doubtful →
+    passed+note. **NOT a full compliance certification** — the compact `Financials` snapshot only carries
+    debt/liquid/haram-income, so the receivables (≤67%) and prohibited-sector screens are *not* evaluated
+    here (see `ScreenResult.unscreened`). Use `sharia/cross_check.py` (full `AAOIFIFinancials`) to certify
+    a name as buyable; this path is for quarterly drift detection on already-whitelisted names only."""
     res = aaoifi_screen(_to_aaoifi(f))
     reasons = list(res.breaches)
     if res.status == "doubtful":
         reasons += res.near_misses
-    return ScreenResult(symbol=f.symbol, passed=(res.status != "fail"), reasons=reasons)
+    return ScreenResult(symbol=f.symbol, passed=(res.status != "fail"), reasons=reasons, full_screen=False)
 
 
 def run_quarterly_rescreen(

@@ -1,10 +1,10 @@
 # The Camel — Project Handoff
 
-**Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9–S11 complete (+ S11.5 integration)** · Dashboard v2 + founder alerts · **557 tests green** · 7-database architecture live
+**Prepared:** 2026-06-05 · **Updated:** 2026-06-08 (full QA/QC pass + pre-tester sweep)
+**Status:** **Roadmap v3 build S1–S14 COMPLETE** · Dashboard (Design-System skin) + founder alerts · **572 tests green** · 7-database architecture live · **full 5-dimension QA/QC audit passed (0 blockers)**
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
-(S1–S14) · **S8 core done** (10 connectors; rest deferred). **S9 complete** (entity resolver + Regime Engine + event intelligence/`event_reactions` + multi-state AAOIFI Sharia cross-check + peg). **S10** full Edge Proof · **S10.5** loop assembled (Phase-1 blocker closed) · **S11(+S11.5)** strategies + portfolios + learning, wired end-to-end via `loop/driver.py`. **S12** Edge Lab + realistic paper + ⭐ Sandbox · **S12.5** Research Desk framework (dormant) · **S13** micro-live readiness infra (all fail-safe / gated OFF). **The entire build is done and staged at the live-readiness gate. Going live is the founder's explicit act** (machine hardening + a ≥28-day track record + the phase-flip with real money). **NEXT = S14** (module restructure — optional, low-value/high-risk).
+(S1–S14, all worked through). **S8 core** (10 connectors + provenance + point-in-time; rest deferred). **S9** (entity resolver + 10-state Regime Engine + event intelligence/`event_reactions` + multi-state AAOIFI Sharia cross-check + SAR/USD peg). **S10** full 17-check Edge Proof · **S10.5** loop assembled (Phase-1 blocker closed) · **S11(+S11.5)** strategies + portfolios + learning, wired end-to-end via `loop/driver.py`. **S12** Edge Lab + realistic paper + ⭐ Sandbox · **S12.5** Research Desk framework (dormant) · **S13** micro-live readiness infra (all fail-safe / gated OFF) · **S14** architecture documented (`docs/CAMEL_ARCHITECTURE.md`; physical reorg deferred) · **backlog sweep** (`demo.py`, screener→aaoifi, connector retry/backoff, real health checks, analytics). **The entire build is done and staged at the live-readiness gate. Going live is the founder's explicit act** (machine hardening + a ≥28-day paper/sandbox track record + the phase-flip with real money). **NEXT = the founder-gated pre-live hardening checklist** — see `docs/CAMEL_PRELIVE_HARDENING.md`.
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's
@@ -63,7 +63,7 @@ We are in **Phase 0**.
 | Language | **Python 3.12** | `guardrail/` and `engine/` kept pure (no I/O) for unit-testing |
 | Database | **SQLite × 7** | One file per data domain. Migrate to Supabase when remote/dashboard/multi-device is needed |
 | Broker / data | **Alpaca paper** (free IEX feed) | `alpaca-py`. yfinance ok for quick prototypes |
-| Test framework | **pytest** | 557 tests, run via the `N:\` virtual drive (see §6) |
+| Test framework | **pytest** | 572 tests, run via the `N:\` virtual drive (see §6) |
 | Config | **YAML** (`config/limits.yaml`) | Founder-owned; agent process has no write path |
 | Scheduler | **Windows Task Scheduler** | `python loop/scheduler.py` post-close (EOD); intraday monitor every 5 min (S8) |
 | Secrets | **`.env`** now → **Windows Credential Manager** (S6) | Never in code, logs, or commits |

@@ -5,6 +5,36 @@
 
 ---
 
+## 2026-06-08 — Full 5-dimension QA/QC audit (0 blockers) + pre-live hardening checklist
+
+Before sharing with a tester, ran a line-by-line QA/QC across the whole system via five parallel
+independent auditors — **(1) safety/guardrail core, (2) Sharia, (3) data integrity, (4) decision→
+execution→loop, (5) docs/sprints/consultant-coverage**. **Result: 0 BLOCKERS, 0 active HIGH bugs.** The
+trust-inversion holds on the assembled path (Edge→Constitution→Budget→Approval→Act), live trading is
+triple-gated off and raises, nothing auto-flips phase, config is code-immutable, the Sharia gate admits only
+`compliant`, the no-edge-no-trade invariant holds, the hash-chain ledger + phantom-sell walls + reconcile are
+correct, the two-engine backtest cross-check is real, learning is propose-only, and every consultant/Alaa
+adoption is implemented or honestly deferred. **571 → 572 tests** (one new safety test added for F1; the audit
+found no behavior to change beyond the fixes below).
+
+**Fixed in this pass:** (F1) `capital/allocator.py` — edge mandate now covers *any* non-reducing TRADE side
+(closed a latent fail-open where a side other than literal `"buy"` skipped the edge gate); (F2)
+`loop/scheduler.py` — the legacy heartbeat (no Edge Proof gate) now **refuses phase ≥ 1**, so it can never
+become the live path; (F3) `sharia/screener.py` — the legacy compact screen now marks `full_screen=False` +
+`unscreened=[...]` so a partial pass can't be misread as full compliance (a "loaded gun" defused; the path was
+already test-only); (F4) removed a confusing `* 0` no-op in dividend attribution; (F5) test-count doc drift
+(557 → **572**) corrected everywhere, HANDOFF refreshed to "S1–S14 complete", consultant handoff banner-marked
+as a frozen snapshot.
+
+**New: `docs/CAMEL_PRELIVE_HARDENING.md`** — the canonical, QA-derived checklist of *latent* gaps that are safe
+in the current paper/Phase-0/single-caller state but **must close before real money**: P1 (broker
+write-atomicity, Edge-Proof price loader `as_of`, Budget-Kernel injection, single phase source, scheduler→
+assembled), P2 (vintage/`known_at` filters, `etf_holdings` UNIQUE, dead `quality.decision_eligible`, retire the
+compact screener, persist doubtful, shadow-mode phase guard, manual-fill guard), P3 (polish), and P4 (the
+founder/paid/external go-live gates). Registered in the doc indexes.
+
+---
+
 ## 2026-06-07 — Backlog sweep (pre-tester) + one-command demo
 
 Ahead of sharing the system with an external tester, cleared the highest-value items off the

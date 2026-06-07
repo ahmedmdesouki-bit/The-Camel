@@ -93,7 +93,7 @@ def main(out_dir: str | None = None, quiet: bool = False) -> int:
         print(f"  Realistic fill    : {f.status.value} {f.filled_qty} {f.symbol} @ ${f.fill_price} (fees ${f.fees})")
     print(f"\n  Dashboard written : {dash}")
     print("  Open it in any browser -- fully offline, read-only, no order entry.\n")
-    print("  Run the test suite:  pytest -q   (expect 557 passed)\n")
+    print("  Run the test suite:  pytest -q   (expect 572 passed)\n")
     return 0
 
 
