@@ -9,10 +9,10 @@ from datetime import date, timedelta
 from db.sqlite import connection
 from data.store import store_price
 from guardrail.constitution import PortfolioState, Instrument
-from strategies.registry import StrategyRegistry
-from strategies.quality_momentum import QualityMomentum
+from trader.strategies.registry import StrategyRegistry
+from trader.strategies.quality_momentum import QualityMomentum
 from loop.driver import run_strategy_tick, build_context
-from portfolios.holdings import apply_portfolio_fill, holdings, reconcile_to_fund, fund_rollup
+from trader.portfolios.holdings import apply_portfolio_fill, holdings, reconcile_to_fund, fund_rollup
 
 
 def _seed(dbs, symbol, closes, start="2023-01-01"):

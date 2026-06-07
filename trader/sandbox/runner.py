@@ -19,12 +19,12 @@ from typing import Callable, Dict, List, Optional
 
 from db.paths import CamelDbs
 from guardrail.constitution import Action, PortfolioState
-from strategies.registry import StrategyRegistry
+from trader.strategies.registry import StrategyRegistry
 from loop.assembled import AssembledLoop, TickResult
 from loop.driver import run_strategy_tick
-from execution.models import Order, MarketSnapshot, Fill, FillStatus
-from execution.realistic_paper import RealisticPaperExecutor
-from edgelab.no_edge import resolve_no_edge
+from trader.execution.models import Order, MarketSnapshot, Fill, FillStatus
+from trader.execution.realistic_paper import RealisticPaperExecutor
+from trader.edgelab.no_edge import resolve_no_edge
 
 
 @dataclass

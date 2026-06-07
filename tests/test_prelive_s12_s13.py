@@ -1,6 +1,6 @@
 """S12 per-portfolio book threading + S13 approval channel + manual-entry parser."""
 from broker.paper import PaperBroker
-from portfolios.holdings import holdings, reconcile_to_fund
+from trader.portfolios.holdings import holdings, reconcile_to_fund
 from guardrail.constitution import Action, ActionType, Decision, Thesis
 from governance import approval, approval_channel
 from broker import manual

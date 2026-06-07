@@ -8,7 +8,7 @@ approval gate, the kill switch, and the daily/weekly job entrypoints.
 """
 from guardrail.constitution import Action, ActionType, PortfolioState, Instrument, Thesis
 from capital.budget_kernel import BudgetKernel, BudgetLimits
-from engine.edge_proof import run_full_edge_proof
+from trader.engine.edge_proof import run_full_edge_proof
 from loop.assembled import AssembledLoop
 from loop.jobs import run_daily_ops, run_weekly_safety
 from ops.kill_switch import halt

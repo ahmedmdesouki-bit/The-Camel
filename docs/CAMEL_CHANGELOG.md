@@ -5,6 +5,22 @@
 
 ---
 
+## 2026-06-08 — S14 physical reorg DONE (Trader Camel under `trader/`)
+
+The founder elected to close the last free deferred item. The six strategy/evidence/execution packages —
+`engine`, `edgelab`, `execution`, `strategies`, `portfolios`, `sandbox` — were moved under **`trader/`**
+(beside the existing `trader/regime/` + `trader/events/`), so the whole **Trader Camel** is one package tree,
+cleanly separated from the cross-cutting layers (`guardrail`, `governance`, `capital`, `operator_os`, `broker`,
+`loop`, `ledger`, `ops`, `data`, `db`, `sharia`, `dashboard`, `alerts`, `research`, `learning`) and the
+Entrepreneur arm. Done as a **scripted one-shot migration** (move dirs + rewrite every `from <pkg>` import
+across 37 files), verified by a **full green run — 603 tests, zero behaviour change**. Safe because the
+codebase uses only absolute `from <pkg>…` imports (no bare `import <pkg>`, no string/`patch()` references to
+these packages), so the rewrite rebinds imported names without touching usage sites. Demo re-verified.
+Architecture doc + roadmap S14 status + CLAUDE.md repo map updated. **Roadmap v3 S1–S14 is now fully built and
+physically organized; only S15 (paid/founder) remains.**
+
+---
+
 ## 2026-06-08 — Post-S14 hardening push: all free/non-founder deferred work done; only S15 remains
 
 Per the founder directive ("finish anything deferred that is not paid or pending on me; gather the paid/
@@ -31,9 +47,11 @@ founder items under S15; maximize every S — complete S8"). Five tested, commit
   hardening + Task-Scheduler + track record + the phase-flip), each mapped to the code already built and
   waiting. Registered S15 in the roadmap + indexes.
 
-The S14 physical reorg stays deliberately deferred (free, but pure churn / zero functional gain / risks the
-green suite) — to be done, if ever, as its own isolated PR. **Below the line is done & fail-safe; only S15
-(paid/founder) remains.**
+**Then the S14 physical reorg was done too** (founder elected to close the last free item): the six
+strategy/evidence/execution packages (`engine`, `edgelab`, `execution`, `strategies`, `portfolios`,
+`sandbox`) were moved under **`trader/`** via a scripted one-shot migration (move dirs + rewrite every
+`from <pkg>` import), verified by a **full green run — 603 tests, zero behaviour change**. The whole Trader
+Camel is now one package tree. **Below the line is done & fail-safe; only S15 (paid/founder) remains.**
 
 ---
 

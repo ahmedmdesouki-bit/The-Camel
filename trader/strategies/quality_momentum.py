@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import List
 
-from strategies.base import BaseStrategy, Signal, StrategyContext, StrategyMeta, PromotionMode
+from trader.strategies.base import BaseStrategy, Signal, StrategyContext, StrategyMeta, PromotionMode
 
 _LOOKBACK = 252          # ~12 months of trading days
 _SKIP = 21               # ~1 month

@@ -2,7 +2,7 @@
 Sprint 3 — Thesis / base-rate engine tests.
 """
 import pytest
-from engine.thesis import BaseRateCard, ThesisCard
+from trader.engine.thesis import BaseRateCard, ThesisCard
 from guardrail.constitution import Thesis
 
 

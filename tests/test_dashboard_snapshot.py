@@ -10,7 +10,7 @@ import json
 from dashboard.snapshot import build_snapshot
 from dashboard.generate import build_dashboard_html
 from ledger.writer import append_entry
-from engine.edge_proof_v0 import EdgeReport, log_edge_report
+from trader.engine.edge_proof_v0 import EdgeReport, log_edge_report
 from sharia.whitelist import add_instrument
 
 

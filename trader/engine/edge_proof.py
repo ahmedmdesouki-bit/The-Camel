@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from statistics import median, pstdev
 from typing import Dict, List, Optional, Tuple
 
-from engine.edge_proof_v0 import compute_forward_returns, _max_drawdown, _load_closes
+from trader.engine.edge_proof_v0 import compute_forward_returns, _max_drawdown, _load_closes
 
 # ---- PRE-REGISTERED thresholds (founder-owned; fixed before the Edge Lab, never tuned to results) ----
 MIN_SAMPLE = 50

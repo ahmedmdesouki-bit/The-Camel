@@ -3,14 +3,14 @@ S11a — strategy framework: registry, promotion ladder, the strategy-portfolio 
 trio + dividend_growth, the mixer, and the dividend cash mechanics. All strategies are pure and only
 ever PROPOSE compliant names (defence in depth — the Sharia gate still enforces downstream).
 """
-from strategies.base import StrategyContext, PromotionMode, StrategyStatus
-from strategies.registry import StrategyRegistry
-from strategies.mixer import StrategyMixer
-from strategies.core_dca import CoreDCA
-from strategies.quality_momentum import QualityMomentum, momentum_12_1
-from strategies.etf_rotation import ETFRegimeRotation, target_etf
-from strategies.dividend_growth import DividendGrowth, DividendProfile
-from strategies.dividends import net_dividend, purification_amount
+from trader.strategies.base import StrategyContext, PromotionMode, StrategyStatus
+from trader.strategies.registry import StrategyRegistry
+from trader.strategies.mixer import StrategyMixer
+from trader.strategies.core_dca import CoreDCA
+from trader.strategies.quality_momentum import QualityMomentum, momentum_12_1
+from trader.strategies.etf_rotation import ETFRegimeRotation, target_etf
+from trader.strategies.dividend_growth import DividendGrowth, DividendProfile
+from trader.strategies.dividends import net_dividend, purification_amount
 
 
 def _ctx(**kw):

@@ -58,7 +58,7 @@ def test_manual_fill_warns_on_off_whitelist_buy(dbs):
 def test_shadow_mode_refused_at_live_phase(dbs):
     from loop.driver import run_strategy_tick
     from loop.assembled import AssembledLoop
-    from strategies.registry import StrategyRegistry
+    from trader.strategies.registry import StrategyRegistry
     from guardrail.constitution import PortfolioState
     loop = AssembledLoop(dbs, phase=1)
     with pytest.raises(ValueError):

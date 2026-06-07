@@ -5,10 +5,10 @@ Locks in that realistic_paper does what broker paper does NOT: crosses the real 
 against displayed size, charges fees, REJECTS stale data (never fabricates a price), enforces whole
 shares, and replays the 4-stage dividend pipeline + splits on the NRA-withholding frame.
 """
-from execution.models import Order, MarketSnapshot, FillStatus
-from execution.fill import simulate_fill, slippage_bps
-from execution.realistic_paper import RealisticPaperExecutor
-from execution.corporate_actions import announce, entitled_qty, settle, attribute, replay_split
+from trader.execution.models import Order, MarketSnapshot, FillStatus
+from trader.execution.fill import simulate_fill, slippage_bps
+from trader.execution.realistic_paper import RealisticPaperExecutor
+from trader.execution.corporate_actions import announce, entitled_qty, settle, attribute, replay_split
 
 
 def _snap(**kw):

@@ -14,7 +14,7 @@ from guardrail.constitution import (
 )
 from capital.allocator import Allocator
 from broker.paper import PaperBroker, NoMarketPriceError
-from engine.edge_proof_v0 import build_edge_report
+from trader.engine.edge_proof_v0 import build_edge_report
 
 
 def _whitelist():

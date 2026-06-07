@@ -1,5 +1,5 @@
 """Quality/income analytics (Alaa-review backlog): yield-on-cost + moat matrix."""
-from strategies.analytics import yield_on_cost, moat_score, MOAT_WEIGHTS
+from trader.strategies.analytics import yield_on_cost, moat_score, MOAT_WEIGHTS
 
 
 def test_yield_on_cost_uses_cost_basis_not_price():

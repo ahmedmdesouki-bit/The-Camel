@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from guardrail.constitution import Action, ActionType, Constitution, Decision, PortfolioState
-from engine.edge_proof_v0 import EdgeReport, gate as edge_gate
+from trader.engine.edge_proof_v0 import EdgeReport, gate as edge_gate
 
 log = logging.getLogger(__name__)
 

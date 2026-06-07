@@ -27,13 +27,13 @@ def main(out_dir: str | None = None, quiet: bool = False) -> int:
     from ledger.writer import append_entry
     from broker.positions import apply_fill
     from sharia.whitelist import add_instrument, freeze_instrument
-    from engine.edge_proof_v0 import EdgeReport, log_edge_report
+    from trader.engine.edge_proof_v0 import EdgeReport, log_edge_report
     from guardrail.constitution import PortfolioState, Instrument
-    from strategies.registry import StrategyRegistry
-    from strategies.quality_momentum import QualityMomentum
-    from strategies.core_dca import CoreDCA
-    from execution.models import MarketSnapshot
-    from sandbox.runner import SandboxRunner
+    from trader.strategies.registry import StrategyRegistry
+    from trader.strategies.quality_momentum import QualityMomentum
+    from trader.strategies.core_dca import CoreDCA
+    from trader.execution.models import MarketSnapshot
+    from trader.sandbox.runner import SandboxRunner
     from dashboard.generate import write_dashboard
 
     dbs = CamelDbs.from_dir(out_dir)
@@ -93,7 +93,7 @@ def main(out_dir: str | None = None, quiet: bool = False) -> int:
         print(f"  Realistic fill    : {f.status.value} {f.filled_qty} {f.symbol} @ ${f.fill_price} (fees ${f.fees})")
     print(f"\n  Dashboard written : {dash}")
     print("  Open it in any browser -- fully offline, read-only, no order entry.\n")
-    print("  Run the test suite:  pytest -q   (expect 572 passed)\n")
+    print("  Run the test suite:  pytest -q   (expect 603 passed)\n")
     return 0
 
 

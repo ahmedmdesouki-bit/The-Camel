@@ -27,7 +27,7 @@ from db.sqlite import connection
 from guardrail.constitution import Action, Decision
 from ledger.writer import append_entry, _ensure_table as _ensure_ledger_table
 from broker.positions import apply_fill, held_qty, InsufficientPositionError
-from portfolios.holdings import apply_portfolio_fill
+from trader.portfolios.holdings import apply_portfolio_fill
 
 
 class DuplicateOrderException(Exception):

@@ -51,8 +51,8 @@ These are neither paid nor founder-gated — they are free-pattern connector/cod
 framework, available whenever we want to extend coverage (do NOT belong above the line):
 - More **free connectors**: GPR/EPU geopolitical indices, Kenneth-French factors, CFTC COT, an OFAC SDN
   sanctions screen (needs a small sanctions table), congress/senate disclosures.
-- The **physical module reorg** (S14) — deliberately deferred on engineering judgment (pure churn, zero
-  functional gain, risks the green suite); best done as its own isolated PR, not bundled at a feature line.
+- The **physical module reorg** (S14) — ✅ **DONE 2026-06-08** (the Trader Camel packages now live under
+  `trader/`; 603 tests still green). No longer outstanding.
 
 ## Bottom line
 Everything below the line is **done, tested (603 green), and fail-safe**. S15 is the shopping list +

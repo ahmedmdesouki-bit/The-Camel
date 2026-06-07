@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from strategies.base import BaseStrategy, Signal, StrategyContext, StrategyMeta, PromotionMode
+from trader.strategies.base import BaseStrategy, Signal, StrategyContext, StrategyMeta, PromotionMode
 
 # regime → target compliant ETF (None = hold cash / step aside)
 _REGIME_TARGET = {

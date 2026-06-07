@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List
 
-from strategies.base import BaseStrategy, Signal, StrategyContext, StrategyMeta, PromotionMode
+from trader.strategies.base import BaseStrategy, Signal, StrategyContext, StrategyMeta, PromotionMode
 
 _MAX_PAYOUT = 0.70           # avoid unsustainable payouts
 _MIN_STREAK = 5              # ≥ 5 years of consecutive dividend growth

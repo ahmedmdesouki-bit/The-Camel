@@ -10,7 +10,7 @@ from datetime import date, timedelta
 
 from db.sqlite import connection
 from data.store import store_price
-from engine.edge_proof import (
+from trader.engine.edge_proof import (
     run_full_edge_proof, evaluate_signal_full, log_full_edge_report, gate,
     MIN_SAMPLE, signal_definition_hash,
 )

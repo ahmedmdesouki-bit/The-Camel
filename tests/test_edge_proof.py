@@ -4,7 +4,7 @@ S4.5 — Edge Proof v0 tests. No trade proceeds without a passing EdgeReport.
 import sqlite3
 import pytest
 
-from engine.edge_proof_v0 import (
+from trader.engine.edge_proof_v0 import (
     build_edge_report, compute_forward_returns, evaluate_signal, gate, log_edge_report,
 )
 from capital.allocator import Allocator

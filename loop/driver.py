@@ -17,11 +17,11 @@ from typing import Dict, List, Optional
 
 from db.paths import CamelDbs
 from guardrail.constitution import Action, ActionType, PortfolioState, Thesis
-from engine.edge_proof_v0 import _load_closes
-from engine.edge_proof import evaluate_signal_full, _sharia_status
-from strategies.base import StrategyContext
-from strategies.registry import StrategyRegistry
-from strategies.mixer import StrategyMixer
+from trader.engine.edge_proof_v0 import _load_closes
+from trader.engine.edge_proof import evaluate_signal_full, _sharia_status
+from trader.strategies.base import StrategyContext
+from trader.strategies.registry import StrategyRegistry
+from trader.strategies.mixer import StrategyMixer
 from loop.assembled import AssembledLoop, TickResult
 
 

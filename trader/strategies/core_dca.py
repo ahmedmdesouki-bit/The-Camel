@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import List
 
-from strategies.base import BaseStrategy, Signal, StrategyContext, StrategyMeta, PromotionMode
+from trader.strategies.base import BaseStrategy, Signal, StrategyContext, StrategyMeta, PromotionMode
 
 
 class CoreDCA(BaseStrategy):

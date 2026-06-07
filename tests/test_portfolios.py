@@ -2,7 +2,7 @@
 S11b — Portfolio Engine: the 6 seed portfolios, allocation, lifecycle, tolerance-band rebalancing
 (suggestions only), 4-level risk budgets, and persistence round-trip.
 """
-from portfolios.engine import (
+from trader.portfolios.engine import (
     PortfolioManager, PortfolioPhase, SEED_PORTFOLIOS,
     advance_phase, allocate, tolerance_band_rebalance, check_risk_budget,
 )

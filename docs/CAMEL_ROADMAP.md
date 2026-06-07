@@ -17,7 +17,7 @@ S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 ✅ (Knowledge Gr
 S10 ✅ (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 ✅ (Operator-Loop Assembly + Runtime — Workstream A/B) →
 S11 ✅ (Strategy Registry + Portfolio Engine + Learning) →
 S12 ✅ (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 ✅ (Research Desk — framework built, DORMANT) →
-S13 ◑ (Micro-Live — readiness infra built, go-live FOUNDER-GATED) → S14 ✅ (architecture documented; physical reorg deferred) →
+S13 ◑ (Micro-Live — readiness infra built, go-live FOUNDER-GATED) → S14 ✅ (architecture documented + physical reorg DONE — Trader Camel under `trader/`) →
 S15 ◑ (Paid tools & founder actions to cross "above the line" — the only remaining items; all paid or founder-gated)
 ```
 
@@ -1248,16 +1248,15 @@ dashboard/   generate
 
 **Gate:** full test suite green after restructure; all imports updated; CLAUDE.md updated.
 
-**STATUS: ✅ RESOLVED — architecture documented; physical reshuffle DEFERRED (deliberate).** The value of
-S14 (a clean, discoverable domain hierarchy) is delivered by **`docs/CAMEL_ARCHITECTURE.md`** — the canonical
-layered module map (Foundation → Data → Knowledge → Evidence → Decision → Strategy/Portfolio → Execution →
-Loop/Ops → Surfaces) showing how every package composes into the trust-inverted system. The packages are
-already flat-but-domain-organized. The **physical big-bang reshuffle** (nesting `engine`/`edgelab`/`execution`/
-`strategies`/`portfolios` under `trader/`, fill models under `broker/`, etc.) is **deliberately deferred**: it
-rewrites hundreds of imports across ~55 source + ~35 test files for **zero functional change**, risking a green
-603-test suite at a feature finish line. It is an **optional, separately-scoped task** — best done (if ever)
-ahead of a packaging/open-source milestone as its own focused PR with a full green run. *Code beats docs; don't
-break what works. Tracked here so it isn't lost — not dropped, deliberately sequenced.*
+**STATUS: ✅ DONE — architecture documented AND physically reorganized (2026-06-08).** The value of S14 (a
+clean, discoverable domain hierarchy) is delivered both ways: **`docs/CAMEL_ARCHITECTURE.md`** is the canonical
+layered map, AND the **physical reorg is complete** — the six strategy/evidence/execution packages now live
+under **`trader/`** (`trader/engine`, `trader/edgelab`, `trader/execution`, `trader/strategies`,
+`trader/portfolios`, `trader/sandbox`) beside `trader/regime` + `trader/events`, so the whole Trader Camel is
+one package tree. Done as a scripted one-shot migration (move dirs + rewrite every `from <pkg>` import),
+verified by a **full green run — 603 tests, zero behaviour change**. It was safe because the codebase uses only
+absolute `from <pkg>…` imports (no bare `import <pkg>`, no string/`patch()` refs), so the rewrite rebinds
+imported names without touching usage sites. *Code beats docs; the move broke nothing.*
 
 ---
 
@@ -1275,8 +1274,7 @@ mapped to the code already built and waiting for it — is **`docs/CAMEL_S15_PAI
 - **Founder machine + go-live:** machine hardening · Task-Scheduler wiring (`data.ingest`, `loop.jobs tick`) ·
   a ≥28-day track record · the `config/limits.yaml` phase-flip with real (tiny) capital.
 
-*Not S15 (free code, tracked separately): the remaining free connectors (GPR/French/COT/OFAC) and the S14
-physical reorg.*
+*Not S15 (free code): the remaining free connectors (GPR/French/COT/OFAC) — the S14 physical reorg is now DONE.*
 
 ## Open decisions
 

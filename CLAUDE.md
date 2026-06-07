@@ -163,20 +163,21 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   rejected by the assembled loop** (invariant test). Scheduled ops have real entrypoints (`loop/jobs.py` —
   `python -m loop.jobs daily|weekly`). *The legacy `loop/runner.py` is unchanged (its tests still pass); the
   assembled loop is the real harness — S11 strategies feed it candidates.*
-- **S10 ✅ Full Edge Proof** (`engine/edge_proof.py`, 17 checks + shadow/enforcing) · **S10.5 ✅ loop assembled**
+- **S10 ✅ Full Edge Proof** (`trader/engine/edge_proof.py`, 17 checks + shadow/enforcing) · **S10.5 ✅ loop assembled**
   (`loop/assembled.py`, Phase-1 blocker closed) · **S11 ✅ Strategy Registry + Portfolio Engine + Learning**
-  (`strategies/` trio + dividend_growth + mixer + promotion ladder; `portfolios/` 6 seed portfolios + lifecycle
+  (`trader/strategies/` trio + dividend_growth + mixer + promotion ladder; `trader/portfolios/` 6 seed portfolios + lifecycle
   + tolerance-band rebalancing; `learning/` 4-tier L1–L4) · **S11.5 ✅ integration keystone** (`loop/driver.py`:
-  registry→full Edge Proof→assembled loop; `portfolios/holdings.py` reconciles to fund) · **S12 ✅ Edge Lab +
-  Realistic Paper + ⭐ Sandbox** (`execution/` realistic fills + 4-stage dividends; `edgelab/` two-engine
-  backtest + No-Edge→DCA; `sandbox/` full system on a live feed + virtual money — the micro-live track record).
+  registry→full Edge Proof→assembled loop; `trader/portfolios/holdings.py` reconciles to fund) · **S12 ✅ Edge Lab +
+  Realistic Paper + ⭐ Sandbox** (`trader/execution/` realistic fills + 4-stage dividends; `trader/edgelab/` two-engine
+  backtest + No-Edge→DCA; `trader/sandbox/` full system on a live feed + virtual money — the micro-live track record).
   **→ 543 tests** · **S12.5 ✅ Research Desk framework** (`research/` evidence-object contract + desks + master
   switch DORMANT by default; evidence-only, no execute path) · **S13 ◑ Micro-Live readiness** (`governance/
   approval.py` human gate withholds by default; `broker/manual.py` Sahm path; `broker/live.py` gated LiveBroker
   refuses by default; `ops/live_readiness.py` not-ready by default). **→ 557 tests** · **S14 ✅ architecture
-  documented** (`docs/CAMEL_ARCHITECTURE.md`; physical reorg deferred) · **Backlog sweep ✅** (`demo.py` one-command
+  documented** (`docs/CAMEL_ARCHITECTURE.md`) + **physical reorg DONE** (Trader Camel under `trader/`: engine,
+  edgelab, execution, strategies, portfolios, sandbox + regime, events) · **Backlog sweep ✅** (`demo.py` one-command
   governed-tick + dashboard demo; `sharia/screener.py` now delegates to verified `sharia/aaoifi.py` — one 30% screen;
-  `data/connectors/base.py` retry/backoff + descriptive UA; real health checks cpu/mem/creds; `strategies/analytics.py`
+  `data/connectors/base.py` retry/backoff + descriptive UA; real health checks cpu/mem/creds; `trader/strategies/analytics.py`
   yield-on-cost + moat matrix). **→ 603 tests (2026-06-08: full QA/QC 0 blockers + post-S14 hardening push — P1/P2/P3 pre-live items, S8 completed (Stooq price connector + ingestion orchestrator + SEC-RSS + earnings rule), S12/S13 code; only **S15** (paid/founder, `docs/CAMEL_S15_PAID_AND_FOUNDER.md`) remains). The whole BUILD (S1–S14) is done; going LIVE is the founder's explicit
   act (machine hardening + ≥28-day track record + phase-flip).**
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
@@ -362,7 +363,7 @@ Observe
 
 ## Conventions
 
-- Python 3.12. Keep `guardrail/` and `engine/` pure (no I/O) — unit-testable.
+- Python 3.12. Keep `guardrail/` and `trader/engine/` pure (no I/O) — unit-testable.
 - Every new consequential action type must route through `Constitution.evaluate`.
 - New modules get tests in `tests/`. Run `pytest -q` via `N:\` before declaring done.
 - Adapter pattern: `PaperBroker` first; `LiveBroker` behind a feature flag.

@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
-from strategies.dividends import net_dividend, purification_amount, DEFAULT_NRA_WITHHOLDING
+from trader.strategies.dividends import net_dividend, purification_amount, DEFAULT_NRA_WITHHOLDING
 
 
 # ---- stage 1: announcement ----

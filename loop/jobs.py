@@ -107,10 +107,10 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
     from capital.budget_kernel import BudgetState
     from loop.assembled import AssembledLoop
     from loop.driver import run_strategy_tick
-    from strategies.registry import StrategyRegistry
-    from strategies.core_dca import CoreDCA
-    from strategies.quality_momentum import QualityMomentum
-    from strategies.dividend_growth import DividendGrowth
+    from trader.strategies.registry import StrategyRegistry
+    from trader.strategies.core_dca import CoreDCA
+    from trader.strategies.quality_momentum import QualityMomentum
+    from trader.strategies.dividend_growth import DividendGrowth
 
     constitution = Constitution.from_yaml(config_path) if os.path.exists(config_path) else Constitution()
     phase = int(constitution.L.get("phase", 0))            # single source of truth for phase (P1-D)

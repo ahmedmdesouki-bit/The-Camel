@@ -136,7 +136,7 @@ Unchanged from the roadmap backlog — none of these block a tester:
 machine hardening (`CAMEL_MACHINE_HARDENING.md`) · a **≥28-day paper/sandbox track record** with 0 breaches and
 a clean reconcile · the **phase-flip with real money** (founder's explicit act) · live broker credentials ·
 paid vendors (EODHD/Sharadar/Benzinga) · the live websocket feed · IBKR (Phase 2) · Windows Task-Scheduler
-wiring · the connector-ingestion orchestrator + parked connector backlog · the optional physical module reorg.
+wiring · the parked free-connector backlog. *(The ingestion orchestrator and the S14 physical reorg are now DONE.)*
 
 ---
 

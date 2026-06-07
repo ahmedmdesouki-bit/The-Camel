@@ -11,8 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List
 
-from strategies.base import Signal
-from strategies.registry import StrategyRegistry
+from trader.strategies.base import Signal
+from trader.strategies.registry import StrategyRegistry
 
 
 @dataclass

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from strategies.base import (
+from trader.strategies.base import (
     BaseStrategy, Signal, StrategyContext, StrategyStatus, PromotionMode,
     can_promote, demote as _demote,
 )

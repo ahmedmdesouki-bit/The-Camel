@@ -2,9 +2,9 @@
 S12b — Edge Lab: the two-engine cross-check, cost-aware returns, beats-DCA, walk-forward honesty
 guards, and the No-Edge protocol (no proven edge → systematic DCA, never idle on opportunity).
 """
-from edgelab.backtest import run_backtest, run_event_driven, run_vectorized
-from edgelab.honest import walk_forward_split, survives_out_of_sample, passes_crisis
-from edgelab.no_edge import resolve_no_edge, beats_dca, DCA_FALLBACK
+from trader.edgelab.backtest import run_backtest, run_event_driven, run_vectorized
+from trader.edgelab.honest import walk_forward_split, survives_out_of_sample, passes_crisis
+from trader.edgelab.no_edge import resolve_no_edge, beats_dca, DCA_FALLBACK
 
 
 # closes with a sharp dip a smart signal can sidestep

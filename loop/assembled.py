@@ -147,7 +147,7 @@ class AssembledLoop:
             _oplog(self.dbs, "ACT", f"{sym} EXECUTED ({res})")
             if er is not None:
                 try:
-                    from engine.edge_proof import FullEdgeReport, log_full_edge_report
+                    from trader.engine.edge_proof import FullEdgeReport, log_full_edge_report
                     if isinstance(er, FullEdgeReport):
                         log_full_edge_report(self.dbs, er)
                 except Exception:                        # pragma: no cover

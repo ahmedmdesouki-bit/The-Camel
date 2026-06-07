@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from execution.models import Order, MarketSnapshot, Fill, FillStatus
-from execution.fill import simulate_fill, DEFAULT_FEE_BPS, DEFAULT_MAX_AGE_S
+from trader.execution.models import Order, MarketSnapshot, Fill, FillStatus
+from trader.execution.fill import simulate_fill, DEFAULT_FEE_BPS, DEFAULT_MAX_AGE_S
 
 
 class RealisticPaperExecutor:

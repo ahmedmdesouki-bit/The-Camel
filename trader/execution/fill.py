@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from execution.models import Order, MarketSnapshot, Fill, FillStatus
+from trader.execution.models import Order, MarketSnapshot, Fill, FillStatus
 
 DEFAULT_FEE_BPS = 1.0          # 0.01% per-side fee estimate
 DEFAULT_MAX_AGE_S = 900        # quote older than 15 min → stale → reject
