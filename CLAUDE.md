@@ -177,7 +177,7 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   documented** (`docs/CAMEL_ARCHITECTURE.md`; physical reorg deferred) · **Backlog sweep ✅** (`demo.py` one-command
   governed-tick + dashboard demo; `sharia/screener.py` now delegates to verified `sharia/aaoifi.py` — one 30% screen;
   `data/connectors/base.py` retry/backoff + descriptive UA; real health checks cpu/mem/creds; `strategies/analytics.py`
-  yield-on-cost + moat matrix). **→ 572 tests (after the 2026-06-08 full QA/QC pass: 0 blockers, see `docs/CAMEL_PRELIVE_HARDENING.md`). The whole BUILD (S1–S14) is done; going LIVE is the founder's explicit
+  yield-on-cost + moat matrix). **→ 603 tests (2026-06-08: full QA/QC 0 blockers + post-S14 hardening push — P1/P2/P3 pre-live items, S8 completed (Stooq price connector + ingestion orchestrator + SEC-RSS + earnings rule), S12/S13 code; only **S15** (paid/founder, `docs/CAMEL_S15_PAID_AND_FOUNDER.md`) remains). The whole BUILD (S1–S14) is done; going LIVE is the founder's explicit
   act (machine hardening + ≥28-day track record + phase-flip).**
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 - **First look:** `python demo.py` → seeds the 7 DBs, runs one fully-governed tick, writes the read-only dashboard
@@ -422,6 +422,7 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 | `docs/CAMEL_ROADMAP.md` | Full sprint plan S1-S14 (Roadmap v3) + open decisions + definition of done |
 | `docs/CAMEL_ARCHITECTURE.md` | Layered module map (S14) — how every package composes into the trust-inverted system |
 | `docs/CAMEL_PRELIVE_HARDENING.md` | QA-derived must-close-before-real-money checklist (P1–P4); 0 blockers, paper-safe today |
+| `docs/CAMEL_S15_PAID_AND_FOUNDER.md` | S15 — the only remaining work: paid tools + founder actions to go "above the line" |
 | `docs/CAMEL_CONSTITUTION.md` | The rules in prose (Sharia, risk, phase gates) |
 | `docs/CAMEL_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
 | `docs/CAMEL_TESTING.md` | Test strategy, adversarial + integration suites |

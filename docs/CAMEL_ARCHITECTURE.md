@@ -61,7 +61,7 @@ fill models under `broker/`). **That physical reshuffle is deliberately deferred
 - It is **pure churn** — it changes hundreds of `import` statements across ~55 source + ~35 test files for
   **zero functional change**; the only gate is "tests stay green."
 - The current layout is already clean and discoverable (this doc is the map); the nesting is cosmetic.
-- Doing a big-bang move risks a green 572-test suite for no benefit.
+- Doing a big-bang move risks a green 603-test suite for no benefit.
 
 **It is therefore an explicit, optional, separately-scoped task** — best done (if ever) ahead of a packaging
 or open-source milestone, as its own focused PR with a full green run, not bundled at a feature finish line.

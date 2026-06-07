@@ -11,14 +11,14 @@ autonomy is earned through a paper track record, never granted.
 > **Safety first. Evidence second. Autonomy last.**
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · **Roadmap v3 build S1–S14 complete** (full stack: data → Edge Proof → Constitution → Budget → assembled loop → Edge Lab + Sandbox; research desk + micro-live readiness fail-safe by default) · Dashboard (Design-System skin) + founder alerts · **572 tests green** ·
+**Status:** Phase 0 (paper) · **Roadmap v3 build S1–S14 complete** (full stack: data → Edge Proof → Constitution → Budget → assembled loop → Edge Lab + Sandbox; research desk + micro-live readiness fail-safe by default) · Dashboard (Design-System skin) + founder alerts · **603 tests green** ·
 7-DB architecture live. Remaining steps are deliberately **founder-gated** (machine hardening · ≥28-day paper/sandbox track record · the live phase-flip with real money).
 
 > **New here? Run `python demo.py`** — one command seeds sample data, drives one fully-governed tick through the whole stack, and writes the read-only dashboard. Fully offline, paper-only, no credentials. See **[Try it](#try-it-one-command)** below.
 
 ---
 
-## What's built (Phase 0 — paper, 572 tests green)
+## What's built (Phase 0 — paper, 603 tests green)
 
 The **safety and evidence core** is done. Everything runs in paper mode behind a human gate.
 
@@ -80,7 +80,7 @@ What you'll see it prove:
 - Flip the seeded macro to an inverted curve and the Opportunity Router goes to **Wait** — no edge, no trade.
 
 ```bash
-pytest -q          # then run the suite — expect 572 passed
+pytest -q          # then run the suite — expect 603 passed
 ```
 
 ## Where to start
@@ -108,7 +108,7 @@ The repo path is 261 chars (over Windows MAX_PATH). Map a virtual drive first:
 ```powershell
 subst N: "<path-to-this-folder>"
 cd N:\
-python -m pytest -q          # 572 passed
+python -m pytest -q          # 603 passed
 ```
 
 *(For future work, cloning to a short path like `C:\camel` removes this friction.)*

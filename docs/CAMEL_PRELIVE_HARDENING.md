@@ -2,7 +2,7 @@
 
 > **Origin:** the full 5-dimension line-by-line QA/QC audit on **2026-06-08** (safety core · Sharia ·
 > data integrity · decision/execution/loop · docs/coverage). **Result: 0 BLOCKERS, 0 active HIGH bugs.**
-> The build (S1–S14, 572 tests green) is **sound and fail-safe for paper/Phase-0 use today.** Every item
+> The build (S1–S14, 603 tests green) is **sound and fail-safe for paper/Phase-0 use today.** Every item
 > below is a *latent* gap — safe right now because the system is paper-only, Phase-0, single-caller, and
 > timestamps collapse to `now` — that should be closed **before any real money** flows. This is the
 > canonical home for those items; pair it with `CAMEL_LIVE_READINESS.md` (the go-live gate) and
@@ -11,6 +11,16 @@
 **Why "safe today" is true, in one line:** real capital is triple-gated off (`broker/live.py` raises;
 approval withholds; phase=0), the production executor is a no-op, virtual money is isolated in the sandbox,
 and the live tables only hold knowable bars — so none of these gaps can move a real cent in the current state.
+
+> ### ✅ UPDATE 2026-06-08 — P1 and P2 are now CLOSED (603 tests green)
+> The post-S14 hardening push implemented **all P1** (A broker write-atomicity · B Edge-Proof `as_of` · C
+> Budget-Kernel injection + D single phase source + E scheduler→assembled, via the new
+> `loop.jobs.run_trading_tick` / `python -m loop.jobs tick`) and **all P2** (A `known_at` filter · B
+> `etf_holdings` UNIQUE+reported_at · C *documented* — `quality.decision_eligible` left as the richer gate
+> pending quorum-metadata plumbing, freshness + sample-size are the active gates · D compact screener
+> completed · E doubtful persisted · F shadow-phase guard · G manual-fill guard) and **P3-E** (peg `as_of`).
+> The sections below are kept as the record of what each item was. **Remaining: only P2-C (documented,
+> deferred), the lower-stakes P3 polish, and P4 (the founder/paid go-live gates → now `CAMEL_S15_...md`).**
 
 ---
 

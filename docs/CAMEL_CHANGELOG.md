@@ -5,6 +5,38 @@
 
 ---
 
+## 2026-06-08 — Post-S14 hardening push: all free/non-founder deferred work done; only S15 remains
+
+Per the founder directive ("finish anything deferred that is not paid or pending on me; gather the paid/
+founder items under S15; maximize every S — complete S8"). Five tested, committed batches took the suite
+**572 → 603 green**:
+
+- **P1 (pre-live, batch 1):** broker write-atomicity (orders+ledger+positions in ONE transaction, rollback
+  proven); Edge-Proof `as_of` point-in-time on the price loader (+ threaded through the driver); a real
+  production Edge-gated tick `loop.jobs.run_trading_tick` (Constitution-from-yaml = single phase source +
+  injected Budget Kernel + assembled loop; `python -m loop.jobs tick`).
+- **P2/P3 (batch 2):** `known_at` in the regime point-in-time filter; `etf_holdings` UNIQUE + reported_at;
+  the compact screener completed (optional receivables/total_assets/sector → all 5 AAOIFI screens); doubtful
+  names persisted to the whitelist; shadow-mode refused at phase ≥ 1; manual-fill compliance warnings +
+  atomic write; peg `as_of`.
+- **S8 COMPLETED (batch 3):** free **Stooq price connector** (the missing real price feed → `prices`); the
+  **ingestion orchestrator** `data/ingest.py` (Workstream D — connectors now populate the DBs in production,
+  best-effort, isolated failures); **SEC-RSS 8-K** event connector; the **earnings-blackout rule** (logic;
+  calendar feed is S15). Added `source_documents` to the market DB.
+- **S12/S13 code (batch 4):** per-portfolio book threading (a fill updates fund + portfolio books in one
+  transaction, reconciles); inbound **approve/veto channel** `governance/approval_channel.py`; **manual-entry
+  parser** `broker/manual.parse_fill_text` (paste a Sahm confirmation → structured fill).
+- **S15 (batch 5):** new `docs/CAMEL_S15_PAID_AND_FOUNDER.md` gathers **everything paid or founder-gated**
+  to cross "above the line" (EODHD/Sharadar/Benzinga/Finnhub/Alpaca/IBKR; FRED/Telegram/Alpaca creds; machine
+  hardening + Task-Scheduler + track record + the phase-flip), each mapped to the code already built and
+  waiting. Registered S15 in the roadmap + indexes.
+
+The S14 physical reorg stays deliberately deferred (free, but pure churn / zero functional gain / risks the
+green suite) — to be done, if ever, as its own isolated PR. **Below the line is done & fail-safe; only S15
+(paid/founder) remains.**
+
+---
+
 ## 2026-06-08 — Full 5-dimension QA/QC audit (0 blockers) + pre-live hardening checklist
 
 Before sharing with a tester, ran a line-by-line QA/QC across the whole system via five parallel

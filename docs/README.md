@@ -12,7 +12,7 @@ defining principle is an **inversion of trust**: the LLM only *proposes*; a dete
 > **LLM proposes. Math tests. Guardrails decide. Humans approve what's risky. Autonomy is earned, not granted.**
 > **Safety first. Evidence second. Autonomy last.**
 
-**Status:** Phase 0 (paper) · **Roadmap v3 build S1–S14 complete** (full 5-dimension QA/QC passed, 0 blockers) · **572 tests green** ·
+**Status:** Phase 0 (paper) · **Roadmap v3 build S1–S14 complete** (full 5-dimension QA/QC passed, 0 blockers · S15 = paid/founder only) · **603 tests green** ·
 7-DB architecture live · on **Roadmap v3** (S1–S14).
 
 ---
@@ -35,6 +35,7 @@ the others point here rather than copy. This is the rule that keeps the docs fro
 | **`CAMEL_TESTING.md`** | Test strategy, adversarial suite, integration tests | Builder | How Camel is tested |
 | **`CAMEL_LIVE_READINESS.md`** | Phase 1 go-live checklist | Founder | The pre-live gate |
 | **`CAMEL_PRELIVE_HARDENING.md`** | QA-derived must-close-before-real-money checklist (P1–P4) | Builder, founder | What to harden before live |
+| **`CAMEL_S15_PAID_AND_FOUNDER.md`** | The only remaining work: paid tools + founder actions to go "above the line", each mapped to the code waiting for it | Founder | What to buy / switch on to go live |
 | **`CAMEL_BROKER_MATRIX.md`** | Broker comparison + resolved direction | Founder, builder | The broker decision |
 | **`CAMEL_DATA_SOURCES.md`** | Verified data-feed catalogue + connector build-list | Founder, builder | Which data feeds, in what order |
 | **`CAMEL_MACHINE_HARDENING.md`** | S6 founder machine-setup checklist (Tailscale, BitLocker, secrets, backups) | Founder | The machine hardening checklist |
