@@ -6,11 +6,11 @@
 
 ---
 
-## Current suite — 519 tests green (through S11 + S11.5 integration + Dashboard v2 + founder alerts)
+## Current suite — 543 tests green (through S11 + S11.5 integration + Dashboard v2 + founder alerts)
 
 *(Historical note: the table below was authored at the S1–S4 baseline of 197 tests; per-file counts are
 illustrative of the S4 cut. The running per-sprint totals — 197 → 217 → 253 → 263 → 289 → 309 → 331 → 352 →
-389 → 419 → 426 → 440 → 449 → 465 → 478 → 486 → 513 → 517 → 519 — are tracked in `CAMEL_CHANGELOG.md`.)*
+389 → 419 → 426 → 440 → 449 → 465 → 478 → 486 → 513 → 517 → 519 → 543 — are tracked in `CAMEL_CHANGELOG.md`.)*
 
 *Sprint 4 added ~87 tests across guardrail hardening (43 in `test_guardrail.py`), governance,
 budget, data-hardening, security, secrets, and the adversarial suite. The per-file table below

@@ -16,7 +16,7 @@ S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hard
 S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 ✅ (Knowledge Graph + Regime + Sharia cross-check) →
 S10 ✅ (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 ✅ (Operator-Loop Assembly + Runtime — Workstream A/B) →
 S11 ✅ (Strategy Registry + Portfolio Engine + Learning) →
-S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 (Research Desk — design, dormant) →
+S12 ✅ (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 (Research Desk — design, dormant) →
 S13 (Micro-Live) → S14 (Restructure)
 ```
 *(⭐ **Sandbox Mode** = the full system on live real-time data with virtual money — the founder-requested
@@ -1106,6 +1106,21 @@ pandas, numpy, scipy, statsmodels, scikit-learn, vectorbt, quantstats.
 **Gate:** every strategy tested out-of-sample on two engines; delisted handled; full benchmark
 hierarchy compared; weak signals killed; all performance from realistic_paper fills; Camel beats
 simple DCA before any live execution; backtest using future/restated data blocked by `known_at`.
+
+**STATUS: ✅ DONE (→ 543 tests).** **(a) Realistic-paper execution** `execution/` — `fill.py`/`slippage.py`
+(crosses the real spread, partial-fills against displayed size, charges fees, **REJECTS stale data** — no
+$1 fallback), `realistic_paper.py` (whole-share constraint), `corporate_actions.py` (the **4-stage dividend
+pipeline** announcement→entitlement→settlement→attribution on the **NRA-withholding** frame + split replay).
+**(b) Edge Lab** `edgelab/` — `backtest.py` (cost-aware, with a **two-engine cross-check**: an event-driven
+and a vectorized engine must agree or the result is untrusted; beats-DCA benchmark), `honest.py` (walk-forward
+out-of-sample split + overfit/decay guard + crisis windows), `no_edge.py` (**No-Edge protocol → DCA**: an
+active strategy runs only if it proves an edge AND beats DCA after costs; otherwise systematic DCA, never idle
+on capital). **(c) ⭐ Sandbox Mode** `sandbox/runner.py` — drives the **full assembled system** (regime →
+strategy → full Edge Proof → Constitution → Budget → Approval) against an **injected live quote feed** with
+**virtual money** via the realistic-paper executor; produces the track record that gates micro-live. Tests:
+`test_execution.py` (12) + `test_edgelab.py` (9) + `test_sandbox.py` (3). *Remaining backlog: survivorship-free
+PIT history (Sharadar) for the deepest honest backtests; the live websocket feed adapter (S8.5) replaces the
+test stub — both already tracked. The engine, backtester, No-Edge protocol, and sandbox are done.*
 
 ---
 

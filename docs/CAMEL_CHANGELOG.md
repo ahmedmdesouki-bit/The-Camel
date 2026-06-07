@@ -5,6 +5,34 @@
 
 ---
 
+## 2026-06-07 — S12 SHIPPED: Edge Lab + Realistic Paper + ⭐ Sandbox → the build is complete (S1–S12)
+
+The last big build sprint (519 → **543 tests**). Three new packages:
+- **`execution/` — realistic-paper engine** (what broker paper does NOT do): `fill.py`/slippage cross the
+  real spread, partial-fill against displayed size, charge fees, and **REJECT stale data** rather than invent
+  a price (no $1 fallback — that's loop_test only); `realistic_paper.py` adds the whole-share (Sahm)
+  constraint; `corporate_actions.py` replays the **4-stage dividend pipeline** (announcement→entitlement→
+  settlement→attribution) on the **NRA-withholding** frame (gross→withheld→net separate; 25%+ special ex-date
+  deferral; due-bills) + split replay.
+- **`edgelab/` — honest backtester**: `backtest.py` runs an **event-driven AND a vectorized engine that must
+  agree** (the cross-check that catches look-ahead / off-by-one bugs — a divergence marks the result
+  untrusted), cost-aware, benchmarked against buy-and-hold DCA; `honest.py` adds walk-forward out-of-sample +
+  an overfit/decay guard + the named crisis windows; `no_edge.py` is the **No-Edge protocol → DCA** (an active
+  strategy runs only if it proves an edge AND beats DCA after costs; otherwise systematic DCA, never idle).
+- **`sandbox/` — ⭐ Sandbox Mode**: `SandboxRunner` drives the **full assembled system** (regime → strategy →
+  full Edge Proof → Constitution → Budget → Approval) against an **injected live quote feed** with **virtual
+  money** via the realistic-paper executor. Tests prove a real candidate flows the whole stack to a virtual
+  FILL, the No-Edge protocol fires when nothing trades, and a **stale quote is rejected**. The feed is injected
+  so it's fully testable with no network (production = the S8.5 Alpaca/Finnhub websocket).
+- Tests: `test_execution.py` (12) + `test_edgelab.py` (9) + `test_sandbox.py` (3).
+
+**The entire build (S1–S12) is now complete and staged at the live-readiness gate.** What remains is
+deliberately founder-gated / future: **S13 micro-live** (machine hardening + an explicit phase-flip with real
+money — the founder's switch), **S12.5 Research Desk** (dormant by design), **S14** (restructure), and the
+tracked data/connector backlog. *No code here puts a cent of real capital at risk — that line is yours to cross.*
+
+---
+
 ## 2026-06-07 — Dashboard re-skinned to the Camel Design System
 
 The founder built a **design system in Claude Design** (claude.ai/design) — notably generated *from* our

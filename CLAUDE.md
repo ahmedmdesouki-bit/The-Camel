@@ -167,8 +167,10 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   (`loop/assembled.py`, Phase-1 blocker closed) · **S11 ✅ Strategy Registry + Portfolio Engine + Learning**
   (`strategies/` trio + dividend_growth + mixer + promotion ladder; `portfolios/` 6 seed portfolios + lifecycle
   + tolerance-band rebalancing; `learning/` 4-tier L1–L4) · **S11.5 ✅ integration keystone** (`loop/driver.py`:
-  registry→full Edge Proof→assembled loop, proven end-to-end; `portfolios/holdings.py` per-portfolio accounting
-  reconciles to the fund). **→ 517 tests. NEXT = S12 (Edge Lab + Sandbox).**
+  registry→full Edge Proof→assembled loop; `portfolios/holdings.py` reconciles to fund) · **S12 ✅ Edge Lab +
+  Realistic Paper + ⭐ Sandbox** (`execution/` realistic fills + 4-stage dividends; `edgelab/` two-engine
+  backtest + No-Edge→DCA; `sandbox/` full system on a live feed + virtual money — the micro-live track record).
+  **→ 543 tests. The whole build is done (S1–S12). NEXT = S13 micro-live readiness — founder-gated.**
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -253,6 +255,14 @@ strategies/       ✅ S11 — base.py (BaseStrategy + Signal/Context/Meta + prom
                   promote/demote, strategy-portfolio matrix + regime filter (signals_for)
                   core_dca.py · quality_momentum.py · etf_rotation.py · dividend_growth.py · dividends.py · mixer.py
                   (⏳ backlog after the Edge Lab: trailing_stop · dca_ladder · momentum · mean_reversion · congress_signal — NOT on disk)
+
+execution/        ✅ S12 — realistic-paper engine: fill.py + slippage (cross the spread, partial fills,
+                  fees, STALE-DATA REJECTION, no $1 fallback), realistic_paper.py (whole-share),
+                  corporate_actions.py (4-stage dividend NRA pipeline + split replay)
+edgelab/          ✅ S12 — backtest.py (cost-aware, two-engine cross-check, beats-DCA), honest.py
+                  (walk-forward + overfit guard + crisis windows), no_edge.py (No-Edge → DCA protocol)
+sandbox/          ✅ S12 — runner.py: ⭐ full assembled system on an injected live feed + virtual money
+                  (regime→strategy→full Edge Proof→Constitution→realistic fill); the micro-live track record
 
 portfolios/       ✅ S11 — engine.py: Portfolio + lifecycle + 6 seed portfolios + allocation +
                   tolerance-band rebalancing (suggestions, not auto-trades) + 4-level risk budgets +
@@ -424,7 +434,7 @@ Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur
 S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK -> S6.6 OK -> S7 OK ->
 S8 ~CORE (10 connectors; rest deferred) -> S8.5 (Real-Time Data Tier) -> S9 ✅ (Knowledge Graph + Regime + Sharia cross-check)
 -> S10 ✅ (Full Edge Proof) -> S10.5 ✅ (Operator-Loop Assembly) -> S11 ✅ (Strategy Registry + Portfolio + Learning)
--> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) <- NEXT -> S12.5 (Research Desk; design, dormant)
+-> S12 ✅ (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S12.5 (Research Desk; design, dormant)
 -> S13 (Micro-Live) -> S14 (Restructure)
 ```
 Guiding principle: **Safety first. Evidence second. Autonomy last.**
@@ -449,7 +459,7 @@ Optimize for **evidence density, not feature count.**
 | ✅ S10 | Full Edge Proof Engine (17 checks) | `engine/edge_proof.py` — 17 checks, pre-registered thresholds, multiple-testing penalty, signal-decay, Sharia fail-safe, model-disagreement→human, shadow/enforcing, `edge_reports` log. **Now fed real strategy signals via the S11.5 driver.** *(Regime-conditioned sample + dashboard panels: backlog)* |
 | ✅ S10.5 | Operator-Loop Assembly + Runtime (Workstream A/B) | **DONE (486 tests):** `loop/assembled.py` assembles Observe→Router→Allocator(Edge+Constitution)→Budget→Approval→Act; invariant test proves **a buy with no EdgeReport is rejected by the assembled loop** (Phase-1 blocker CLOSED); `loop/jobs.py` scheduled daily/weekly entrypoints; still paper |
 | ✅ S11 (513 tests) | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth w/ **lot-level + gross→NRA-withholding→net** mechanics) pass Edge Proof; **multi-portfolio (lifecycle incubate→retire, tolerance-band rebalance, multi-benchmark, 6 seed portfolios, portfolio-scoped positions/ledger reconciling to fund)**; meets the 15-item acceptance checklist; never auto-edits the Constitution |
-| S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
+| ✅ S12 (543 tests) | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
 | S12.5 | Research Desk / Analyst Agents *(founder; design now, dormant)* | per-vertical research agents (Agent SDK — full roster incl. market-microstructure + execution/TCA) write evidence only via the **evidence-object contract**, never act; narrow/safe learning (no retrain, no Constitution edits); token budget; master switch defaults OFF |
 | S13 | Micro-Live Readiness (Phase 1) | all live-readiness boxes pass |
 | S14 | Module Restructure | full suite green after restructure |
