@@ -13,7 +13,7 @@
 ```
 S1 ✅ → S2 ✅ → S3 ✅ → S4 ✅ → S4.5 ✅ (Edge Proof v0) → S5 ✅ → S5.5 ✅ (Minimal Ops) → S6 ✅ →
 S6.5 ✅ (Safety/Accounting hotfix) → S6.6 ✅ (Position accounting + Ops hardening + Beginner Mode) → S7 ✅ (Entrepreneur engine) →
-S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 (Knowledge Graph + Regime) →
+S8 (Data Backbone ~core) → S8.5 (Real-Time Data Tier) → S9 ✅ (Knowledge Graph + Regime + Sharia cross-check) →
 S10 (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 (Operator-Loop Assembly + Runtime — Workstream A/B) →
 S11 (Strategy Registry + Portfolio Engine) →
 S12 (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 (Research Desk — design, dormant) →
@@ -118,6 +118,9 @@ weekly `ops/scheduled_checks.run_weekly_checks` (kill-switch test + backup + rec
 - **Health-monitor checks** `cpu/memory/broker/telegram/secrets` are hardcoded `"skipped"` — wire real checks
   (psutil for cpu/mem; live-cred pings for broker/telegram). *(Ops-hardening follow-up; add `psutil`.)*
 - **`data/quality.py`** "refine" was mis-tagged to S7 — refinement belongs with the data backbone (S8 cont.).
+- **Migrate `sharia/screener.py` → `sharia/aaoifi.py`** — the legacy quarterly job still uses the looser 33%
+  two-ratio model (with boundary tests at 32.9%); fold it onto the verified AAOIFI screen so there's one screen.
+  *(Small; requires updating `test_sharia.py`'s boundary assertions. `sharia/aaoifi.py` is authoritative meanwhile.)*
 - **Broker write-atomicity** (positions↔ledger transaction) → **S12** (already owned). **Earnings blackout** →
   **S8** (needs earnings calendar). **Max cancel/replace order handling** → **S13** (LiveBroker). **IBKR** → Phase 2.
 
@@ -744,8 +747,8 @@ remains EOD.
 latest filings, latest events, ETF exposure, and benchmark; the regime classifier labels the current
 environment from real macro data; a Sharia disagreement freezes new buys.
 
-**STATUS: IN PROGRESS — slices 1–3 done; slice 4 remains.** *(Suite: QA hardening → 419, Dashboard v2 → 426,
-Alaa founder-alerting + peg → 440, **event intelligence (slice 3) → 449 tests green**.)*
+**STATUS: ✅ COMPLETE — slices 1–4 done (→ 465 tests green).** *(419 QA → 426 Dashboard v2 → 440 Alaa alerts/peg
+→ 449 event intelligence → **465 Sharia cross-check**.)*
 - *Slice 1 (entity resolution):* `assets` table (ticker/CIK/ISIN/CUSIP/name/sector/active_from-to/
   delisted_flag) + `data/entity_resolver.py` `resolve(ticker)` → full identity joining `assets` +
   `company_facts` + `etf_holdings` look-through + Sharia whitelist.
@@ -763,11 +766,17 @@ Alaa founder-alerting + peg → 440, **event intelligence (slice 3) → 449 test
   21d benchmark + excess vs SPUS, `regime_at_event`; a **hindsight study/base-rate table for S10 event studies,
   not a live signal**; pure math helpers unit-tested). *Free data recipe (FRED/ALFRED dates + Finnhub surprise +
   CFTC COT + Kenneth French factors) feeds it once those connectors land — see `CAMEL_DATA_SOURCES.md`.*
-- *Slice 4 — Sharia cross-check (remains):* multi-state status + **full AAOIFI ratio enforcement** (≤30% / ≤30% / ≤67% /
-  ≤5% + 11 sectors, per `CAMEL_DATA_SOURCES.md` and the updated `CAMEL_CONSTITUTION.md`) + drift + local-board
-  override. **Wire `trader/regime/peg.py` (SAR/USD peg monitor) into `features.py`** here so the regime engine
-  consumes it — source is **FRED series `DEXSAUS`** (USD/SAR spot), which the existing FRED connector already
-  pulls, so this is a **free** activation (no new vendor).
+- *Slice 4 (Sharia cross-check) — ✅ DONE (465 tests):* `sharia/aaoifi.py` — the **verified in-house AAOIFI
+  screen** (≤30% debt / ≤30% liquid-assets / ≤67% receivables / ≤5% haram-income, **12-mo-avg market-cap
+  denominator**, 11 prohibited sectors; near-limit → *doubtful* band; missing-data → doubtful, never a silent
+  pass; reports `purification_ratio`). `sharia/cross_check.py` — **multi-state status** (pass/fail/doubtful/
+  frozen/pending_review) + the **disagreement→freeze rule**, **fail-safe quorum** (a single source can fail but
+  not *clear* a name → no cross-check = `pending_review`), the **authority stack** (local board > AAOIFI >
+  founder tighten-only > agent-never), **drift detection**, and a fail-safe writer (any error or non-clear
+  outcome freezes for new buys; reduce-only exits stay open) persisting to the new `sharia_status` table.
+  **Peg wired in:** `features.py` now reads **FRED `DEXSAUS`** → `peg_deviation_pct`, and the classifier raises
+  a `GEOPOLITICAL_RISK_OFF` signal on peg stress — free activation, no new vendor. *(Legacy `sharia/screener.py`
+  keeps its looser 33% boundary tests; migrating it to delegate to `aaoifi.py` is a small backlog item.)*
 
 ---
 

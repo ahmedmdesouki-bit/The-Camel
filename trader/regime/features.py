@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 
 from db.sqlite import connection
 from db.paths import CamelDbs
+from trader.regime.peg import peg_status
 
 # feature name → series_id as ingested by the FRED/Treasury/etc. connectors
 DEFAULT_SERIES = {
@@ -24,6 +25,7 @@ DEFAULT_SERIES = {
     "usd": "DTWEXBGS",
     "cpi": "CPIAUCSL",
     "oil": "DCOILWTICO",
+    "usd_sar": "DEXSAUS",        # S9 slice 4: USD/SAR spot → the peg monitor (free, FRED)
 }
 
 
@@ -80,6 +82,8 @@ def build_features(dbs: CamelDbs, series: Dict[str, str] = None,
 
     d2 = _latest(pts("dgs2"))
     d10 = _latest(pts("dgs10"))
+    usd_sar = _latest(pts("usd_sar"))
+    peg = peg_status(usd_sar)              # None rate → known=False → deviation None (peg feature dormant)
     return {
         "fed_funds": _latest(pts("fed_funds")),
         "yield_curve": (d10 - d2) if (d2 is not None and d10 is not None) else None,
@@ -89,4 +93,5 @@ def build_features(dbs: CamelDbs, series: Dict[str, str] = None,
         "usd": _latest(pts("usd")),
         "cpi_yoy": _yoy(pts("cpi")),
         "oil_change_pct": _yoy(pts("oil")),
+        "peg_deviation_pct": peg.get("deviation_pct"),   # USD/SAR drift vs the 3.75 peg
     }

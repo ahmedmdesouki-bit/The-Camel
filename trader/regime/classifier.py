@@ -74,6 +74,12 @@ def classify(f: Dict[str, Optional[float]]) -> RegimeResult:
         s[Regime.USD_STRENGTH_EM_PRESSURE] += 0.8; sig.append(f"usd={usd:.0f}>= {USD_STRONG:.0f}")
     if unemp is not None and unemp >= 5.0:
         s[Regime.RECESSION_RISK] += 0.5; sig.append(f"unemployment={unemp:.1f}>=5")
+    # SAR/USD peg stress (from FRED DEXSAUS via the peg monitor) — a Gulf-book risk-off shock.
+    # Normally 0 (peg intact since 1986); only fires on real drift, so it never perturbs benign regimes.
+    peg_dev = f.get("peg_deviation_pct")
+    if peg_dev is not None and abs(peg_dev) >= 0.5:
+        s[Regime.GEOPOLITICAL_RISK_OFF] += 1.0; s[Regime.USD_STRENGTH_EM_PRESSURE] += 0.5
+        sig.append(f"sar_peg_drift={peg_dev:+.2f}%")
 
     if not s:
         have_data = any(v is not None for v in (cpi, curve, hy, vix, ff, unemp, oil, usd))

@@ -5,6 +5,31 @@
 
 ---
 
+## 2026-06-07 — S9 slice 4 SHIPPED → **S9 COMPLETE**: Sharia cross-check
+
+The Sharia screen sits at #1 in the priority hierarchy, so this slice was built fail-safe (449 → **465 tests**).
+- **`sharia/aaoifi.py`** — the **verified in-house AAOIFI screen** replacing the looser 33% model: debt ≤30% /
+  liquid-assets ≤30% (both on the **12-month-average market-cap** denominator, an AAOIFI detail) / receivables
+  ≤67% / haram-income ≤5%, plus the **11 prohibited sectors**. Near-limit → **doubtful** watch band; a missing
+  denominator → doubtful, **never a silent pass**; reports `purification_ratio` (impure fraction to give away).
+- **`sharia/cross_check.py`** — the **multi-state status** (pass/fail/doubtful/frozen/pending_review) and the
+  decision rules: **disagreement→freeze** (in-house vs canonical cross-check disagree → freeze for new buys,
+  reduce-only exits stay open, route to human); **fail-safe quorum** — a single source can *fail* a name but
+  cannot *clear* it, so no cross-check → `pending_review`; the **authority stack** (local Sharia board > AAOIFI >
+  founder *tighten-only* > agent *never*); **drift detection** (a held name creeping toward a limit is flagged
+  early); and a fail-safe writer (any screening error → freeze) persisting to the new append-only `sharia_status`
+  table. Cross-check + financials are injected (adapter pattern) → fully testable, no network.
+- **Peg wired into the regime engine:** `trader/regime/features.py` now reads **FRED `DEXSAUS`** → a
+  `peg_deviation_pct` feature, and the classifier raises a `GEOPOLITICAL_RISK_OFF` signal on SAR/USD peg stress.
+  Free activation (the FRED connector already exists) — closes the Workstream-D peg gap.
+- `tests/test_sharia_cross_check.py` (16): each ratio breach, sector exclusion, doubtful band, missing-data,
+  12-mo-avg denominator, combine/authority/drift rules, and the end-to-end writer (pass-with-quorum, disagreement-
+  freeze, single-source-pending, fail-freeze, local-board override, error-fail-safe, drift-across-screens).
+- *Legacy `sharia/screener.py` (looser 33%, boundary tests at 32.9%) left intact; migrating it to delegate to
+  `aaoifi.py` is a small backlog item — `aaoifi.py` is authoritative meanwhile.* **S9 done (slices 1–4); next = S10.**
+
+---
+
 ## 2026-06-07 — S9 slice 3 SHIPPED: event intelligence + `event_reactions` substrate
 
 New package **`trader/events/`** (440 → **449 tests green**):

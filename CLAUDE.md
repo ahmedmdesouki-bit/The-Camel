@@ -124,7 +124,7 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   (conflict → news). Slice 5 added the ETF issuer-holdings connector (CSV; `etf_holdings.py` → sharia DB
   look-through). **10 connectors live; all 3 stub DBs hold real data.** → **389 passed**. Remaining:
   ~10 more connectors (OFAC/USGS/disclosures/French/SEC-RSS) + market-data + paid vendors.
-- **Sprint 9 IN PROGRESS — slices 1–3.** (1) Entity resolution: `assets` table + `data/entity_resolver.py`
+- **Sprint 9 ✅ COMPLETE — slices 1–4.** (1) Entity resolution: `assets` table + `data/entity_resolver.py`
   (`resolve(ticker)` joins assets + company_facts + etf_holdings look-through + whitelist Sharia status).
   (2) Regime Engine: `trader/regime/` — feature builder over `macro_observations`, deterministic 10-state
   classifier (regime + confidence + signals; `regime_to_themes`), `regime_history` audit table.
@@ -132,7 +132,14 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   dictionary entity-linker over *sanitised* titles, severity/direction/theme rule tables; enriches
   `news_events`; **only `safe=1` rows**) + `reactions.py` (the **`event_reactions`** substrate: forward returns
   1/5/21/63/126d, 63d drawdown, 21d excess-vs-SPUS, `regime_at_event` — a hindsight study table for S10, not a
-  live signal). **→ 449 tests.** Remaining S9: **slice 4** — Sharia cross-check (multi-state + full AAOIFI) + peg wiring.
+  live signal).
+  (4) **Sharia cross-check: `sharia/aaoifi.py`** (verified AAOIFI screen — ≤30/≤30/≤67/≤5% on **12-mo-avg
+  market cap** + 11 sectors; doubtful band; purification ratio) + **`sharia/cross_check.py`** (multi-state
+  status pass/fail/doubtful/frozen/pending_review; **disagreement→freeze**; **fail-safe quorum** — a single
+  source can fail but not clear a name; authority stack local-board>AAOIFI>founder-tighten-only>agent-never;
+  drift; fail-safe writer → `sharia_status` table). **Peg wired:** `features.py` reads FRED `DEXSAUS` →
+  `peg_deviation_pct`; classifier raises `GEOPOLITICAL_RISK_OFF` on peg stress. **→ 465 tests. S9 COMPLETE
+  (slices 1–4).** *(Legacy `sharia/screener.py` keeps its 33% boundary tests — migration to `aaoifi.py` is backlog.)*
 - **QA/QC hardening pass** (independent line-by-line review of S6.5→S9): fixed YoY-vs-MoM in the regime
   feature builder, vintage look-ahead, connector date-fabrication, BLS month-13, unguarded floats,
   register_asset un-delist, beginner-mode rail coverage, sanitiser whitespace bypass — each with a
@@ -205,7 +212,9 @@ db/               paths.py — CamelDbs dataclass + init_all()
                   sqlite.py — connect() helper
 
 sharia/           whitelist.py — load/add/freeze/unfreeze (→ camel_sharia.db)
-                  screener.py — quarterly AAOIFI re-screen job
+                  aaoifi.py — ⭐ verified in-house AAOIFI screen (S9 — ≤30/≤30/≤67/≤5%, 12-mo-avg mktcap, 11 sectors)
+                  cross_check.py — multi-state status + disagreement→freeze + authority stack + drift (S9)
+                  screener.py — LEGACY quarterly re-screen (33%; superseded by aaoifi.py)
                   classifier.py — business-model haram classifier
 
 data/             provenance.py — point-in-time provenance fields + source_documents (S8)
@@ -398,8 +407,8 @@ Code beats docs: `guardrail/constitution.py` + `config/limits.yaml` are authorit
 Sequence (**Roadmap v3** — data backbone before the proof engine; Entrepreneur moved earlier):
 ```
 S1 OK -> S2 OK -> S3 OK -> S4 OK -> S4.5 OK -> S5 OK -> S5.5 OK -> S6 OK -> S6.5 OK -> S6.6 OK -> S7 OK ->
-S8 ~CORE (10 connectors; rest deferred) -> S8.5 (Real-Time Data Tier) -> S9 (Knowledge Graph + Regime) <- IN PROGRESS
--> S10 (Full Edge Proof; shadow/enforcing) -> S10.5 (Operator-Loop Assembly + Runtime) -> S11 (Strategy Registry + Portfolio Engine)
+S8 ~CORE (10 connectors; rest deferred) -> S8.5 (Real-Time Data Tier) -> S9 ✅ (Knowledge Graph + Regime + Sharia cross-check)
+-> S10 (Full Edge Proof; shadow/enforcing) <- NEXT -> S10.5 (Operator-Loop Assembly + Runtime) -> S11 (Strategy Registry + Portfolio Engine)
 -> S12 (Edge Lab + realistic paper + Sandbox Mode + No-Edge protocol) -> S12.5 (Research Desk; design, dormant)
 -> S13 (Micro-Live) -> S14 (Restructure)
 ```
@@ -421,7 +430,7 @@ Optimize for **evidence density, not feature count.**
 | S7 OK | Entrepreneur Product Engine (engine; agent scope = code-gen only) | 17-field gate + separate Entrepreneur Constitution + 10-stage pipeline; no launch without founder approval (352 tests) |
 | S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slices 1–5 done** (framework + provenance + 10 connectors incl. ETF look-through + news injection-hardening + scraping policy, 389 tests; all 3 stub DBs real); ~10 connectors + market-data + paid remain |
 | S8.5 | Real-Time Data Tier *(founder)* | streaming quotes + live-news + real-time monitor/alerts; separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
-| S9 ~ | Knowledge Graph + Regime Engine | **slices 1–2 done** (entity resolver + 10-state Regime Engine over real macro) + QA hardening pass, 419 tests; event intelligence + Sharia cross-check (multi-state) remain |
+| S9 ✅ | Knowledge Graph + Regime + Sharia cross-check | **slices 1–4 done** (entity resolver + 10-state Regime Engine + event intelligence/`event_reactions` + multi-state AAOIFI Sharia cross-check w/ disagreement→freeze + peg wiring), **465 tests** |
 | S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
 | ⭐ S10.5 | Operator-Loop Assembly + Runtime (Workstream A/B) | end-to-end tick runs through the **assembled** loop (Observe→Router→Edge-Proof→Constitution→Budget→Approval→Act→Learn); **a buy with no EdgeReport is rejected by the assembled loop, not just the Allocator unit** (closes the Phase-1 blocker); scheduled daily/weekly ops + brief jobs have real entrypoints; still paper |
 | S11 | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth w/ **lot-level + gross→NRA-withholding→net** mechanics) pass Edge Proof; **multi-portfolio (lifecycle incubate→retire, tolerance-band rebalance, multi-benchmark, 6 seed portfolios, portfolio-scoped positions/ledger reconciling to fund)**; meets the 15-item acceptance checklist; never auto-edits the Constitution |

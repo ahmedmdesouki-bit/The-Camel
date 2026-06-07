@@ -32,6 +32,28 @@ CREATE TABLE IF NOT EXISTS sharia_events (
     reasoning_summary   TEXT
 );
 
+-- S9 slice 4: append-only multi-state Sharia status (in-house AAOIFI screen × canonical cross-check).
+-- One row per screen; the latest row (by id) is current. final_status ∈ pass|fail|doubtful|frozen|
+-- pending_review. `authority` records the resolved authority stack (local_board > AAOIFI > founder).
+CREATE TABLE IF NOT EXISTS sharia_status (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    symbol              TEXT,
+    in_house_status     TEXT,
+    cross_check_status  TEXT,
+    final_status        TEXT,
+    methodology         TEXT,
+    authority           TEXT,
+    confidence          REAL,
+    ratios              TEXT,        -- JSON: debt/liquid-assets/receivables/haram-income ratios
+    purification_ratio  REAL,
+    sector              TEXT,
+    drift               INTEGER DEFAULT 0,
+    screened_at         TEXT,
+    known_at            TEXT,
+    next_review_at      TEXT,
+    source_hash         TEXT
+);
+
 -- S8: compliant-ETF constituents (look-through to single-name exposure; feeds S9)
 CREATE TABLE IF NOT EXISTS etf_holdings (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,

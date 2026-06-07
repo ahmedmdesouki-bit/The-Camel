@@ -1,7 +1,13 @@
 """
-Quarterly Sharia re-screen job.
+Quarterly Sharia re-screen job (LEGACY simplified screen).
 
-AAOIFI limits (from spec §2.1):
+⚠️ **Superseded by `sharia/aaoifi.py` (S9 slice 4)** — the canonical verified screen now uses the
+AAOIFI / FTSE-IdealRatings spec (≤30% / ≤30% / ≤67% / ≤5% + 11 sectors, 12-mo-avg market cap) and the
+multi-state cross-check in `sharia/cross_check.py`. This module keeps the older, looser 33% two-ratio
+model (and its boundary tests) for the existing quarterly path; it is on the backlog to migrate to
+delegate to `sharia/aaoifi.py`. Until then, **`sharia/aaoifi.py` is authoritative** for compliance.
+
+AAOIFI limits (legacy simplified):
   - debt / market_cap            < 33%
   - (cash + interest_securities) / market_cap < 33%
   - non_compliant_income_pct     < 5%
