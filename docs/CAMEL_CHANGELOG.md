@@ -5,6 +5,27 @@
 
 ---
 
+## 2026-06-07 — S9 slice 3 SHIPPED: event intelligence + `event_reactions` substrate
+
+New package **`trader/events/`** (440 → **449 tests green**):
+- `intelligence.py` — synthesis over the structured `news_events` rows: **deterministic dedupe + reporting
+  quorum** (the ≥2-source discipline made visible), a **dictionary entity-linker** (tickers + company names from
+  `assets`/whitelist matched over the *already-sanitised* title — matching, not LLM inference), explicit
+  severity/direction/theme rule tables, and confidence = data-quality × quorum factor (single-source events
+  discounted). `run_event_intelligence` enriches `affected_assets/severity/direction/confidence` — and processes
+  **only `safe=1` rows, so injection-flagged titles are never linked, scored, or acted on.**
+- `reactions.py` + the new **`event_reactions`** table (in `camel_news.db`) — for each (event, affected-symbol):
+  forward returns at 1/5/21/63/126d, 63d max-drawdown, 21d benchmark return + excess vs SPUS, and
+  `regime_at_event`. Explicitly a **hindsight study / base-rate table for the S10 event studies — NOT a live
+  signal** (returns are realized after the window). Pure math helpers (`forward_returns_from`,
+  `max_drawdown_window`) unit-tested; symbols without usable price history are skipped (no fabricated reactions);
+  writes are idempotent (`UNIQUE(event_id, symbol)`).
+- `tests/test_event_intelligence.py` (9 tests): dedupe/quorum, entity-linking, severity/direction/theme,
+  safe-only enrichment, forward-return + drawdown + regime-at math, end-to-end reactions with excess + regime,
+  idempotency. **S9 now slices 1–3 done; slice 4 (Sharia cross-check + AAOIFI + peg wiring) remains.**
+
+---
+
 ## 2026-06-07 — Data-sourcing second pass (historical + news emphasis) + live capability confirmed
 
 **Confirmed live data-pull capability** (direct test): Fed RSS press releases ✅ and Yahoo SPY series ✅ pulled

@@ -124,11 +124,15 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   (conflict → news). Slice 5 added the ETF issuer-holdings connector (CSV; `etf_holdings.py` → sharia DB
   look-through). **10 connectors live; all 3 stub DBs hold real data.** → **389 passed**. Remaining:
   ~10 more connectors (OFAC/USGS/disclosures/French/SEC-RSS) + market-data + paid vendors.
-- **Sprint 9 IN PROGRESS — slices 1–2.** (1) Entity resolution: `assets` table + `data/entity_resolver.py`
+- **Sprint 9 IN PROGRESS — slices 1–3.** (1) Entity resolution: `assets` table + `data/entity_resolver.py`
   (`resolve(ticker)` joins assets + company_facts + etf_holdings look-through + whitelist Sharia status).
   (2) Regime Engine: `trader/regime/` — feature builder over `macro_observations`, deterministic 10-state
-  classifier (regime + confidence + signals; `regime_to_themes`), `regime_history` audit table. Remaining
-  S9: event intelligence, Sharia cross-check (multi-state).
+  classifier (regime + confidence + signals; `regime_to_themes`), `regime_history` audit table.
+  (3) **Event intelligence: `trader/events/`** — `intelligence.py` (deterministic dedupe + reporting quorum,
+  dictionary entity-linker over *sanitised* titles, severity/direction/theme rule tables; enriches
+  `news_events`; **only `safe=1` rows**) + `reactions.py` (the **`event_reactions`** substrate: forward returns
+  1/5/21/63/126d, 63d drawdown, 21d excess-vs-SPUS, `regime_at_event` — a hindsight study table for S10, not a
+  live signal). **→ 449 tests.** Remaining S9: **slice 4** — Sharia cross-check (multi-state + full AAOIFI) + peg wiring.
 - **QA/QC hardening pass** (independent line-by-line review of S6.5→S9): fixed YoY-vs-MoM in the regime
   feature builder, vintage look-ahead, connector date-fabrication, BLS month-13, unguarded floats,
   register_asset un-delist, beginner-mode rail coverage, sanitiser whitespace bypass — each with a
@@ -265,6 +269,11 @@ entrepreneur/     product_gate.py — 17-field ProductThesis + evaluate_gate (S7
 trader/regime/    features.py (macro features from macro_observations), classifier.py (10-state
                   regime + confidence + themes), history.py + regime_history table (S9),
                   peg.py — SAR/USD peg monitor (pure peg_status + dormant-safe latest_peg_status)
+
+trader/events/    intelligence.py — dedupe + quorum + dictionary entity-linker + severity/direction/
+                  theme over news_events (safe=1 only) (S9 slice 3)
+                  reactions.py — event_reactions substrate (forward returns/drawdown/excess/regime;
+                  hindsight study table for S10 event studies, not a live signal)
 
 alerts/           telegram.py — credential-safe one-way notifier (+approve/veto S11)
                   whatsapp.py — CallMeBot 2nd channel (same stub contract)

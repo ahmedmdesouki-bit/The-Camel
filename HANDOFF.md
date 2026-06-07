@@ -1,10 +1,10 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9 in progress (slices 1–2)** · Dashboard v2 + founder alerts · **440 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9 in progress (slices 1–3)** · Dashboard v2 + founder alerts · **449 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
-(S1–S14) · **S8 core done** (10 connectors; rest deferred to backlog). **In S9:** slices 1–2 done (entity resolver + 10-state Regime Engine over real macro); next event intelligence + Sharia cross-check
+(S1–S14) · **S8 core done** (10 connectors; rest deferred to backlog). **In S9:** slices 1–3 done (entity resolver + Regime Engine + event intelligence/event_reactions); next slice 4 = Sharia cross-check + AAOIFI + peg wiring
 
 > For the live sprint-by-sprint detail and module list see `docs/CAMEL_ROADMAP.md` and the
 > `## Current status` section of `CLAUDE.md` — both are kept current. This file's

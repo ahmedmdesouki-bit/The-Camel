@@ -744,8 +744,8 @@ remains EOD.
 latest filings, latest events, ETF exposure, and benchmark; the regime classifier labels the current
 environment from real macro data; a Sharia disagreement freezes new buys.
 
-**STATUS: IN PROGRESS — slices 1–2 done.** *(Suite has since advanced past S9's own slices via cross-cutting
-work: QA hardening pass → 419, Dashboard v2 → 426, Alaa founder-alerting + peg batch → **440 tests green**.)*
+**STATUS: IN PROGRESS — slices 1–3 done; slice 4 remains.** *(Suite: QA hardening → 419, Dashboard v2 → 426,
+Alaa founder-alerting + peg → 440, **event intelligence (slice 3) → 449 tests green**.)*
 - *Slice 1 (entity resolution):* `assets` table (ticker/CIK/ISIN/CUSIP/name/sector/active_from-to/
   delisted_flag) + `data/entity_resolver.py` `resolve(ticker)` → full identity joining `assets` +
   `company_facts` + `etf_holdings` look-through + Sharia whitelist.
@@ -754,14 +754,16 @@ work: QA hardening pass → 419, Dashboard v2 → 426, Alaa founder-alerting + p
   `classifier.py` (deterministic signal-scored 10-state classifier → regime + confidence + which signals
   fired; `regime_to_themes` mapper), `history.py` + `regime_history` table (append-only audit). v0 covers
   the macro-derivable regimes; AI_CAPEX_BOOM / confident RECOVERY need equity-sector signals (later).
-**Remaining S9 slices:**
-- *Slice 3 — event intelligence:* dedup/severity/entity-linker/theme mapper over `news_events`, **plus the
-  `event_reactions` substrate table** (event_type · event_date · known_at · affected symbols/sectors/commodities ·
-  return_1d/5d/21d/63d/126d · max_drawdown_63d · benchmark/excess return · regime_at_event) — the point-in-time
-  base for S10 event studies. **Buildable free** (2026-06-07 research): **FRED/ALFRED** (event dates + PIT
-  vintages) + **Finnhub** (EPS/revenue surprise) + **CFTC COT** + **Kenneth French** factors, joined to Stooq/
-  Yahoo index returns (per `CAMEL_DATA_SOURCES.md`).
-- *Slice 4 — Sharia cross-check:* multi-state status + **full AAOIFI ratio enforcement** (≤30% / ≤30% / ≤67% /
+**S9 slices:**
+- *Slice 3 (event intelligence) — ✅ DONE (449 tests):* `trader/events/` — `intelligence.py` (deterministic
+  **dedupe + reporting quorum**, dictionary **entity-linker** over sanitised titles, severity/direction/theme
+  rule tables, confidence = data-quality × quorum factor; enriches `news_events.affected_assets/severity/
+  direction/confidence`; **only `safe=1` rows — injection-flagged events are never linked or scored**) +
+  `reactions.py` (the **`event_reactions`** substrate table: forward returns 1/5/21/63/126d, 63d max-drawdown,
+  21d benchmark + excess vs SPUS, `regime_at_event`; a **hindsight study/base-rate table for S10 event studies,
+  not a live signal**; pure math helpers unit-tested). *Free data recipe (FRED/ALFRED dates + Finnhub surprise +
+  CFTC COT + Kenneth French factors) feeds it once those connectors land — see `CAMEL_DATA_SOURCES.md`.*
+- *Slice 4 — Sharia cross-check (remains):* multi-state status + **full AAOIFI ratio enforcement** (≤30% / ≤30% / ≤67% /
   ≤5% + 11 sectors, per `CAMEL_DATA_SOURCES.md` and the updated `CAMEL_CONSTITUTION.md`) + drift + local-board
   override. **Wire `trader/regime/peg.py` (SAR/USD peg monitor) into `features.py`** here so the regime engine
   consumes it — source is **FRED series `DEXSAUS`** (USD/SAR spot), which the existing FRED connector already

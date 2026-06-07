@@ -38,6 +38,32 @@ CREATE TABLE IF NOT EXISTS news_events (
     data_quality_score  REAL,
     UNIQUE(source_id, event_id)
 );
+
+-- S9 slice 3: point-in-time substrate of how markets REACTED to events.
+-- This is a study/base-rate table (realized forward returns computed with hindsight) — it feeds
+-- the S10 event studies, it is NOT a live signal. `known_at` is when Camel learned of the event;
+-- the return_* columns are realized after the event window closed.
+CREATE TABLE IF NOT EXISTS event_reactions (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id            TEXT,
+    event_type          TEXT,
+    symbol              TEXT,
+    sector              TEXT,
+    event_date          TEXT,
+    known_at            TEXT,
+    return_1d           REAL,
+    return_5d           REAL,
+    return_21d          REAL,
+    return_63d          REAL,
+    return_126d         REAL,
+    max_drawdown_63d    REAL,
+    benchmark           TEXT,
+    benchmark_return_21d REAL,
+    excess_return_21d   REAL,
+    regime_at_event     TEXT,
+    computed_at         TEXT,
+    UNIQUE(event_id, symbol)
+);
 """ + SOURCE_DOCUMENTS_DDL
 
 
