@@ -99,6 +99,7 @@ pytest -q          # then run the suite — expect 603 passed
 | Understand the project (why, who, context) | [`docs/CAMEL_BRIEF.md`](docs/CAMEL_BRIEF.md) |
 | Get current status + run it | [`HANDOFF.md`](HANDOFF.md) |
 | Work in the repo (build a sprint) | [`CLAUDE.md`](CLAUDE.md) — the operating manual |
+| Stand up the **private web window** (Vercel + Supabase) | [`web/README.md`](web/README.md) — read-only mirror + control bar, friends-only, paper-safe |
 | See the full plan | [`docs/CAMEL_ROADMAP.md`](docs/CAMEL_ROADMAP.md) |
 | Everything else | [`docs/README.md`](docs/README.md) — the documentation index |
 
