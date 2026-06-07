@@ -1,0 +1,18 @@
+/* ============================================================
+   THE CAMEL · FONTS
+   ------------------------------------------------------------
+   The product codebase renders its dashboard in system serifs
+   (Iowan Old Style / Georgia) so it stays fully offline. For the
+   design system we substitute close webfont matches:
+
+     · Spectral       → the serif "voice" (wordmark + display + body).
+                        A scholarly, evidence-minded old-style serif
+                        that echoes the engraved-seal wordmark.
+     · IBM Plex Sans  → UI micro-labels, eyebrows, nav, table heads.
+     · IBM Plex Mono  → figures, tickers, verdicts, ledger, code.
+
+   ⚠ SUBSTITUTION: these are nearest-match Google Fonts, not the
+   exact wordmark face. Swap in licensed binaries if you have them.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');

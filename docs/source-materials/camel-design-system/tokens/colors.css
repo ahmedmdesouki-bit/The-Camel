@@ -1,0 +1,98 @@
+/* ============================================================
+   THE CAMEL · COLOR TOKENS
+   ------------------------------------------------------------
+   Palette borrowed from the bronze-and-malachite seal and the
+   Round-2 logo system: deep malachite green, antique gold,
+   desert sand/parchment, charcoal ink. Markets add an honest
+   up/down pair and a four-state health signal (GREEN/YELLOW/
+   RED/BLACK) lifted straight from the operator dashboard.
+   ============================================================ */
+
+:root {
+  /* ---- Brand primitives -------------------------------------------------- */
+  --green-900: #0a2b25;   /* deepest malachite — seal ground */
+  --green-800: #0f3b34;   /* PRIMARY deep green */
+  --green-700: #16443a;
+  --green-600: #1a3e2c;   /* warm green (gradient partner) */
+  --green-500: #1f5a4c;
+  --green-300: #4f8276;   /* muted green for chips on light */
+
+  --gold-700: #7a5a10;    /* burnt gold — text on light */
+  --gold-600: #a9842f;
+  --gold-500: #c9a14a;    /* ANTIQUE GOLD — primary accent */
+  --gold-400: #d8b96e;
+  --gold-200: #ecd9a8;    /* soft gold wash */
+
+  --sand-50:  #faf7ee;    /* lightest parchment */
+  --sand-100: #f5f1e6;    /* PARCHMENT — primary surface */
+  --sand-200: #efe9da;    /* parchment shade (gradient partner) */
+  --sand-300: #e4dcc6;    /* sand line / divider on parchment */
+
+  --ink-900: #1b1b1b;
+  --ink-800: #262626;     /* CHARCOAL — primary text */
+  --ink-500: #595959;
+  --white:   #ffffff;
+
+  /* ---- Markets: honest up / down ----------------------------------------- */
+  --up-200:   #e6f1ea;    /* gain wash */
+  --up-400:   #4fa86a;    /* gain tint */
+  --up-600:   #1a7f37;    /* gain / allowed / pass */
+  --up-800:   #145f29;    /* gain deep */
+  --down-200: #f7e7e2;    /* loss wash */
+  --down-400: #d4694e;    /* loss tint */
+  --down-600: #c13c1e;    /* loss / blocked / fail */
+  --down-800: #8f2c15;    /* loss deep */
+
+  /* ---- Health signal (operator status) ----------------------------------- */
+  --signal-green:  #1a7f37;   /* all clear */
+  --signal-yellow: #9a6700;   /* caution */
+  --signal-red:    #cf222e;   /* breach */
+  --signal-black:  #24292f;   /* halted / kill-switch */
+
+  /* ====================================================================== */
+  /* SEMANTIC ALIASES — reference these in components, not the raw scales.   */
+  /* ====================================================================== */
+
+  /* Text */
+  --text-strong:   var(--ink-900);
+  --text-body:     var(--ink-800);
+  --text-muted:    rgba(38, 38, 38, .55);
+  --text-faint:    rgba(38, 38, 38, .38);
+  --text-on-green: var(--sand-100);
+  --text-gold:     var(--gold-700);
+  --text-brand:    var(--green-800);
+
+  /* Surfaces */
+  --surface-page:    var(--sand-100);
+  --surface-page-2:  var(--sand-200);
+  --surface-card:    var(--white);
+  --surface-sunken:  var(--sand-50);
+  --surface-brand:   var(--green-800);
+  --surface-brand-2: var(--green-600);
+  --surface-inverse: var(--ink-800);
+
+  /* Accent */
+  --accent:        var(--gold-500);
+  --accent-strong: var(--gold-600);
+  --accent-text:   var(--gold-700);
+  --accent-wash:   rgba(201, 161, 74, .16);
+
+  /* Lines & borders */
+  --line:        rgba(38, 38, 38, .12);
+  --line-strong: rgba(38, 38, 38, .22);
+  --line-gold:   rgba(201, 161, 74, .45);
+  --line-on-dark: rgba(245, 241, 230, .16);
+
+  /* Status semantic */
+  --pass:   var(--up-600);
+  --fail:   var(--down-600);
+  --caution: var(--signal-yellow);
+  --halt:   var(--signal-black);
+
+  /* Focus ring */
+  --focus-ring: rgba(201, 161, 74, .55);
+
+  /* Brand gradients */
+  --grad-brand: linear-gradient(135deg, var(--green-800), var(--green-600));
+  --grad-page:  linear-gradient(160deg, var(--sand-200), var(--sand-100));
+}

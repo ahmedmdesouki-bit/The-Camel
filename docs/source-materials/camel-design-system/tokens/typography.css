@@ -1,0 +1,70 @@
+/* ============================================================
+   THE CAMEL · TYPOGRAPHY TOKENS
+   ------------------------------------------------------------
+   Three voices:
+     · Serif (Spectral)      — the brand voice. Wordmark, display,
+                               headings, and long-form body. Quiet
+                               authority; reads like a ledger you trust.
+     · Sans  (IBM Plex Sans) — UI furniture. Uppercase eyebrows,
+                               nav, table headers, small labels.
+     · Mono  (IBM Plex Mono) — every number that matters: tickers,
+                               figures, verdicts, ledger, code.
+   ============================================================ */
+
+:root {
+  /* ---- Families --------------------------------------------------------- */
+  --font-serif: 'Spectral', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --font-sans:  'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:  'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Semantic family aliases */
+  --font-display: var(--font-serif);
+  --font-body:    var(--font-serif);
+  --font-ui:      var(--font-sans);
+  --font-figure:  var(--font-mono);
+
+  /* ---- Weights ---------------------------------------------------------- */
+  --fw-light:    300; /* @kind font */
+  --fw-regular:  400; /* @kind font */
+  --fw-medium:   500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold:     700; /* @kind font */
+  --fw-black:    800; /* @kind font */
+
+  /* ---- Type scale (1.250 major-third, 16px base) ------------------------ */
+  --text-3xs: 10px;
+  --text-2xs: 11px;
+  --text-xs:  12px;
+  --text-sm:  13px;
+  --text-md:  15px;   /* base UI */
+  --text-base:16px;
+  --text-lg:  19px;
+  --text-xl:  24px;
+  --text-2xl: 30px;
+  --text-3xl: 38px;
+  --text-4xl: 48px;
+  --text-5xl: 62px;
+  --text-6xl: 80px;
+
+  /* ---- Line heights ----------------------------------------------------- */
+  --leading-tight:  1.08;
+  --leading-snug:   1.22;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.65;
+
+  /* ---- Letter-spacing --------------------------------------------------- */
+  --tracking-tight:  -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-wider:  0.08em;   /* eyebrows, pills, seal text */
+  --tracking-widest: 0.14em;
+
+  /* ---- Semantic roles --------------------------------------------------- */
+  --eyebrow-font: var(--font-sans);
+  --eyebrow-size: var(--text-2xs);
+  --eyebrow-weight: var(--fw-bold);
+  --eyebrow-tracking: var(--tracking-wider);
+
+  --tick-font: var(--font-mono);   /* ticker symbols */
+  --figure-font: var(--font-mono); /* money / counts */
+}

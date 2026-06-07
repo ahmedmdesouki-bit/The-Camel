@@ -1,0 +1,336 @@
+<!-- @dsCard group="Operator Dashboard" viewport="1180x900" -->
+<!-- @startingPoint section="Operator Dashboard" subtitle="Read-only governed-state operator view — KPIs, decisions, regime, Sharia, ops" viewport="1180x820" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>The Camel — Operator Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  body { margin: 0; background: var(--grad-page); }
+  .k-app { max-width: var(--container); margin: 0 auto; padding-bottom: var(--space-9); }
+
+  /* Header */
+  .k-header { background: var(--grad-brand); color: var(--sand-100); padding: var(--space-5) var(--space-7);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-5);
+    box-shadow: var(--shadow-header); }
+  .k-brand { display: flex; align-items: center; gap: var(--space-4); }
+  .k-emblem { height: 46px; }
+  .k-title { font-family: var(--font-serif); font-weight: 700; font-size: var(--text-2xl); letter-spacing: .01em; line-height: 1; }
+  .k-tag { font-family: var(--font-sans); font-size: var(--text-2xs); color: rgba(245,241,230,.66); margin-top: 5px; letter-spacing: .02em; max-width: 70ch; }
+  .k-kill { font-family: var(--font-sans); font-weight: 700; font-size: var(--text-sm); display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(245,241,230,.08); color: var(--sand-100); border: 1px solid rgba(245,241,230,.28);
+    padding: 9px 15px; border-radius: var(--radius-md); cursor: pointer; transition: var(--transition); white-space: nowrap; }
+  .k-kill:hover { background: rgba(245,241,230,.16); }
+  .k-kill i { width: 16px; height: 16px; }
+  .k-kill--on { background: var(--down-600); border-color: var(--down-600); }
+
+  /* Status bar */
+  .k-statusbar { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-7) 0; flex-wrap: wrap; }
+  .k-statusmeta { font-family: var(--font-sans); font-size: var(--text-sm); color: var(--text-muted); }
+  .k-statusmeta b { color: var(--text-body); font-weight: 600; }
+
+  /* Nav */
+  .k-navwrap { padding: var(--space-4) var(--space-7) 0; }
+
+  /* Main */
+  .k-main { padding: var(--space-5) var(--space-7) 0; }
+  .k-stack { display: flex; flex-direction: column; gap: var(--space-5); }
+  .k-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-3); }
+
+  .k-halt-banner { display: flex; align-items: center; gap: var(--space-3); background: var(--signal-black); color: var(--sand-100);
+    font-family: var(--font-sans); font-size: var(--text-sm); padding: var(--space-4) var(--space-5); border-radius: var(--radius-lg); margin-bottom: var(--space-5); }
+  .k-halt-banner i { width: 18px; height: 18px; color: var(--gold-400); }
+
+  /* Tables */
+  .k-table { border-collapse: collapse; width: 100%; font-family: var(--font-sans); font-size: var(--text-sm); }
+  .k-table th { font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted);
+    font-weight: 800; text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .k-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); color: var(--text-body); vertical-align: middle; }
+  .k-table tbody tr:last-child td { border-bottom: none; }
+  .k-table tbody tr:hover { background: rgba(15,59,52,.03); }
+  .k-empty { color: var(--text-muted); font-style: italic; font-family: var(--font-serif); padding: 6px 0; }
+  .k-fig { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .k-mono-sm { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
+  .k-faint { color: var(--text-faint); }
+  .k-code { font-family: var(--font-mono); background: rgba(38,38,38,.06); padding: 1px 6px; border-radius: 4px; font-size: var(--text-xs); color: var(--gold-700); }
+
+  .k-alloc { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
+  .k-bar { display: inline-block; width: 64px; height: 7px; background: rgba(38,38,38,.1); border-radius: 4px; overflow: hidden; }
+  .k-bar span { display: block; height: 100%; background: var(--gold-500); }
+
+  /* Regime */
+  .k-regime-val { font-family: var(--font-serif); font-weight: 700; font-size: var(--text-3xl); color: var(--green-800); margin: 3px 0; line-height: 1.05; }
+  .k-regime-conf { font-family: var(--font-sans); font-size: var(--text-xs); color: var(--text-muted); }
+  .k-chips { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: 8px; }
+  .k-chip { font-family: var(--font-mono); font-size: var(--text-2xs); background: rgba(15,59,52,.07); color: var(--green-800);
+    padding: 4px 10px; border-radius: var(--radius-pill); }
+
+  .k-footer { text-align: center; font-family: var(--font-sans); font-size: var(--text-2xs); color: var(--text-faint); padding: var(--space-7) var(--space-7) 0; }
+
+  @media (max-width: 640px) {
+    .k-tag { display: none; }
+    .k-header { padding: var(--space-4) var(--space-5); }
+  }
+</style>
+</head><body>
+<div id="root"></div>
+<script src="../../_ds_bundle.js"></script>
+
+<!-- Kit code is INLINE on purpose: inline scripts are never compiled into the shared
+     _ds_bundle.js, so the dashboard's top-level render never pollutes the component bundle. -->
+<script>
+/* Fake but faithful snapshot. Shapes mirror dashboard/snapshot.py. Paper mode, Phase 0. */
+window.CAMEL_DATA = {
+  mode: "paper",
+  health: { status: "GREEN", issues: [] },
+  governance: {
+    phase_label: "Phase 0 · paper only",
+    kill_switch: "off",
+    gate_passed: 6, gate_total: 6,
+    gate_items: [
+      { label: "Phase 0 — paper only (no live capital)", ok: true },
+      { label: "Leverage disabled", ok: true },
+      { label: "Live trades require human approval", ok: true },
+      { label: "Kill switch off (not halted)", ok: true },
+      { label: "Per-order envelope set ($50)", ok: true },
+      { label: "Daily loss-stop configured (−5%)", ok: true },
+    ],
+    live_at_risk: 0,
+  },
+  kpis: {
+    total_value: "$10,126.40", cash: "$1,842.10", unrealized_pnl: "+$240.18",
+    realized_pnl: "+$54.60", cash_drag_pct: "8.2", open_positions: 5,
+  },
+  positions: [
+    { symbol: "SPUS", qty: 26, avg_cost: "$41.20", market_price: "$43.06", market_value: "$1,119.56", unrealized_pnl: "+$48.36", alloc: 13 },
+    { symbol: "HLAL", qty: 31, avg_cost: "$48.90", market_price: "$50.12", market_value: "$1,553.72", unrealized_pnl: "+$37.82", alloc: 19 },
+    { symbol: "SPSK", qty: 44, avg_cost: "$22.05", market_price: "$22.74", market_value: "$1,000.56", unrealized_pnl: "+$30.36", alloc: 12 },
+    { symbol: "UMMA", qty: 38, avg_cost: "$31.60", market_price: "$33.41", market_value: "$1,269.58", unrealized_pnl: "+$68.78", alloc: 15 },
+    { symbol: "SPRE", qty: 52, avg_cost: "$25.10", market_price: "$24.02", market_value: "$1,249.04", unrealized_pnl: "−$56.16", alloc: 15 },
+  ],
+  edge_decisions: [
+    { ts: "09:41:02", symbol: "UMMA", signal: "quality_momentum", allowed: true, reason: "Edge survives multiple-testing penalty", hit_rate: "0.612", sample: "n=148", confidence: "0.71" },
+    { ts: "09:38:55", symbol: "SPRE", signal: "etf_regime_rotation", allowed: false, reason: "Signal decayed below threshold in current regime", hit_rate: "0.508", sample: "n=92", confidence: "0.34" },
+    { ts: "09:31:14", symbol: "QQMG", signal: "quality_momentum", allowed: false, reason: "Sample too small after regime filter", hit_rate: "0.640", sample: "n=21", confidence: "0.22" },
+  ],
+  guardrail: [
+    { ts: "09:42:10", blocked: true, symbol: "UMMA", reason: "Would breach 20% max single-position cap", limit_hit: "max_single_position" },
+    { ts: "09:40:33", blocked: true, symbol: "TQQQ", reason: "Leverage instrument — Sharia + risk hard rule", limit_hit: "leverage" },
+    { ts: "09:39:01", blocked: true, symbol: "XOM", reason: "Non-compliant business model (energy/sector screen)", limit_hit: "sharia_sector" },
+    { ts: "09:21:48", blocked: false, symbol: "SPUS", reason: "Within envelope, compliant, fresh data", limit_hit: "" },
+  ],
+  regime: {
+    regime: "Late-cycle · Disinflationary", confidence: "0.68", classified_at: "2026-06-07 08:00",
+    signals: ["Rates: restrictive", "Curve: re-steepening", "CPI: cooling", "HY spreads: tight", "VIX: 14.2", "USD: firm", "Oil: range-bound"],
+  },
+  regime_history: [
+    { classified_at: "2026-06-07 08:00", regime: "Late-cycle · Disinflationary", confidence: "0.68" },
+    { classified_at: "2026-06-06 08:00", regime: "Late-cycle · Disinflationary", confidence: "0.61" },
+    { classified_at: "2026-06-05 08:00", regime: "Mid-cycle · Expansion", confidence: "0.55" },
+    { classified_at: "2026-06-04 08:00", regime: "Mid-cycle · Expansion", confidence: "0.59" },
+  ],
+  whitelist: [
+    { symbol: "SPUS", status: "Compliant", frozen: false },
+    { symbol: "HLAL", status: "Compliant", frozen: false },
+    { symbol: "SPSK", status: "Compliant", frozen: false },
+    { symbol: "UMMA", status: "Compliant", frozen: false },
+    { symbol: "SPRE", status: "Compliant", frozen: false },
+    { symbol: "SCHD", status: "Non-compliant (debt ratio > 30%)", frozen: true },
+    { symbol: "SCHX", status: "Non-compliant (re-screen pending)", frozen: true },
+  ],
+  runs: [
+    { id: "run-2418", started_at: "08:00:04", phase: "MEASURE", outcome: "completed" },
+    { id: "run-2417", started_at: "07:00:03", phase: "LEARN", outcome: "completed" },
+    { id: "run-2416", started_at: "06:00:05", phase: "OBSERVE", outcome: "wait (no edge)" },
+  ],
+  ledger: [
+    { ts: "09:21:49", type: "BUY", symbol: "SPUS", amount: "$430.60", balance_after: "$1,842.10" },
+    { ts: "08:14:22", type: "DIVIDEND", symbol: "HLAL", amount: "+$6.40", balance_after: "$2,272.70" },
+    { ts: "06:00:00", type: "CONTRIB", symbol: "—", amount: "+$100.00", balance_after: "$2,266.30" },
+  ],
+  health_checks: {
+    "Ledger hash-chain": "verified", "Data freshness": "fresh (< 15m)", "Broker reconcile": "matched",
+    "Backup": "verified 02:00", "Kill-switch self-test": "passed",
+  },
+};
+</script>
+
+<script type="text/babel">
+/* Views — compose the design-system primitives. */
+const { Card, StatCard, GateList, Badge, StatusPill, Verdict, Tabs } = window.TheCamelDesignSystem_fdd784;
+
+function Table({ headers, rows, empty = "none" }) {
+  if (!rows || !rows.length) return <p className="k-empty">{empty}</p>;
+  return (
+    <table className="k-table">
+      <thead><tr>{headers.map((h, i) => <th key={i}>{h}</th>)}</tr></thead>
+      <tbody>{rows.map((r, i) => (<tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>))}</tbody>
+    </table>
+  );
+}
+const Tick = ({ children }) => <span className="cml-tick">{children}</span>;
+const pnlClass = (v) => (String(v).trim().startsWith("−") || String(v).trim().startsWith("-")) ? "cml-down" : "cml-up";
+
+function Overview({ d }) {
+  const k = d.kpis;
+  return (
+    <div className="k-stack">
+      <div className="k-kpi-grid">
+        <StatCard label="Total value" value={k.total_value} sub={`${k.open_positions} open positions`} />
+        <StatCard label="Cash" value={k.cash} sub="paper balance" />
+        <StatCard label="Unrealised P&L" value={k.unrealized_pnl} tone="up" sub="mark-to-market" />
+        <StatCard label="Realised P&L" value={k.realized_pnl} tone="up" sub="booked on sells" />
+        <StatCard label="Cash drag" value={`${k.cash_drag_pct}%`} tone="gold" sub="within range" />
+        <StatCard label="Live capital at risk" value="$0.00" tone="green" sub="paper only" />
+      </div>
+      <Card title="Live-money safety posture"
+            badge={<Badge tone="gold">{d.governance.gate_passed}/{d.governance.gate_total} clear</Badge>}
+            hint="Honest booleans — each is a real fact, not a self-scored checkbox. Live trading stays blocked until the founder flips a phase flag.">
+        <GateList items={d.governance.gate_items} />
+      </Card>
+    </div>
+  );
+}
+function Portfolio({ d }) {
+  const rows = d.positions.map((p) => [
+    <Tick>{p.symbol}</Tick>, p.qty, p.avg_cost, p.market_price, p.market_value,
+    <span className={`k-fig ${pnlClass(p.unrealized_pnl)}`}>{p.unrealized_pnl}</span>,
+    <span className="k-alloc"><span className="k-bar"><span style={{ width: `${p.alloc}%` }} /></span>{p.alloc}%</span>,
+  ]);
+  return (
+    <Card title="Positions" hint="Whole-share, long-only, Sharia-screened book.">
+      <Table headers={["Symbol", "Qty", "Avg cost", "Mkt price", "Mkt value", "Unreal. P&L", "Allocation"]}
+             rows={rows} empty="no open positions — paper book is flat" />
+    </Card>
+  );
+}
+function Decisions({ d }) {
+  const erows = d.edge_decisions.map((e) => [
+    e.ts, <Tick>{e.symbol}</Tick>, <span className="k-mono-sm">{e.signal}</span>,
+    <Verdict allowed={e.allowed} allowLabel="ALLOWED" blockLabel="BLOCKED" />,
+    e.reason, <span className="k-fig">{e.hit_rate}</span>, <span className="k-fig">{e.sample}</span>, <span className="k-fig">{e.confidence}</span>,
+  ]);
+  const grows = d.guardrail.map((g) => [
+    g.ts, <Verdict allowed={!g.blocked} allowLabel="allowed" blockLabel="BLOCKED" />,
+    <Tick>{g.symbol}</Tick>, g.reason, g.limit_hit ? <code className="k-code">{g.limit_hit}</code> : "",
+  ]);
+  return (
+    <div className="k-stack">
+      <Card title="Edge-Proof decisions" badge={<Badge tone="gold">Evidence gate</Badge>}
+            hint="No trade proceeds without a passing EdgeReport. These are the verdicts — including the rejections, which are the whole point.">
+        <Table headers={["Time", "Symbol", "Signal", "Edge verdict", "Reason", "Hit-rate", "Sample", "Conf."]}
+               rows={erows} empty="no Edge-Proof decisions logged yet" />
+      </Card>
+      <Card title="Guardrail events" badge={<Badge tone="green">Constitution</Badge>}
+            hint="Every consequential action runs through the deterministic Constitution. Blocked actions show the exact reason and the limit that fired.">
+        <Table headers={["Time", "Decision", "Symbol", "Reason", "Limit hit"]} rows={grows} empty="no guardrail events yet" />
+      </Card>
+    </div>
+  );
+}
+function Regime({ d }) {
+  const r = d.regime;
+  const hrows = d.regime_history.map((h) => [h.classified_at, h.regime, <span className="k-fig">{h.confidence}</span>]);
+  return (
+    <div className="k-stack">
+      <Card title="Macro regime">
+        <div className="k-regime">
+          <div className="cml-eyebrow">Current regime</div>
+          <div className="k-regime-val">{r.regime}</div>
+          <div className="k-regime-conf">confidence {r.confidence} · classified {r.classified_at}</div>
+          <div className="k-chips">{r.signals.map((s, i) => <span className="k-chip" key={i}>{s}</span>)}</div>
+        </div>
+      </Card>
+      <Card title="Regime history">
+        <Table headers={["Classified at", "Regime", "Confidence"]} rows={hrows} empty="no history yet" />
+      </Card>
+    </div>
+  );
+}
+function Sharia({ d }) {
+  const rows = d.whitelist.map((w) => [
+    <Tick>{w.symbol}</Tick>,
+    w.frozen ? <Badge tone="down" dot>{w.status}</Badge> : <Badge tone="up" dot>{w.status}</Badge>,
+    w.frozen ? <span className="cml-down k-fig">close-only</span> : <span className="k-faint">tradeable</span>,
+  ]);
+  return (
+    <Card title="Sharia whitelist"
+          hint="Only whitelisted, compliant, non-frozen instruments are tradeable. Frozen names are close-only. (Full AAOIFI ratios — debt/30%, liquidity/67%, ≤5% non-compliant revenue.)">
+      <Table headers={["Symbol", "Status", "Tradeability"]} rows={rows} empty="whitelist empty" />
+    </Card>
+  );
+}
+function Ops({ d }) {
+  const runs = d.runs.map((r) => [<span className="k-mono-sm">{r.id}</span>, r.started_at, <Badge tone="neutral">{r.phase}</Badge>, r.outcome]);
+  const ledger = d.ledger.map((l) => [l.ts, <span className="k-mono-sm">{l.type}</span>, <Tick>{l.symbol}</Tick>,
+    <span className={`k-fig ${pnlClass(l.amount)}`}>{l.amount}</span>, <span className="k-fig">{l.balance_after}</span>]);
+  const checks = Object.entries(d.health_checks).map(([k, v]) => [k, <span className="cml-up k-fig">{v}</span>]);
+  return (
+    <div className="k-stack">
+      <Card title="Recent runs"><Table headers={["Run", "Started", "Phase", "Outcome"]} rows={runs} empty="no runs yet" /></Card>
+      <Card title="Ledger" badge={<Badge tone="gold">SHA-256 hash-chain</Badge>}>
+        <Table headers={["Time", "Type", "Symbol", "Amount", "Balance after"]} rows={ledger} empty="ledger empty" /></Card>
+      <Card title="Health checks"><Table headers={["Check", "Result"]} rows={checks} /></Card>
+    </div>
+  );
+}
+window.CamelViews = { Overview, Portfolio, Decisions, Regime, Sharia, Ops };
+</script>
+
+<script type="text/babel">
+/* App shell + root render. */
+const { Badge: _B, StatusPill, Tabs: _T } = window.TheCamelDesignSystem_fdd784;
+const NAV = [
+  { id: "overview", label: "Overview" }, { id: "portfolio", label: "Portfolio" },
+  { id: "decisions", label: "Decisions" }, { id: "regime", label: "Regime" },
+  { id: "sharia", label: "Sharia" }, { id: "ops", label: "Ops" },
+];
+function Dashboard() {
+  const d = window.CAMEL_DATA;
+  const [view, setView] = React.useState("overview");
+  const [halted, setHalted] = React.useState(false);
+  const V = window.CamelViews;
+  const Current = V[view.charAt(0).toUpperCase() + view.slice(1)];
+  const status = halted ? "BLACK" : d.health.status;
+  React.useEffect(() => { if (window.lucide) lucide.createIcons(); });
+  return (
+    <div className="k-app">
+      <header className="k-header">
+        <div className="k-brand">
+          <img src="../../assets/emblem.png" alt="" className="k-emblem" />
+          <div>
+            <div className="k-title">The Camel</div>
+            <div className="k-tag">Read-only operator view · LLM proposes · Math tests · Guardrails decide · Humans approve · Autonomy earned</div>
+          </div>
+        </div>
+        <button className={`k-kill ${halted ? "k-kill--on" : ""}`} onClick={() => setHalted(!halted)}>
+          <i data-lucide={halted ? "play" : "octagon-x"}></i>{halted ? "Resume" : "Kill switch"}
+        </button>
+      </header>
+      <div className="k-statusbar">
+        <StatusPill status={status}>{halted ? "HALTED" : status}</StatusPill>
+        <span className="k-statusmeta">Mode: <b>{d.mode}</b> · {d.governance.phase_label} · Kill switch: <b>{halted ? "HALTED" : "off"}</b> · Issues: none</span>
+      </div>
+      <div className="k-navwrap"><_T tabs={NAV} active={view} onChange={setView} /></div>
+      <main className="k-main">
+        {halted && (
+          <div className="k-halt-banner">
+            <i data-lucide="octagon-x"></i>
+            Kill switch engaged — the loop is frozen and no actions will execute until a human resumes.
+          </div>
+        )}
+        {Current ? <Current d={d} /> : null}
+      </main>
+      <footer className="k-footer">
+        Static read-only snapshot · no live fetch · no order entry · paper only. Not financial, legal, or Sharia advice.
+      </footer>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard />);
+</script>
+</body></html>

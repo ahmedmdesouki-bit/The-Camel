@@ -1,0 +1,55 @@
+/* ============================================================
+   THE CAMEL · BASE LAYER
+   Element defaults + a few utility classes used by specimen
+   cards and UI kits. Tokens do the heavy lifting.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-body);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings default to the serif voice */
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  color: var(--text-brand);
+  line-height: var(--leading-snug);
+  margin: 0;
+}
+
+a { color: var(--text-brand); text-decoration-color: var(--line-gold); }
+
+/* ---- Utility: eyebrow ---------------------------------------------------- */
+.cml-eyebrow {
+  font-family: var(--eyebrow-font);
+  font-size: var(--eyebrow-size);
+  font-weight: var(--eyebrow-weight);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ---- Utility: ticker / mono figure -------------------------------------- */
+.cml-tick { font-family: var(--font-mono); font-weight: var(--fw-bold); color: var(--text-brand); letter-spacing: .02em; }
+.cml-figure { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.cml-up { color: var(--up-600); }
+.cml-down { color: var(--down-600); }
+
+/* ---- Specimen-card scaffolding (Design System tab) ---------------------- */
+.cml-card-pad { padding: var(--space-6); }
+.cml-page-bg  { background: var(--grad-page); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}

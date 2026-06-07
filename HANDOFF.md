@@ -1,7 +1,7 @@
 # The Camel — Project Handoff
 
 **Prepared:** 2026-06-05 · **Updated:** 2026-06-06
-**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9–S11 complete (+ S11.5 integration)** · Dashboard v2 + founder alerts · **517 tests green** · 7-database architecture live
+**Status:** Sprints **S1 → S7 complete** · **S8 core** (10 connectors; rest deferred) · **S9–S11 complete (+ S11.5 integration)** · Dashboard v2 + founder alerts · **519 tests green** · 7-database architecture live
 **Founder:** Chiko (Riyadh) · **Runtime:** Windows 11 PC
 **Repo state:** clean working tree on `main` (GitHub: ahmedmdesouki-bit/The-Camel) · on **Roadmap v3**
 (S1–S14) · **S8 core done** (10 connectors; rest deferred). **S9 complete** (entity resolver + Regime Engine + event intelligence/`event_reactions` + multi-state AAOIFI Sharia cross-check + peg). **S10** full Edge Proof · **S10.5** loop assembled (Phase-1 blocker closed) · **S11(+S11.5)** strategies + portfolios + learning, wired end-to-end via `loop/driver.py`. **NEXT = S12** (Edge Lab + Sandbox).
@@ -63,7 +63,7 @@ We are in **Phase 0**.
 | Language | **Python 3.12** | `guardrail/` and `engine/` kept pure (no I/O) for unit-testing |
 | Database | **SQLite × 7** | One file per data domain. Migrate to Supabase when remote/dashboard/multi-device is needed |
 | Broker / data | **Alpaca paper** (free IEX feed) | `alpaca-py`. yfinance ok for quick prototypes |
-| Test framework | **pytest** | 517 tests, run via the `N:\` virtual drive (see §6) |
+| Test framework | **pytest** | 519 tests, run via the `N:\` virtual drive (see §6) |
 | Config | **YAML** (`config/limits.yaml`) | Founder-owned; agent process has no write path |
 | Scheduler | **Windows Task Scheduler** | `python loop/scheduler.py` post-close (EOD); intraday monitor every 5 min (S8) |
 | Secrets | **`.env`** now → **Windows Credential Manager** (S6) | Never in code, logs, or commits |

@@ -309,7 +309,9 @@ ops/              kill_switch.py — halt / resume / is_halted (file flag)
 
 dashboard/        snapshot.py — pure JSON snapshot from the 7 DBs (positions, edge decisions,
                   guardrail rejections-with-reasons, regime, safety posture) — read-only, offline
-                  generate.py — rich tabbed CSS-only HTML renderer (build_dashboard_html / write_dashboard)
+                  generate.py — rich tabbed CSS-only HTML renderer, **re-skinned to the Camel Design
+                  System** (malachite/gold/parchment tokens, serif/sans/mono voices; offline, no JS).
+                  Design reference: docs/source-materials/camel-design-system/
 
 db/schema.sql     Postgres/Supabase schema (Phase 1+ migration target)
 tests/            test_guardrail.py, test_sharia.py, test_data.py,

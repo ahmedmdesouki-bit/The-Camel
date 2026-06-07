@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-06-07 — Dashboard re-skinned to the Camel Design System
+
+The founder built a **design system in Claude Design** (claude.ai/design) — notably generated *from* our
+own repo (`dashboard/generate.py` + `snapshot.py` are its cited source), with an `operator-dashboard` UI kit
+that re-skins the exact Dashboard v2 (same 6 tabs, same panels, same snapshot shape). Implemented it (517 →
+**519 tests**): rewrote `dashboard/generate.py` to the design tokens — engraved-seal **malachite green
+`#0F3B34` + antique gold `#C9A14A` on parchment `#F5F1E6`**, charcoal ink; three type voices (**serif** prose/
+headings · **sans** UI labels · **mono for every figure/ticker**); flat instrument-panel cards with hairline
+rules, gold-underline tabs, status pill, `Verdict`/`Badge`/`GateList`/`StatCard` component styles ported as
+`.cml-*` classes. **Hard constraints preserved** (and the design system itself notes the product renderer stays
+offline on system serifs): no webfont/CDN imports (system serif/sans/mono fallbacks), **no JavaScript** (the
+React kit's interactions became CSS-only tabs + a read-only kill-switch status), self-contained single file,
+every value escaped. `tests/test_dashboard_design.py` locks in the tokens/classes + the offline/no-JS guarantee;
+all existing dashboard tests still pass. Lean text/CSS reference archived at
+`docs/source-materials/camel-design-system/` (multi-MB brand PNGs kept out of the repo).
+
+---
+
 ## 2026-06-07 — Pre-S12 review → S11.5 keystone integration + doc reconciliation
 
 A two-agent pre-S12 sweep (S1–S11) found one real gap: the subsystems were **islands** — S10's full Edge Proof
