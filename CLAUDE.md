@@ -238,7 +238,9 @@ governance/       config_guard.py — proves agent has no write path to founder 
                   tool_permissions.py — Tool Permission Matrix (S4)
 
 engine/           thesis.py — ThesisCard + BaseRateCard (no I/O, no DB)
-                  edge_proof_v0.py — evidence gate from market.db (S4.5; full 17-check engine S10)
+                  edge_proof_v0.py — evidence gate v0 from market.db (S4.5; cheapest first filter)
+                  edge_proof.py — ⭐ full 17-check Edge Proof engine (S10): run_full_edge_proof (pure),
+                  evaluate_signal_full (DB wrapper), gate (shadow/enforcing), edge_reports audit log
 
 strategies/       ⏳ PLANNED (S11 — NOT yet on disk; listed here as the target shape)
                   registry.py — StrategyRegistry: register, lookup, activate, deactivate, weight
@@ -431,7 +433,7 @@ Optimize for **evidence density, not feature count.**
 | S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slices 1–5 done** (framework + provenance + 10 connectors incl. ETF look-through + news injection-hardening + scraping policy, 389 tests; all 3 stub DBs real); ~10 connectors + market-data + paid remain |
 | S8.5 | Real-Time Data Tier *(founder)* | streaming quotes + live-news + real-time monitor/alerts; separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
 | S9 ✅ | Knowledge Graph + Regime + Sharia cross-check | **slices 1–4 done** (entity resolver + 10-state Regime Engine + event intelligence/`event_reactions` + multi-state AAOIFI Sharia cross-check w/ disagreement→freeze + peg wiring), **465 tests** |
-| S10 | Full Edge Proof Engine (17 checks) | no edge proof = no trade; regime-filtered sample + multiple-testing penalty + signal decay; model disagreement -> human |
+| S10 ◑ engine built | Full Edge Proof Engine (17 checks) | **engine + gate done (478 tests):** `engine/edge_proof.py` — 17 checks, pre-registered thresholds, multiple-testing penalty, signal-decay, Sharia fail-safe, model-disagreement→human, shadow/enforcing, `edge_reports` log. *Remaining: feed real strategy signals (S11) + regime-conditioned sample + dashboard panels* |
 | ⭐ S10.5 | Operator-Loop Assembly + Runtime (Workstream A/B) | end-to-end tick runs through the **assembled** loop (Observe→Router→Edge-Proof→Constitution→Budget→Approval→Act→Learn); **a buy with no EdgeReport is rejected by the assembled loop, not just the Allocator unit** (closes the Phase-1 blocker); scheduled daily/weekly ops + brief jobs have real entrypoints; still paper |
 | S11 | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth w/ **lot-level + gross→NRA-withholding→net** mechanics) pass Edge Proof; **multi-portfolio (lifecycle incubate→retire, tolerance-band rebalance, multi-benchmark, 6 seed portfolios, portfolio-scoped positions/ledger reconciling to fund)**; meets the 15-item acceptance checklist; never auto-edits the Constitution |
 | S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |

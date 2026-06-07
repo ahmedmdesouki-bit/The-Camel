@@ -11,12 +11,12 @@ autonomy is earned through a paper track record, never granted.
 > **Safety first. Evidence second. Autonomy last.**
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · Sprints **S1–S7 complete** · **S8 core** (10 connectors) · **S9 COMPLETE (slices 1–4)** · Dashboard v2 + founder alerts · **465 tests green** ·
+**Status:** Phase 0 (paper) · Sprints **S1–S7 complete** · **S8 core** (10 connectors) · **S9 COMPLETE (slices 1–4)** · Dashboard v2 + founder alerts · **478 tests green** ·
 7-DB architecture live · on **Roadmap v3** (S1–S14).
 
 ---
 
-## What's built (Phase 0 — paper, 465 tests green)
+## What's built (Phase 0 — paper, 478 tests green)
 
 The **safety and evidence core** is done. Everything runs in paper mode behind a human gate.
 
@@ -81,7 +81,7 @@ The repo path is 261 chars (over Windows MAX_PATH). Map a virtual drive first:
 ```powershell
 subst N: "<path-to-this-folder>"
 cd N:\
-python -m pytest -q          # 465 passed
+python -m pytest -q          # 478 passed
 ```
 
 *(For future work, cloning to a short path like `C:\camel` removes this friction.)*

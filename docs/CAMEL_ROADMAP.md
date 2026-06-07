@@ -841,6 +841,16 @@ rolling window.)*
 decision-quality dashboard renders the current regime, the active strategy, and at least one
 rejected-signal-with-reason.
 
+**STATUS: ✅ ENGINE BUILT (→ 478 tests).** `engine/edge_proof.py` — pure `run_full_edge_proof` (all 17 checks
+as `CheckResult`s with blocking flags) + pre-registered thresholds (sample ≥50, regime-sample ≥20, median
+excess ≥2.5%, worst ≥−25% unless ≤2% position, data-quality ≥0.80) + **multiple-testing penalty** + **signal-
+decay** test + **Sharia-status-at-decision (fail-safe, #1)** + **model-disagreement→human** rule + **shadow/
+enforcing** mode; `FullEdgeReport.trade_allowed` keeps the allocator gate drop-in. `evaluate_signal_full` DB
+wrapper (reuses the v0 loaders + S9 Sharia status) + `edge_reports` audit table + `log_full_edge_report`.
+`tests/test_edge_proof_full.py` (13). *Remaining for full S10: feed it real strategy signals (S11) + the
+regime-conditioned historical sample from `event_reactions`/`regime_history`; render the new panels on the
+decision-quality dashboard as those inputs arrive. The engine + gate are done.*
+
 ---
 
 ### ⭐ S10.5 — Operator-Loop Assembly + Runtime Automation

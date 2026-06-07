@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-06-07 — S10 engine SHIPPED: full 17-check Edge Proof
+
+`engine/edge_proof.py` (465 → **478 tests**). The full signal-conditioned proof on top of the v0 gate (v0
+stays the cheapest first filter). Pure `run_full_edge_proof` runs all 17 checks as `CheckResult`s with
+blocking flags; **pre-registered thresholds** (sample ≥50, regime-sample ≥20, median excess ≥2.5%, worst
+≥−25% unless ≤2% position, data-quality ≥0.80 — fixed before the Edge Lab, never tuned to results); plus the
+honesty controls: **multiple-testing penalty** (raises the bar with the number of signals tested), **signal-
+decay** test (recent edge vs full sample), **survivorship flag**, **Sharia-status-at-decision (fail-safe — #1
+in the hierarchy)**, and a **model-disagreement → human-approval** rule. **Shadow vs enforcing:** the report
+always records its real verdict (`would_allow`); `mode` controls whether the gate blocks (a fresh signal starts
+in shadow to calibrate). `FullEdgeReport.trade_allowed` keeps the existing allocator gate drop-in. DB wrapper
+`evaluate_signal_full` (reuses the v0 loaders + the S9 Sharia status) + the new `edge_reports` audit table +
+`log_full_edge_report`. `tests/test_edge_proof_full.py` (13): strong-pass, each blocking failure, Sharia
+fail-safe across all non-clear states, decay, multiple-testing, worst-case-vs-small-position, model-disagreement,
+shadow-vs-enforcing, and the DB wrapper + log. *Remaining for full S10: real strategy signals (S11) + the
+regime-conditioned historical sample + the dashboard panels — the engine + gate themselves are done.*
+
+---
+
 ## 2026-06-07 — S9 slice 4 SHIPPED → **S9 COMPLETE**: Sharia cross-check
 
 The Sharia screen sits at #1 in the priority hierarchy, so this slice was built fail-safe (449 → **465 tests**).

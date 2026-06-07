@@ -21,6 +21,32 @@ CREATE TABLE IF NOT EXISTS learning_ledger (
     reusable_pattern            TEXT,
     ref                         TEXT    -- order_id or run_id
 );
+
+-- S10: full 17-check Edge Proof reports (the decision-quality audit trail).
+CREATE TABLE IF NOT EXISTS edge_reports (
+    id                              INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts                              TEXT DEFAULT (datetime('now')),
+    symbol                          TEXT,
+    signal                          TEXT,
+    signal_definition_hash          TEXT,
+    sample_size                     INTEGER,
+    regime_filtered_sample_size     INTEGER,
+    hit_rate                        REAL,
+    median_excess_return            REAL,
+    worst_forward_return            REAL,
+    max_drawdown                    REAL,
+    benchmark                       TEXT,
+    after_costs                     REAL,
+    turnover_estimate               REAL,
+    data_quality_score              REAL,
+    multiple_testing_penalty_applied INTEGER,
+    signal_decay_detected           INTEGER,
+    mode                            TEXT,        -- shadow | enforcing
+    would_allow                     INTEGER,
+    trade_allowed                   INTEGER,
+    reason                          TEXT,
+    checks_json                     TEXT
+);
 """
 
 
