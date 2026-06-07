@@ -11,8 +11,10 @@ autonomy is earned through a paper track record, never granted.
 > **Safety first. Evidence second. Autonomy last.**
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · Sprints **S1–S7 complete** · **S8 core** (10 connectors) · **S9–S11 complete (+ S11.5 integration)** · Dashboard v2 + founder alerts · **557 tests green** ·
-7-DB architecture live · on **Roadmap v3** (S1–S14).
+**Status:** Phase 0 (paper) · **Roadmap v3 build S1–S14 complete** (full stack: data → Edge Proof → Constitution → Budget → assembled loop → Edge Lab + Sandbox; research desk + micro-live readiness fail-safe by default) · Dashboard (Design-System skin) + founder alerts · **571 tests green** ·
+7-DB architecture live. Remaining steps are deliberately **founder-gated** (machine hardening · ≥28-day paper/sandbox track record · the live phase-flip with real money).
+
+> **New here? Run `python demo.py`** — one command seeds sample data, drives one fully-governed tick through the whole stack, and writes the read-only dashboard. Fully offline, paper-only, no credentials. See **[Try it](#try-it-one-command)** below.
 
 ---
 
@@ -56,6 +58,31 @@ with **point-in-time discipline** (`event_date · reported_at · ingested_at · 
 | **S13** | Micro-Live Readiness | Telegram approval channel, LiveBroker, limit-orders-only, $100–500 human-approved |
 | **S14** | Module Restructure | Flat layout → clean domain hierarchy (tests stay green) |
 
+## Try it (one command)
+
+For a first look — no setup, no credentials, nothing touches the network or real money:
+
+```bash
+git clone https://github.com/ahmedmdesouki-bit/The-Camel.git
+cd The-Camel
+python demo.py
+```
+
+`demo.py` seeds a fresh set of the 7 SQLite DBs under `./demo_run/`, drives **one fully-governed tick**
+through the entire stack — regime classification → strategy proposal → the **17-check Edge Proof** →
+Constitution (Sharia #1) → Budget Kernel → a **realistic-paper fill** (whole shares, fees, slippage) — and
+writes the read-only operator dashboard to `./demo_run/camel-dashboard.html`. Open that file in any browser.
+
+What you'll see it prove:
+- A name with a **proven edge** passes every gate and fills with realistic costs.
+- A **frozen / non-compliant** name (`SCHD`) is held out by the Sharia gate — the dashboard shows the
+  rejection, because *the rejections are the point*.
+- Flip the seeded macro to an inverted curve and the Opportunity Router goes to **Wait** — no edge, no trade.
+
+```bash
+pytest -q          # then run the suite — expect 571 passed
+```
+
 ## Where to start
 
 | You want to… | Read |
@@ -81,7 +108,7 @@ The repo path is 261 chars (over Windows MAX_PATH). Map a virtual drive first:
 ```powershell
 subst N: "<path-to-this-folder>"
 cd N:\
-python -m pytest -q          # 557 passed
+python -m pytest -q          # 571 passed
 ```
 
 *(For future work, cloning to a short path like `C:\camel` removes this friction.)*

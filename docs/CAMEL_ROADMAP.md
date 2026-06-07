@@ -111,8 +111,10 @@ Windows Task Scheduler per the S6 machine-setup checklist.)*
   T3 reference) lives in `CAMEL_DATA_SOURCES.md`.*
 - **USD/SAR FX feed → ✅ DONE (S9 slice 4):** `features.py` reads **FRED `DEXSAUS`** → `peg_deviation_pct`; the
   classifier raises `GEOPOLITICAL_RISK_OFF` on peg stress. Free (the FRED connector already existed).
-- **Connector base hardening (NEW):** add retry/backoff + descriptive-User-Agent discipline to `SourceConnector`
-  (live-pull test 2026-06-07 hit SEC 403s on generic UA + GDELT 429 rate-limits). *(S8 cont. / ties to Workstream B.)*
+- **Connector base hardening → ✅ DONE (backlog sweep 2026-06-07):** `with_retries()` in `data/connectors/base.py`
+  wraps any transport with bounded retry + exponential backoff on *transient* failures only (429/5xx/URLError);
+  permanent errors (403/404) fail fast. Injectable `sleeper` → zero real wait in tests. Descriptive, contact-bearing
+  default User-Agent (fixes the SEC 403 / GDELT 429 generic-agent blocks). `default_transport` is now retry-wrapped.
 
 ### BACKLOG — smaller items with a home
 - **Per-portfolio positions/ledger (A2): PARTIAL.** `portfolios/holdings.py` (S11.5) gives a per-portfolio
@@ -122,14 +124,16 @@ Windows Task Scheduler per the S6 machine-setup checklist.)*
 - **System-integration polish (S11.5 done; remainder):** `loop/driver.py` connects registry→full-Edge-Proof→loop;
   remaining = drive it from a scheduled entrypoint (Workstream B) + per-portfolio context (pass `portfolio_id`).
 - **Alaa harvested items:** screenshot-OCR manual entry → S13; strategy-fit *selector* + "mix" coherence UX → S11
-  backlog (the *registry/matrix* shipped; the founder-facing selector UI did not); yield-on-cost + moat matrix →
-  S11 backlog; sector-cap ≤40% → landed in `portfolios/check_risk_budget` (S11).
-- **Health-monitor checks** `cpu/memory/broker/telegram/secrets` are hardcoded `"skipped"` — wire real checks
-  (psutil for cpu/mem; live-cred pings for broker/telegram). *(Ops-hardening follow-up; add `psutil`.)*
-- **`data/quality.py`** "refine" was mis-tagged to S7 — refinement belongs with the data backbone (S8 cont.).
-- **Migrate `sharia/screener.py` → `sharia/aaoifi.py`** — the legacy quarterly job still uses the looser 33%
-  two-ratio model (with boundary tests at 32.9%); fold it onto the verified AAOIFI screen so there's one screen.
-  *(Small; requires updating `test_sharia.py`'s boundary assertions. `sharia/aaoifi.py` is authoritative meanwhile.)*
+  backlog (the *registry/matrix* shipped; the founder-facing selector UI did not — still open); **yield-on-cost +
+  moat matrix → ✅ DONE (backlog sweep 2026-06-07)** in `strategies/analytics.py` (`yield_on_cost`, `moat_score` →
+  none/narrow/wide; pure, evidence-only); sector-cap ≤40% → landed in `portfolios/check_risk_budget` (S11).
+- **Health-monitor checks → ✅ DONE (backlog sweep 2026-06-07):** `cpu/memory` via psutil *if present* (honest
+  `n/a` otherwise — never a hard dep); `broker/telegram/secrets` are now **credential-presence** checks (env-based,
+  value never echoed; absent is fine in paper → never degrades status). No more `"skipped"` placeholders.
+- **`data/quality.py`** "refine" was mis-tagged to S7 — refinement belongs with the data backbone (S8 cont.). *(open)*
+- **Migrate `sharia/screener.py` → `sharia/aaoifi.py` → ✅ DONE (backlog sweep 2026-06-07):** the legacy quarterly
+  job now **delegates** to the verified AAOIFI screen. The looser 33% model is gone — one screen, ≤30%/≤30%/≤67%/≤5%
+  + 11 sectors, doubtful = passed-with-a-note (not auto-frozen). `test_sharia.py` boundary tests updated to 30%.
 - **Broker write-atomicity** (positions↔ledger transaction) → **S12** (already owned). **Earnings blackout** →
   **S8** (needs earnings calendar). **Max cancel/replace order handling** → **S13** (LiveBroker). **IBKR** → Phase 2.
 

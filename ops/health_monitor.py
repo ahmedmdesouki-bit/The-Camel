@@ -1,12 +1,14 @@
 """
-Machine / operator health monitor (S5; expanded in S5.5/S6).
+Machine / operator health monitor (S5; expanded in S5.5/S6; resources + creds wired in the backlog sweep).
 
-Real checks with no extra dependencies: DB reachability, disk free, kill-switch state,
-current mode, guardrail importable. CPU/memory and broker/Telegram connectivity are marked
-'skipped' here (they need psutil / live creds — wired in S5.5/S6). Produces a HealthReport
-and a GREEN/YELLOW/RED/BLACK status classifier (used by the daily report + Opportunity Router).
+Real checks with no *hard* extra dependencies: DB reachability, disk free, kill-switch state, current
+mode, guardrail importable, CPU/memory (via psutil if present — gracefully 'n/a' otherwise, never a hard
+dep), and broker/Telegram/secrets credential presence (env-based; absent is normal & fine in paper, so it
+never degrades the status). Produces a HealthReport and a GREEN/YELLOW/RED/BLACK status classifier (used by
+the daily report + Opportunity Router).
 """
 from __future__ import annotations
+import os
 import shutil
 from dataclasses import dataclass, field
 from typing import Dict, List
@@ -14,6 +16,43 @@ from typing import Dict, List
 from db.sqlite import connection
 from db.paths import CamelDbs
 from ops.kill_switch import is_halted
+
+# Resource thresholds kept high so the monitor only degrades on genuine pressure (not normal load).
+CPU_YELLOW_PCT = 98.0
+MEM_YELLOW_PCT = 97.0
+
+# Env vars that, if present, indicate a configured integration. Absence is expected in paper mode.
+_BROKER_ENV = ("CAMEL_BROKER_KEY", "ALPACA_API_KEY_ID", "ALPACA_KEY_ID")
+_TELEGRAM_ENV = ("CAMEL_TELEGRAM_TOKEN", "TELEGRAM_BOT_TOKEN")
+_SECRET_ENV = _BROKER_ENV + _TELEGRAM_ENV + ("FRED_API_KEY", "FINNHUB_API_KEY", "EODHD_API_KEY")
+
+
+def _resource_checks(checks: Dict[str, str], issues: List[str]) -> None:
+    """CPU + memory via psutil if installed; otherwise honestly report 'n/a (psutil absent)'."""
+    try:
+        import psutil  # optional, never a hard dependency
+    except Exception:
+        checks["cpu"] = checks["memory"] = "n/a (psutil absent)"
+        return
+    try:
+        cpu = float(psutil.cpu_percent(interval=None))
+        mem = float(psutil.virtual_memory().percent)
+        checks["cpu"] = f"{cpu:.0f}%"
+        checks["memory"] = f"{mem:.0f}%"
+        if cpu >= CPU_YELLOW_PCT:
+            issues.append(f"high cpu: {cpu:.0f}%")
+        if mem >= MEM_YELLOW_PCT:
+            issues.append(f"high memory: {mem:.0f}%")
+    except Exception as exc:                       # psutil present but query failed — informational
+        checks["cpu"] = checks["memory"] = f"unknown ({exc})"
+
+
+def _cred_checks(checks: Dict[str, str], env: Dict[str, str]) -> None:
+    """Credential PRESENCE only (never reads/echoes the value). Absent is fine in paper → no issue."""
+    checks["broker"] = "configured" if any(env.get(k) for k in _BROKER_ENV) else "absent (paper)"
+    checks["telegram"] = "configured" if any(env.get(k) for k in _TELEGRAM_ENV) else "absent"
+    loaded = sum(1 for k in _SECRET_ENV if env.get(k))
+    checks["secrets"] = f"{loaded} loaded" if loaded else "none (paper)"
 
 
 @dataclass
@@ -68,9 +107,9 @@ def check(dbs: CamelDbs, mode: str = "paper", min_disk_gb: float = 1.0) -> Healt
         checks["guardrail"] = "FAIL"
         issues.append("guardrail import failed")
 
-    # not yet wired (need psutil / live creds)
-    for skipped in ("cpu", "memory", "broker", "telegram", "secrets"):
-        checks[skipped] = "skipped (S5.5/S6)"
+    # resources (psutil-optional) + credential presence (env-based)
+    _resource_checks(checks, issues)
+    _cred_checks(checks, dict(os.environ))
 
     checks["mode"] = mode
 

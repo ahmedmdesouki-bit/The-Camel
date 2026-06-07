@@ -14,6 +14,8 @@ dist/
 *.xlsx
 # Alpaca paper key — never commit
 alpaca_paper.json
+# demo.py output (seeded DBs + generated dashboard)
+demo_run/
 # transient/junk artifacts
 pytest-cache-files-*/
 zi0Yq9dR

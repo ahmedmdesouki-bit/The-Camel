@@ -14,6 +14,8 @@ The base handles provenance stamping, validation (drop anything not fully proven
 """
 from __future__ import annotations
 import json
+import time
+import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -26,8 +28,15 @@ from data.provenance import (
 
 Transport = Callable[[str], str]
 
-# A polite default User-Agent; SEC in particular requires a contact (overridden per connector).
-DEFAULT_HEADERS = {"User-Agent": "TheCamel/0.1 (personal research; contact: founder@example.com)"}
+# A polite, descriptive default User-Agent. Several free sources (SEC, GDELT, FRED) block or rate-limit
+# generic/empty agents, so we identify ourselves honestly with a contact. SEC requires this per its policy.
+DEFAULT_HEADERS = {
+    "User-Agent": "TheCamel/0.1 (+https://github.com/ahmedmdesouki-bit/The-Camel; personal research; contact: founder@thecamel.local)",
+    "Accept-Encoding": "identity",
+}
+
+# HTTP statuses worth retrying: 429 (rate limit) + the 5xx transient server-side band.
+_RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 
 
 def http_get(url: str, headers: Optional[Dict[str, str]] = None, timeout: float = 20.0) -> str:
@@ -35,6 +44,39 @@ def http_get(url: str, headers: Optional[Dict[str, str]] = None, timeout: float 
     req = urllib.request.Request(url, headers=headers or DEFAULT_HEADERS)
     with urllib.request.urlopen(req, timeout=timeout) as resp:   # noqa: S310 (trusted, registered sources)
         return resp.read().decode("utf-8")
+
+
+def _is_retryable(exc: Exception) -> bool:
+    """Transient network failures we should back off and retry, vs. permanent ones (404, 403) we shouldn't."""
+    if isinstance(exc, urllib.error.HTTPError):
+        return exc.code in _RETRYABLE_STATUS
+    if isinstance(exc, urllib.error.URLError):
+        return True                      # DNS / connection reset / timeout — transient
+    if isinstance(exc, (TimeoutError, ConnectionError)):
+        return True
+    return False
+
+
+def with_retries(transport: Transport, retries: int = 3, backoff_base: float = 0.5,
+                 sleeper: Callable[[float], None] = time.sleep) -> Transport:
+    """Wrap any transport with bounded retry + exponential backoff on *transient* failures only.
+
+    Permanent errors (403 Forbidden, 404 Not Found, parse errors) are re-raised immediately — retrying
+    them is pointless and rude. `sleeper` is injectable so tests exercise the backoff with zero real wait.
+    """
+    def _wrapped(url: str) -> str:
+        last: Optional[Exception] = None
+        for attempt in range(max(1, retries)):
+            try:
+                return transport(url)
+            except Exception as exc:     # noqa: BLE001 — classify, then re-raise if non-transient/exhausted
+                last = exc
+                if not _is_retryable(exc) or attempt == retries - 1:
+                    raise
+                sleeper(backoff_base * (2 ** attempt))   # 0.5s, 1s, 2s, ...
+        assert last is not None
+        raise last
+    return _wrapped
 
 
 def _utcnow() -> str:
@@ -68,7 +110,7 @@ class SourceConnector:
     # ---- shared pipeline ----
     def default_transport(self) -> Transport:
         hdrs = self.headers or DEFAULT_HEADERS
-        return lambda url: http_get(url, headers=hdrs)
+        return with_retries(lambda url: http_get(url, headers=hdrs))
 
     @staticmethod
     def parse_json(raw: str) -> dict:

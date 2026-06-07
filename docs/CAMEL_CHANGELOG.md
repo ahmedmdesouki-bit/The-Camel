@@ -5,6 +5,36 @@
 
 ---
 
+## 2026-06-07 — Backlog sweep (pre-tester) + one-command demo
+
+Ahead of sharing the system with an external tester, cleared the highest-value items off the
+Workstreams & Backlog and added a faithful one-command demo. **571 tests green (was 557).**
+
+- **`demo.py` (new) + `tests/test_demo.py`** — one command seeds the 7 DBs with realistic sample data,
+  drives a single fully-governed tick (regime → strategy → 17-check Edge Proof → Constitution → Budget →
+  realistic-paper fill with fees/slippage), and writes the read-only Design-System dashboard. Offline,
+  paper-only, no credentials. `demo_run/` gitignored. README now leads with a **Try it** quickstart.
+- **Sharia single source of truth** — migrated the legacy `sharia/screener.py` to **delegate to the
+  verified `sharia/aaoifi.py`** screen. The old looser **33%** two-ratio model is gone; everything now
+  uses the AAOIFI **≤30% / ≤30% / ≤67% / ≤5% + 11 sectors** spec, with doubtful = passed-with-a-note
+  (not auto-frozen). Boundary tests updated to the 30% limit + a doubtful-band test.
+- **Connector base hardening** — `with_retries()` wraps any transport with bounded retry + exponential
+  backoff on *transient* failures only (429/5xx/URLError); permanent errors (403/404) fail fast. Injectable
+  `sleeper` → zero real wait in tests. Descriptive, contact-bearing default User-Agent (SEC/GDELT/FRED
+  block generic agents). `default_transport` now retry-wrapped.
+- **Health monitor — real checks** — cpu/memory via psutil *if present* (honest `n/a` otherwise, never a
+  hard dep); broker/telegram/secrets are now **credential-presence** checks (env-based, value never echoed).
+  Absent creds are normal in paper → never degrade status. Replaces the hardcoded `"skipped"` placeholders.
+- **Quality/income analytics (Alaa backlog)** — `strategies/analytics.py`: `yield_on_cost` (running yield
+  on cost basis, not price) + `moat_score` (transparent weighted 0–100 moat matrix → none/narrow/wide).
+  Pure, evidence-only (never trades), fully tested.
+
+Still open + explicitly **founder/paid/external-gated** (a tester needs none of these): live trading +
+real broker creds, paid vendors (EODHD/Sharadar/Benzinga), the live websocket feed, IBKR, Task-Scheduler
+wiring, machine hardening, the physical module reorg (deferred), and the broader connector backlog.
+
+---
+
 ## 2026-06-07 — S14 resolved: architecture documented; physical reorg deliberately deferred
 
 The last sprint. S14 was a pure cosmetic reorg (nest the flat packages deeper); its only gate is "tests stay

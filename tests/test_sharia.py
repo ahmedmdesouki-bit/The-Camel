@@ -63,18 +63,27 @@ def test_debt_ratio_breach_fails():
     assert not r.passed and any("debt_ratio" in s for s in r.reasons)
 
 def test_interest_assets_breach_fails():
+    # migrated to the verified AAOIFI screen → the liquid-assets ratio (was "interest_assets_ratio")
     r = screen_instrument(Financials("X", 1_000_000, 50_000, 400_000, 0.01))
-    assert not r.passed and any("interest_assets_ratio" in s for s in r.reasons)
+    assert not r.passed and any("liquid_assets_ratio" in s for s in r.reasons)
 
 def test_haram_income_breach_fails():
     r = screen_instrument(Financials("X", 1_000_000, 50_000, 50_000, 0.06))
     assert not r.passed and any("haram_income_pct" in s for s in r.reasons)
 
 def test_boundary_at_limit_fails():
-    assert not screen_instrument(Financials("X", 1_000_000, 330_000, 0, 0.0)).passed
+    # verified AAOIFI limit is 30% (not the old 33%): 31% debt → hard fail
+    assert not screen_instrument(Financials("X", 1_000_000, 310_000, 0, 0.0)).passed
 
 def test_boundary_just_under_passes():
-    assert screen_instrument(Financials("X", 1_000_000, 329_000, 0, 0.0)).passed
+    # 25% debt → clean pass, no notes
+    r = screen_instrument(Financials("X", 1_000_000, 250_000, 0, 0.0))
+    assert r.passed and r.reasons == []
+
+def test_doubtful_band_passes_with_note():
+    # 29% debt sits in AAOIFI's doubtful watch band: passes, but carries a near-miss note (not frozen)
+    r = screen_instrument(Financials("X", 1_000_000, 290_000, 0, 0.0))
+    assert r.passed and any("debt_ratio" in s for s in r.reasons)
 
 
 # ─────────────────────── whitelist DB ───────────────────────────

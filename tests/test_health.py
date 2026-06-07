@@ -49,7 +49,27 @@ def test_daily_report_text_contains_status(dbs):
     assert f"System status: {r.status}" in txt
     assert "Paper capital at risk: $430" in txt
 
-def test_skipped_checks_present(dbs):
+def test_resource_and_cred_checks_present(dbs):
+    # backlog sweep: cpu/memory/broker/telegram/secrets are now REAL checks (no more 'skipped').
     r = check(dbs, mode="paper")
     for k in ("cpu", "memory", "broker", "telegram", "secrets"):
-        assert "skipped" in r.checks[k]
+        assert k in r.checks and "skipped" not in r.checks[k]
+    # cpu/memory either report a value or honestly say psutil is absent — never a stub placeholder
+    assert "%" in r.checks["cpu"] or "n/a" in r.checks["cpu"] or "unknown" in r.checks["cpu"]
+
+
+def test_broker_cred_detected_when_env_set(dbs, monkeypatch):
+    monkeypatch.setenv("CAMEL_BROKER_KEY", "dummy-not-a-real-key")
+    r = check(dbs, mode="paper")
+    assert r.checks["broker"] == "configured"
+    assert "loaded" in r.checks["secrets"]
+    # presence-only: the secret value is never echoed into the report
+    assert "dummy-not-a-real-key" not in str(r.checks)
+
+
+def test_no_broker_cred_is_fine_in_paper(dbs, monkeypatch):
+    for k in ("CAMEL_BROKER_KEY", "ALPACA_API_KEY_ID", "ALPACA_KEY_ID"):
+        monkeypatch.delenv(k, raising=False)
+    r = check(dbs, mode="paper")
+    assert r.checks["broker"] == "absent (paper)"
+    assert r.status == "GREEN"          # absent creds must NOT degrade status in paper

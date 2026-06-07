@@ -173,9 +173,15 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   **→ 543 tests** · **S12.5 ✅ Research Desk framework** (`research/` evidence-object contract + desks + master
   switch DORMANT by default; evidence-only, no execute path) · **S13 ◑ Micro-Live readiness** (`governance/
   approval.py` human gate withholds by default; `broker/manual.py` Sahm path; `broker/live.py` gated LiveBroker
-  refuses by default; `ops/live_readiness.py` not-ready by default). **→ 557 tests. The whole BUILD (S1–S13
-  infra) is done; going LIVE is the founder's explicit act (machine hardening + phase-flip). NEXT = S14.**
+  refuses by default; `ops/live_readiness.py` not-ready by default). **→ 557 tests** · **S14 ✅ architecture
+  documented** (`docs/CAMEL_ARCHITECTURE.md`; physical reorg deferred) · **Backlog sweep ✅** (`demo.py` one-command
+  governed-tick + dashboard demo; `sharia/screener.py` now delegates to verified `sharia/aaoifi.py` — one 30% screen;
+  `data/connectors/base.py` retry/backoff + descriptive UA; real health checks cpu/mem/creds; `strategies/analytics.py`
+  yield-on-cost + moat matrix). **→ 571 tests. The whole BUILD (S1–S14) is done; going LIVE is the founder's explicit
+  act (machine hardening + ≥28-day track record + phase-flip).**
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
+- **First look:** `python demo.py` → seeds the 7 DBs, runs one fully-governed tick, writes the read-only dashboard
+  (offline, paper-only, no creds). Smoke-tested by `tests/test_demo.py`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
 > and hits Windows MAX_PATH without the virtual drive. `git config --global core.longpaths true`

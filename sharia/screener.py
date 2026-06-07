@@ -1,34 +1,38 @@
 """
-Quarterly Sharia re-screen job (LEGACY simplified screen).
+Quarterly Sharia re-screen job — now a thin adapter over the verified AAOIFI screen.
 
-⚠️ **Superseded by `sharia/aaoifi.py` (S9 slice 4)** — the canonical verified screen now uses the
-AAOIFI / FTSE-IdealRatings spec (≤30% / ≤30% / ≤67% / ≤5% + 11 sectors, 12-mo-avg market cap) and the
-multi-state cross-check in `sharia/cross_check.py`. This module keeps the older, looser 33% two-ratio
-model (and its boundary tests) for the existing quarterly path; it is on the backlog to migrate to
-delegate to `sharia/aaoifi.py`. Until then, **`sharia/aaoifi.py` is authoritative** for compliance.
+**Migration (backlog sweep):** this module no longer carries its own looser 33% two-ratio model. It now
+**delegates to `sharia/aaoifi.py`** — the canonical, verified AAOIFI / FTSE-IdealRatings spec (≤30% debt,
+≤30% liquid assets, ≤67% receivables, ≤5% haram income, + the 11 prohibited sectors). That makes
+`sharia/aaoifi.py` the *single* source of truth for compliance thresholds; the old 33% vs 30%
+inconsistency is gone. This module keeps the small, convenient `Financials` snapshot + the quarterly
+"freeze on drift" workflow that the rest of the system already calls.
 
-AAOIFI limits (legacy simplified):
-  - debt / market_cap            < 33%
-  - (cash + interest_securities) / market_cap < 33%
-  - non_compliant_income_pct     < 5%
+A name that lands just **inside** a 30% limit is reported by AAOIFI as *doubtful* (a watch band) — here it
+is treated as **passed-with-a-note** (we don't auto-freeze a doubtful name; that's the cross-check's job),
+and only a hard AAOIFI **fail** freezes the instrument.
 
-The financials getter is injected (adapter pattern) so the job is
-fully testable without network I/O.
+The financials getter is injected (adapter pattern) so the job is fully testable without network I/O.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, List
 
 from sharia.whitelist import freeze_instrument, load_whitelist
+from sharia.aaoifi import (
+    AAOIFIFinancials, screen as aaoifi_screen,
+    DEBT_LIMIT, LIQUID_ASSETS_LIMIT, HARAM_INCOME_LIMIT,
+)
 
-DEBT_RATIO_LIMIT = 0.33
-INTEREST_ASSETS_RATIO_LIMIT = 0.33
-HARAM_INCOME_LIMIT = 0.05
+# Re-export the verified limits so any legacy importer sees the unified AAOIFI values (not the old 33%).
+DEBT_RATIO_LIMIT = DEBT_LIMIT                       # 0.30
+INTEREST_ASSETS_RATIO_LIMIT = LIQUID_ASSETS_LIMIT   # 0.30
+# HARAM_INCOME_LIMIT re-exported from aaoifi (0.05)
 
 
 @dataclass
 class Financials:
-    """Snapshot used for AAOIFI ratio checks."""
+    """Compact snapshot used by the quarterly path. Mapped onto the full AAOIFI model on screen."""
     symbol: str
     market_cap: float
     total_debt: float
@@ -43,37 +47,47 @@ class ScreenResult:
     reasons: List[str] = field(default_factory=list)
 
 
+def _to_aaoifi(f: Financials) -> AAOIFIFinancials:
+    """Map the compact snapshot onto the verified AAOIFI model.
+
+    The compact form carries 4 numbers, so we project them onto the AAOIFI denominators conservatively:
+    market_cap stands in for the 12-month-average market cap; interest-bearing assets go to the liquid
+    bucket; the income fraction becomes the haram-income ratio (total_revenue normalised to 1.0). Assets
+    that the compact form doesn't track (receivables) are zero, and total_assets uses market_cap as a
+    benign proxy so the ≤67% receivables ratio is computable and trivially passes rather than erroring.
+    """
+    return AAOIFIFinancials(
+        symbol=f.symbol,
+        avg_market_cap_12mo=f.market_cap,
+        total_debt=f.total_debt,
+        cash_and_deposits=0.0,
+        interest_bearing_investments=f.cash_and_interest_securities,
+        receivables=0.0,
+        total_assets=f.market_cap or 1.0,
+        non_compliant_revenue=f.non_compliant_income_pct,
+        interest_income=0.0,
+        total_revenue=1.0,
+        sector="unknown",
+    )
+
+
 def compute_aaoifi_ratios(f: Financials) -> dict:
-    """Return the three AAOIFI ratios.  Guards against zero market_cap."""
-    mc = f.market_cap if f.market_cap > 0 else 1.0
+    """Legacy 3-ratio view, now computed via the verified screen (guards zero market_cap)."""
+    res = aaoifi_screen(_to_aaoifi(f))
     return {
-        "debt_ratio": f.total_debt / mc,
-        "interest_assets_ratio": f.cash_and_interest_securities / mc,
-        "haram_income_pct": f.non_compliant_income_pct,
+        "debt_ratio": res.ratios.get("debt_ratio"),
+        "interest_assets_ratio": res.ratios.get("liquid_assets_ratio"),
+        "haram_income_pct": res.ratios.get("haram_income_pct"),
     }
 
 
 def screen_instrument(f: Financials) -> ScreenResult:
-    """Run AAOIFI checks on one instrument's financials."""
-    ratios = compute_aaoifi_ratios(f)
-    reasons: List[str] = []
-
-    if ratios["debt_ratio"] >= DEBT_RATIO_LIMIT:
-        reasons.append(
-            f"debt_ratio={ratios['debt_ratio']:.1%} >= {DEBT_RATIO_LIMIT:.0%} limit"
-        )
-    if ratios["interest_assets_ratio"] >= INTEREST_ASSETS_RATIO_LIMIT:
-        reasons.append(
-            f"interest_assets_ratio={ratios['interest_assets_ratio']:.1%}"
-            f" >= {INTEREST_ASSETS_RATIO_LIMIT:.0%} limit"
-        )
-    if ratios["haram_income_pct"] >= HARAM_INCOME_LIMIT:
-        reasons.append(
-            f"haram_income_pct={ratios['haram_income_pct']:.1%}"
-            f" >= {HARAM_INCOME_LIMIT:.0%} limit"
-        )
-
-    return ScreenResult(symbol=f.symbol, passed=len(reasons) == 0, reasons=reasons)
+    """Run the verified AAOIFI screen on one instrument. Hard fail → not passed; doubtful → passed+note."""
+    res = aaoifi_screen(_to_aaoifi(f))
+    reasons = list(res.breaches)
+    if res.status == "doubtful":
+        reasons += res.near_misses
+    return ScreenResult(symbol=f.symbol, passed=(res.status != "fail"), reasons=reasons)
 
 
 def run_quarterly_rescreen(
@@ -82,7 +96,7 @@ def run_quarterly_rescreen(
 ) -> List[ScreenResult]:
     """
     Re-screen every non-frozen whitelist instrument.
-    Non-compliant drift → freeze + log.
+    A hard AAOIFI fail → freeze + log. Doubtful names pass (the cross-check handles watch/disagreement).
     Returns all ScreenResults (both passed and failed).
     """
     whitelist = load_whitelist(db_path)
