@@ -896,6 +896,16 @@ EdgeReport is **rejected by the assembled loop** (not just by the Allocator unit
 there is no edge; the scheduled daily job renders the dashboard + emits the brief; the weekly job runs the
 kill-switch self-test + backup + reconcile from a real entrypoint. **A1 closes the Phase-1 blocker.**
 
+**STATUS: ✅ DONE (→ 486 tests). The Phase-1 blocker (A1) is CLOSED.** `loop/assembled.py` — `AssembledLoop.run_tick`
+assembles Observe(regime) → **Opportunity Router** → **Allocator (Edge Proof + Constitution)** → **Budget Kernel**
+→ **phase-gated Human-Approval** → Act(paper) → op-log. Every action routes through `Allocator.request(...)`, never
+`Constitution.evaluate` directly — so the invariant test proves **a buy with no passing EdgeReport is rejected by
+the assembled loop.** `loop/jobs.py` (Workstream B) — `run_daily_ops` (heartbeat + dashboard render + founder
+brief) and `run_weekly_safety` (kill-switch self-test + backup + reconcile) with a `python -m loop.jobs daily|weekly`
+entrypoint. `tests/test_assembled_loop.py` (8): the invariant, router-waits-without-edge, budget block, phase-1
+approval gate, kill switch, op-log, and both jobs. *(A4 peg→features already done in S9 slice 4. The legacy
+`loop/runner.py` is unchanged; the assembled loop is the new real harness — S11 strategies feed it candidates.)*
+
 ---
 
 ### S11 — Strategy Registry + Portfolio Engine + Learning Engine

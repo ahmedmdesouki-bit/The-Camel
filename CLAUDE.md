@@ -156,14 +156,13 @@ make a feature work. If a task would require bypassing the Constitution, stop an
   RED ALERT on a >3% drop), and `trader/regime/peg.py` (**SAR/USD peg monitor** — pure + dormant-safe DB
   reader, for the S9 regime layer). `tests/test_alerts_founder.py` + `tests/test_peg_monitor.py`. → **440 passed**.
   *(Sector-cap ≤40% guardrail deliberately deferred to S11 — needs the portfolio engine to be meaningful.)*
-- **⚠️ Integration status (be honest about this).** The pieces are built + unit-tested, but the full §4 operator
-  loop is **not yet assembled**: `loop/scheduler.py` runs with no-op callbacks, the Opportunity Router + Edge-Proof
-  `Allocator` + Budget Kernel + Operator-OS state machine are not yet driven by `loop/runner.py`, the regime engine
-  feeds only history/dashboard, and several ops jobs (weekly checks, heartbeat, dead-man, dashboard render, founder
-  brief) have no scheduled entrypoint. This is **Workstream A/B** in `docs/CAMEL_ROADMAP.md`, now promoted to a
-  dedicated sprint **S10.5 — Operator-Loop Assembly** (founder-agreed) and a hard gate in S13 live-readiness.
-  **Wiring the Edge-Proof gate into the assembled loop (A1) is a Phase-1 blocker** (harmless now only because
-  nothing trades in Phase 0).
+- **Integration status (S10.5 — Phase-1 blocker CLOSED).** The §4 loop is now **assembled** in
+  `loop/assembled.py` (`AssembledLoop.run_tick`): Observe(regime) → Opportunity Router → **Allocator (Edge Proof +
+  Constitution)** → Budget Kernel → phase-gated Human-Approval → Act(paper). Every action routes through
+  `Allocator.request(...)`, never `Constitution.evaluate` directly, so **a buy with no passing EdgeReport is
+  rejected by the assembled loop** (invariant test). Scheduled ops have real entrypoints (`loop/jobs.py` —
+  `python -m loop.jobs daily|weekly`). *The legacy `loop/runner.py` is unchanged (its tests still pass); the
+  assembled loop is the real harness — S11 strategies feed it candidates.*
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -261,7 +260,10 @@ learning/         ⏳ PLANNED (S11 — NOT yet on disk; target shape)
                   improvement_proposer.py — L3: write proposed changes for founder approval
                                             (proposes only — never auto-applies)
 
-loop/             runner.py — LoopRunner (takes LoopConfig with dbs: CamelDbs)
+loop/             runner.py — LoopRunner (legacy LoopConfig harness; tests still pass)
+                  assembled.py — ⭐ AssembledLoop (S10.5): the real §4 tick — Observe(regime)→Router→
+                  Allocator(Edge+Constitution)→Budget→Approval→Act; closes the Phase-1 blocker
+                  jobs.py — scheduled entrypoints (S10.5): run_daily_ops / run_weekly_safety (python -m loop.jobs)
                   state.py — RunState + begin/update/finish_run (→ camel_portfolio.db)
                   scheduler.py — Windows Task Scheduler entrypoint (EOD, once daily)
                   intraday_monitor.py — ⏳ PLANNED (S11) 5-min position manager during market hours
@@ -434,7 +436,7 @@ Optimize for **evidence density, not feature count.**
 | S8.5 | Real-Time Data Tier *(founder)* | streaming quotes + live-news + real-time monitor/alerts; separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
 | S9 ✅ | Knowledge Graph + Regime + Sharia cross-check | **slices 1–4 done** (entity resolver + 10-state Regime Engine + event intelligence/`event_reactions` + multi-state AAOIFI Sharia cross-check w/ disagreement→freeze + peg wiring), **465 tests** |
 | S10 ◑ engine built | Full Edge Proof Engine (17 checks) | **engine + gate done (478 tests):** `engine/edge_proof.py` — 17 checks, pre-registered thresholds, multiple-testing penalty, signal-decay, Sharia fail-safe, model-disagreement→human, shadow/enforcing, `edge_reports` log. *Remaining: feed real strategy signals (S11) + regime-conditioned sample + dashboard panels* |
-| ⭐ S10.5 | Operator-Loop Assembly + Runtime (Workstream A/B) | end-to-end tick runs through the **assembled** loop (Observe→Router→Edge-Proof→Constitution→Budget→Approval→Act→Learn); **a buy with no EdgeReport is rejected by the assembled loop, not just the Allocator unit** (closes the Phase-1 blocker); scheduled daily/weekly ops + brief jobs have real entrypoints; still paper |
+| ✅ S10.5 | Operator-Loop Assembly + Runtime (Workstream A/B) | **DONE (486 tests):** `loop/assembled.py` assembles Observe→Router→Allocator(Edge+Constitution)→Budget→Approval→Act; invariant test proves **a buy with no EdgeReport is rejected by the assembled loop** (Phase-1 blocker CLOSED); `loop/jobs.py` scheduled daily/weekly entrypoints; still paper |
 | S11 | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth w/ **lot-level + gross→NRA-withholding→net** mechanics) pass Edge Proof; **multi-portfolio (lifecycle incubate→retire, tolerance-band rebalance, multi-benchmark, 6 seed portfolios, portfolio-scoped positions/ledger reconciling to fund)**; meets the 15-item acceptance checklist; never auto-edits the Constitution |
 | S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
 | S12.5 | Research Desk / Analyst Agents *(founder; design now, dormant)* | per-vertical research agents (Agent SDK — full roster incl. market-microstructure + execution/TCA) write evidence only via the **evidence-object contract**, never act; narrow/safe learning (no retrain, no Constitution edits); token budget; master switch defaults OFF |

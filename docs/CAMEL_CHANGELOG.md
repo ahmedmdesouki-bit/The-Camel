@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-06-07 — S10.5 SHIPPED: operator-loop assembled → Phase-1 blocker CLOSED
+
+`loop/assembled.py` (478 → **486 tests**). The §4 loop is now strung together for real:
+`AssembledLoop.run_tick` runs Observe(regime, S9) → **Opportunity Router** (leans to Wait; can't pick Trader
+without a proven edge) → **Allocator (Edge Proof + Constitution)** → **Budget Kernel** → **phase-gated
+Human-Approval** → Act(paper) → op-log. **Every action routes through `Allocator.request(...)`, never
+`Constitution.evaluate` directly** — so the invariant test proves **a buy with no passing EdgeReport is rejected
+by the assembled loop** (the actual Phase-1 blocker, A1, now CLOSED). Order of authority preserved: Edge →
+Constitution → Budget → Approval → Act. Still paper, still Phase 0.
+- `loop/jobs.py` (Workstream B) — the built-but-untriggered ops now have entrypoints: `run_daily_ops` (heartbeat
+  + dashboard render + founder brief) and `run_weekly_safety` (kill-switch self-test + backup + reconcile), via
+  `python -m loop.jobs daily|weekly`.
+- `tests/test_assembled_loop.py` (8): the invariant, router-waits-without-edge, Budget-Kernel block in the act
+  path, the phase-1 human-approval gate, kill switch, op-log, and both scheduled jobs.
+- The legacy `loop/runner.py` is untouched (its tests still pass); the assembled loop is the real harness — S11
+  strategies will feed it candidates. A4 (peg→features) was already done in S9 slice 4.
+
+---
+
 ## 2026-06-07 — S10 engine SHIPPED: full 17-check Edge Proof
 
 `engine/edge_proof.py` (465 → **478 tests**). The full signal-conditioned proof on top of the v0 gate (v0
