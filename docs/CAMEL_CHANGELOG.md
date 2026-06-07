@@ -5,6 +5,34 @@
 
 ---
 
+## 2026-06-07 — Data-sourcing second pass (historical + news emphasis) + live capability confirmed
+
+**Confirmed live data-pull capability** (direct test): Fed RSS press releases ✅ and Yahoo SPY series ✅ pulled
+clean; SEC 403'd a generic user-agent and GDELT 429'd under load — the friction that justifies the
+`SourceConnector` framework (descriptive UA, retry/backoff, recorded fixtures, sanitization). "Real-time charts"
+= we pull the underlying real-time *series* (Alpaca IEX + Finnhub websockets) and render our own (Dashboard v2);
+we never scrape rendered charts (guardrail: no raw web text to the LLM).
+
+**Ran a 4-category data-source search** (parallel verified research: historical · news · geopolitical ·
+trends/reactions) and **expanded `CAMEL_DATA_SOURCES.md`** with an **operating plan**: a decision→data map, a
+**tiered ingestion plan (T0 decision-critical core / T1 quorum cross-check / T2 paid phase-in / T3 reference-
+only)** that honors the founder directive *"don't exhaust the system — ingest a lean core + one cross-check, not
+everything,"* expanded rosters for the **historical** and **news** pillars, quorum pairs per category, and
+operational flags. Roughly **doubled the free options per category.**
+
+**Two roadmap gaps now have FREE answers:** (1) the **USD/SAR peg monitor** activates via **FRED `DEXSAUS`** —
+the FRED connector already exists, so $0 → wired into the S9 slice-4 plan; (2) the **`event_reactions` substrate**
+(S9 slice 3) is buildable free from FRED/ALFRED + Finnhub surprises + CFTC COT + Kenneth French factors.
+
+**New free anchors added to the S8 backlog (prioritized):** SEC RSS, Finnhub (EPS surprise + WS), CFTC COT,
+Kenneth French, CBOE/FRED stress, **IMF PortWatch** (chokepoint shipping — high value for a Gulf book), GPR/EPU,
+OFAC + **UK Sanctions List**, Marketaux, OpenSanctions, **SAHMK** (free Tadawul-licensed). **Operational flags:**
+🔴 OFSI list closed 28-Jan-2026 → use UKSL; UCDP API now needs a free token; OpenSanctions free non-commercial
+only; **MENA has no native clean gov/exchange news API (Egypt weakest) — route via licensed APIs + sanitize.**
+Also queued: **connector-base hardening** (retry/backoff + UA discipline). Docs-only; suite stays 440 green.
+
+---
+
 ## 2026-06-07 — S10.5 promoted to a dedicated sprint (founder-agreed)
 
 Following the sanity-check finding, the founder agreed to treat the **operator-loop assembly** as its own

@@ -97,8 +97,19 @@ weekly `ops/scheduled_checks.run_weekly_checks` (kill-switch test + backup + rec
   so `regime/features.py` would read empty tables at runtime. Add an ingestion job (part of Workstream B). *(S8 cont.)*
 - **Parked S8 connectors** (founder-deferred): OFAC, USGS, congress/senate disclosures, Kenneth-French factors,
   SEC-RSS/8-K, GPR/EPU, market-data adapter, dividends/corporate-actions, paid vendors. *(S8 continuation.)*
-- **USD/SAR FX feed (NEW):** the peg monitor is dormant until a `USDSAR` series is ingested — add an FX connector
-  to the S8 backlog so the peg monitor activates. *(S8 cont. / S9 slice 4.)*
+- **New free connectors (2026-06-07 data research, prioritized — see `CAMEL_DATA_SOURCES.md`):** **SEC RSS** (8-K
+  events) · **Finnhub** (EPS/revenue surprise + free websocket) · **CFTC COT** (positioning API) · **Kenneth
+  French** factor library · **CBOE / FRED stress** (VIX, NFCI, STLFSI) · **IMF PortWatch** (chokepoint shipping —
+  high value for a Gulf book) · **GPR + EPU** indices · **OFAC + UK Sanctions List** (⚠️ OFSI list closed 28-Jan-
+  2026 → use UKSL) · **Marketaux** (entity-tagged news, tags Tadawul+EGX) · **OpenSanctions** · **SAHMK** (free
+  Tadawul-licensed Saudi). *Ingest a lean decision-critical core + one quorum cross-check per category — NOT all
+  of them (founder directive: "don't exhaust the system"). The full tiered plan (T0 core / T1 quorum / T2 paid /
+  T3 reference) lives in `CAMEL_DATA_SOURCES.md`.*
+- **USD/SAR FX feed → RESOLVED (free):** **FRED series `DEXSAUS`** (USD/SAR spot) is the source — and the **FRED
+  connector already exists**, so the peg monitor (`trader/regime/peg.py`) activates for **$0**. → wire in **S9
+  slice 4**. *(Closes the Workstream-D gap for the peg.)*
+- **Connector base hardening (NEW):** add retry/backoff + descriptive-User-Agent discipline to `SourceConnector`
+  (live-pull test 2026-06-07 hit SEC 403s on generic UA + GDELT 429 rate-limits). *(S8 cont. / ties to Workstream B.)*
 
 ### BACKLOG — smaller items with a home
 - **Alaa harvested items scheduled into sprint bodies** (so they aren't lost): screenshot-OCR manual entry → S13;
@@ -747,11 +758,14 @@ work: QA hardening pass → 419, Dashboard v2 → 426, Alaa founder-alerting + p
 - *Slice 3 — event intelligence:* dedup/severity/entity-linker/theme mapper over `news_events`, **plus the
   `event_reactions` substrate table** (event_type · event_date · known_at · affected symbols/sectors/commodities ·
   return_1d/5d/21d/63d/126d · max_drawdown_63d · benchmark/excess return · regime_at_event) — the point-in-time
-  base for S10 event studies.
+  base for S10 event studies. **Buildable free** (2026-06-07 research): **FRED/ALFRED** (event dates + PIT
+  vintages) + **Finnhub** (EPS/revenue surprise) + **CFTC COT** + **Kenneth French** factors, joined to Stooq/
+  Yahoo index returns (per `CAMEL_DATA_SOURCES.md`).
 - *Slice 4 — Sharia cross-check:* multi-state status + **full AAOIFI ratio enforcement** (≤30% / ≤30% / ≤67% /
   ≤5% + 11 sectors, per `CAMEL_DATA_SOURCES.md` and the updated `CAMEL_CONSTITUTION.md`) + drift + local-board
   override. **Wire `trader/regime/peg.py` (SAR/USD peg monitor) into `features.py`** here so the regime engine
-  consumes it (today it is built + tested but not yet read by the feature builder).
+  consumes it — source is **FRED series `DEXSAUS`** (USD/SAR spot), which the existing FRED connector already
+  pulls, so this is a **free** activation (no new vendor).
 
 ---
 
