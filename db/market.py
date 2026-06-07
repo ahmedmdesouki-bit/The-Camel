@@ -7,6 +7,7 @@ backtests see only what was knowable at the decision time (no look-ahead bias).
 See docs/CAMEL_DATA_CONTRACTS.md. Added now, before data accumulates — cannot be retrofitted.
 """
 from db.sqlite import connection
+from data.provenance import SOURCE_DOCUMENTS_DDL
 
 DDL = """
 CREATE TABLE IF NOT EXISTS prices (
@@ -41,7 +42,7 @@ CREATE TABLE IF NOT EXISTS splits (
     source      TEXT,
     PRIMARY KEY (symbol, split_date)
 );
-"""
+""" + SOURCE_DOCUMENTS_DDL
 
 
 def init_market_db(path: str) -> None:

@@ -100,3 +100,16 @@ ETF_HOLDINGS = register(SourceSpec(
     source_id="etf_holdings", source_name="Sharia ETF issuer holdings (SPUS/HLAL/MNZL)",
     source_type="sharia", base_url="", requires_api_key=False, reliability_tier=1,
 ))
+
+STOOQ = register(SourceSpec(
+    source_id="stooq", source_name="Stooq daily prices (free EOD OHLCV)", source_type="market",
+    base_url="https://stooq.com", requires_api_key=False,
+    allowed_for_decisioning=True, requires_cross_check=True,   # free aggregator → corroborate before live
+    reliability_tier=2,
+))
+
+SEC_RSS = register(SourceSpec(
+    source_id="sec_rss", source_name="SEC EDGAR filings RSS (8-K filing events)", source_type="news",
+    base_url="https://www.sec.gov", requires_api_key=False,
+    requires_cross_check=True, reliability_tier=1,
+))
