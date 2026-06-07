@@ -13,9 +13,12 @@ import uuid
 from dataclasses import dataclass
 
 from db.paths import CamelDbs
+from db.sqlite import connection
 from guardrail.constitution import Action
-from ledger.writer import append_entry
+from ledger.writer import append_entry, _ensure_table as _ensure_ledger_table
 from broker.positions import apply_fill
+from ops.kill_switch import is_halted
+from sharia.whitelist import load_whitelist
 
 
 @dataclass
@@ -37,12 +40,40 @@ def propose(action: Action, limit_price: float, qty: float) -> OrderTicket:
                       f"@ ${limit_price:.2f} (whole shares). Then record the fill with ticket {tid}."))
 
 
+def _compliance_warnings(dbs: CamelDbs, symbol: str, side: str) -> list:
+    """P2-G: a manual fill records money that already moved in Sahm, so we WARN (never hard-block —
+    we can't un-trade it) when the kill switch is on, or the name is off-whitelist / frozen / non-compliant
+    on a BUY. Sells of a held name are always allowed (de-risking)."""
+    warnings: list = []
+    if is_halted():
+        warnings.append("kill switch is HALTED — review this manual entry")
+    try:
+        inst = load_whitelist(dbs.sharia).get(symbol)
+        if side.lower() == "buy":
+            if inst is None or not inst.on_whitelist:
+                warnings.append(f"{symbol} is not on the compliant whitelist")
+            elif inst.frozen or getattr(inst, "sharia_status", "compliant") != "compliant":
+                warnings.append(f"{symbol} is {('frozen' if inst.frozen else inst.sharia_status)} — buy is non-compliant")
+    except Exception:                              # pragma: no cover - never break a real-money record
+        pass
+    return warnings
+
+
 def record_fill(dbs: CamelDbs, *, symbol: str, side: str, qty: float, price: float,
                 ticket_id: str = "") -> dict:
     """Record a founder-entered real-world fill: ledger entry + position update (reconciles to the book).
-    BUY → negative cash; SELL → positive cash (matches ledger convention)."""
+    BUY → negative cash; SELL → positive cash (matches ledger convention).
+
+    P2-G: surfaces compliance/kill-switch **warnings** (the money already moved, so these inform — they do
+    not block), tags the entry as `manual`, and writes ledger + positions **atomically** (one transaction)
+    so a phantom-sell/crash can't leave the books diverged."""
+    warnings = _compliance_warnings(dbs, symbol, side)
     amount = -(qty * price) if side.lower() == "buy" else (qty * price)
-    append_entry(dbs.portfolio, side.upper(), symbol, amount, ref=f"manual:{ticket_id or 'na'}")
-    pos = apply_fill(dbs.portfolio, symbol, side, qty, price)
+    _ensure_ledger_table(dbs.portfolio)
+    with connection(dbs.portfolio) as conn:
+        append_entry(dbs.portfolio, side.upper(), symbol, amount,
+                     ref=f"manual:{ticket_id or 'na'}", conn=conn)
+        pos = apply_fill(dbs.portfolio, symbol, side, qty, price, conn=conn)
     return {"symbol": symbol, "side": side, "qty": qty, "price": price,
-            "cash_amount": amount, "position_qty": pos.qty, "ticket_id": ticket_id}
+            "cash_amount": amount, "position_qty": pos.qty, "ticket_id": ticket_id,
+            "manual": True, "warnings": warnings}

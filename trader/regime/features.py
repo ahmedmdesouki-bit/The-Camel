@@ -35,8 +35,12 @@ def _points(db: str, series_id: str, as_of: Optional[str]) -> List[Tuple[str, fl
     sql = "SELECT event_date, reported_at, value FROM macro_observations WHERE series_id=?"
     args: list = [series_id]
     if as_of:
-        sql += " AND event_date <= ? AND (reported_at IS NULL OR reported_at <= ?)"
-        args += [as_of, as_of]
+        # Point-in-time (P2-A): the observation's session is past (event_date), its vintage was
+        # published (reported_at), AND Camel was already allowed to use it (known_at — the usability
+        # clock that an embargo/licence lag can push past reported_at). All three ≤ as_of.
+        sql += (" AND event_date <= ? AND (reported_at IS NULL OR reported_at <= ?)"
+                " AND (known_at IS NULL OR known_at <= ?)")
+        args += [as_of, as_of, as_of]
     sql += " ORDER BY event_date, reported_at"        # ascending → last write per date = latest vintage
     latest_by_date: Dict[str, float] = {}
     with connection(db) as conn:

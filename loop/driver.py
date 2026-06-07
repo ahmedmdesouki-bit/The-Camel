@@ -49,6 +49,11 @@ def run_strategy_tick(dbs: CamelDbs, registry: StrategyRegistry, state: Portfoli
                       max_candidates: int = 5, mode: str = "enforcing",
                       as_of: Optional[str] = None) -> TickResult:
     """Drive one full governed tick from live strategy signals. Returns the assembled-loop TickResult."""
+    # P2-F: shadow/non-enforcing Edge Proof passes the gate vacuously (it logs without blocking). That is
+    # only safe for paper calibration — refuse it the moment real capital is in play (phase >= 1).
+    _phase = getattr(loop, "phase", 0) if loop is not None else 0
+    if _phase >= 1 and mode != "enforcing":
+        raise ValueError(f"non-enforcing Edge Proof mode {mode!r} is refused at phase {_phase} (live)")
     ctx = build_context(dbs, symbols, cash_usd=state.cash_usd, holdings=state.positions, as_of=as_of)
     signals = registry.signals_for(ctx, portfolio_id=portfolio_id)
     blended = (mixer or StrategyMixer()).blend(signals, registry)

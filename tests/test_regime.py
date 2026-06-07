@@ -11,9 +11,10 @@ from trader.regime import (
 
 def _seed(dbs, series_id, value, event_date):
     with sqlite3.connect(dbs.macro) as c:
+        # known_at = event_date: point-in-time honest (no embargo lag in these fixtures)
         c.execute(
             "INSERT INTO macro_observations (series_id, value, event_date, known_at, source_id) "
-            "VALUES (?,?,?,?,?)", (series_id, value, event_date, "2026-06-06", "test"))
+            "VALUES (?,?,?,?,?)", (series_id, value, event_date, event_date, "test"))
         c.commit()
 
 

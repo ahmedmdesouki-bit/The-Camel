@@ -72,7 +72,9 @@ CREATE TABLE IF NOT EXISTS etf_holdings (
     content_hash        TEXT,
     parser_version      TEXT,
     data_quality_score  REAL,
-    UNIQUE(source_id, etf, holding_ticker, event_date)
+    -- P2-B: reported_at in the key so a re-stated holdings vintage (same as-of date, later
+    -- publish/correction) is INSERTed as a new row rather than silently INSERT-OR-IGNOREd away.
+    UNIQUE(source_id, etf, holding_ticker, event_date, reported_at)
 );
 """ + SOURCE_DOCUMENTS_DDL
 

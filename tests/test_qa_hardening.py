@@ -18,9 +18,11 @@ from governance.beginner_mode import beginner_limits, RailWidenedError
 
 def _seed(dbs, series_id, value, event_date, reported_at=None):
     with sqlite3.connect(dbs.macro) as c:
+        # known_at = when Camel could use it = its vintage (reported_at), else the session date.
+        known_at = reported_at or event_date
         c.execute("INSERT INTO macro_observations (series_id, value, event_date, reported_at, "
                   "known_at, source_id) VALUES (?,?,?,?,?,?)",
-                  (series_id, value, event_date, reported_at, "2026-06-06", "test"))
+                  (series_id, value, event_date, reported_at, known_at, "test"))
         c.commit()
 
 

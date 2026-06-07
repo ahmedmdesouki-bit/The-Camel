@@ -37,17 +37,23 @@ def peg_status(rate: Optional[float], peg: float = PEG_RATE,
 
 
 def latest_peg_status(dbs: CamelDbs, series_id: str = DEFAULT_SERIES_ID,
-                      tolerance_pct: float = DEFAULT_TOLERANCE_PCT) -> Optional[dict]:
+                      tolerance_pct: float = DEFAULT_TOLERANCE_PCT,
+                      as_of: Optional[str] = None) -> Optional[dict]:
     """Read the most recent USD/SAR observation (point-in-time) and classify it.
 
-    Returns None if no such series has been ingested yet (dormant-safe)."""
+    Returns None if no such series has been ingested yet (dormant-safe). `as_of` (P3-E) makes this
+    reusable in a backtest/as-of context: only observations Camel could already see (event_date and
+    known_at ≤ as_of). With `as_of=None` (the live default) it reads the latest known observation."""
+    sql = ("SELECT value, event_date FROM macro_observations "
+           "WHERE series_id = ? AND value IS NOT NULL")
+    args: list = [series_id]
+    if as_of is not None:
+        sql += " AND event_date <= ? AND (known_at IS NULL OR known_at <= ?)"
+        args += [as_of, as_of]
+    sql += " ORDER BY known_at DESC, id DESC LIMIT 1"
     try:
         with connection(dbs.macro) as conn:
-            row = conn.execute(
-                "SELECT value, event_date FROM macro_observations "
-                "WHERE series_id = ? AND value IS NOT NULL ORDER BY known_at DESC, id DESC LIMIT 1",
-                (series_id,),
-            ).fetchone()
+            row = conn.execute(sql, args).fetchone()
     except Exception:
         return None
     if row is None:
