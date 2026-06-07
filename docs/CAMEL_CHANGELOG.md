@@ -5,6 +5,28 @@
 
 ---
 
+## 2026-06-07 — Pre-S12 review → S11.5 keystone integration + doc reconciliation
+
+A two-agent pre-S12 sweep (S1–S11) found one real gap: the subsystems were **islands** — S10's full Edge Proof
+engine, S11's strategies/portfolios/learning, and S10.5's `AssembledLoop` were each built + tested but **nothing
+wired them together at runtime** (the loop would have used Edge Proof *v0* only, and strategies never fed it).
+Closed it (513 → **517 tests**):
+- **`loop/driver.py` (the keystone):** `run_strategy_tick` drives Regime(S9) → `StrategyRegistry.signals_for`(S11)
+  → `StrategyMixer` → **the full 17-check Edge Proof** (`evaluate_signal_full`, S10) → `AssembledLoop.run_tick`
+  (S10.5). `tests/test_integration.py` proves a real strategy signal goes end-to-end and **executes only when it
+  passes the full Edge Proof** (and is blocked when the benchmark beats it — no real edge, no trade).
+- **`portfolios/holdings.py` (A2, partial):** per-portfolio weighted-avg holdings + `reconcile_to_fund` — the S11
+  "portfolio-scoped positions that reconcile to the fund" criterion at a basic level (the full `portfolio_id`
+  through `positions`/`ledger` rewrite is now an explicit S12 backlog item, paired with broker write-atomicity).
+- **Doc reconciliation (no code):** Workstreams A + B marked **CLOSED** (S10.5/S11.5); peg marked done (S9 s4);
+  fixed CLAUDE.md (removed 5 phantom strategy files from the repo map — the earlier "fixed" claim had only
+  covered 2; corrected the `budget_kernel` path from `governance/` → `capital/`; S10 summary row → ✅); bumped all
+  current/headline test counts to 517 and de-staled the S9-in-progress / 440 / 478 strings across README, HANDOFF,
+  docs/README, CAMEL_TESTING, and the consultant handoff. **Verdict: nothing silently dropped; the build is now
+  genuinely one integrated system.** Next = S12.
+
+---
+
 ## 2026-06-07 — S11 SHIPPED: Strategy Registry + Portfolio Engine + 4-tier Learning
 
 Three new real packages (486 → **513 tests**); the `strategies/` and `learning/` repo-map phantoms are now

@@ -60,8 +60,14 @@ Optimize for **evidence density, not feature count.**
 > but it surfaced one structural gap, plus parallel workstreams and backlog items that need an explicit home so
 > they aren't lost between sprints. Everything below is now tracked here.
 
-### ⭐ WORKSTREAM A — Operator-loop assembly / integration (the structural gap)
-**Finding:** the Camel is *a complete set of well-tested components with the integration layer largely
+### ⭐ WORKSTREAM A — Operator-loop assembly / integration — ✅ CLOSED (S10.5 + S11.5)
+**RESOLVED.** A1–A4 are done: the §4 loop is assembled in `loop/assembled.py` (every action routes through
+`Allocator.request()` → Edge Proof + Constitution; the invariant test proves a no-edge buy is rejected by the
+*assembled* loop — Phase-1 blocker closed), A2/A3 driven by the loop, A4 peg wired in S9 slice 4. **The S11.5
+keystone `loop/driver.py` then connected S9–S11 end-to-end:** registry → context → mixer → the **full** 17-check
+Edge Proof → assembled loop (proven by `tests/test_integration.py`). The original finding is kept below for the
+record.
+*(Original finding:)* the Camel was *a complete set of well-tested components with the integration layer largely
 unbuilt*. Each station — Opportunity Router, Edge-Proof gate (`capital/allocator.py`), Budget Kernel,
 Operator-OS state machine, Regime engine, Constitution, Approval gate — is built and unit-tested, but
 `loop/scheduler.py` assembles a `LoopConfig` with **no-op observe/choose/execute/measure/learn callbacks**, so
@@ -78,13 +84,11 @@ strung together at runtime**. Consequences to close before any live trading:
   boundary** (see its body below), rather than letting the wiring ride implicitly inside other sprints. A1 is
   also a hard gate in the **S13 live-readiness** checklist and `CAMEL_LIVE_READINESS.md`. Tracked, not dropped.
 
-### WORKSTREAM B — Scheduled entrypoints / ops automation
-Built but with **no runnable trigger** (only `loop/scheduler.py` and `ops/kill_switch.py` have `__main__`):
-weekly `ops/scheduled_checks.run_weekly_checks` (kill-switch test + backup + reconcile), `ops/heartbeat`,
-`ops/deadman`, **dashboard generation** (`dashboard.write_dashboard`), and the **founder daily brief**
-(`alerts/brief.send_founder_brief` over Telegram/WhatsApp). **Action:** add Task-Scheduler entrypoints (mirror
-`loop/scheduler.py`) for the weekly job + a daily ops/brief job that renders the dashboard and sends the brief.
-*(Ops-hardening follow-up; pairs with the S6 machine-setup checklist.)*
+### WORKSTREAM B — Scheduled entrypoints / ops automation — ✅ CLOSED (S10.5)
+**RESOLVED.** `loop/jobs.py` provides the entrypoints (`python -m loop.jobs daily|weekly`): `run_daily_ops`
+(heartbeat + dashboard render + founder brief) and `run_weekly_safety` (kill-switch self-test + backup +
+reconcile). *(The connector-ingestion entrypoint remains under Workstream D; founder still wires these into
+Windows Task Scheduler per the S6 machine-setup checklist.)*
 
 ### WORKSTREAM C — Founder tools (parallel, read-only, outside the trust boundary)
 - **Dashboard v2** ✅ done (`dashboard/snapshot.py` + `generate.py`).
@@ -105,16 +109,21 @@ weekly `ops/scheduled_checks.run_weekly_checks` (kill-switch test + backup + rec
   Tadawul-licensed Saudi). *Ingest a lean decision-critical core + one quorum cross-check per category — NOT all
   of them (founder directive: "don't exhaust the system"). The full tiered plan (T0 core / T1 quorum / T2 paid /
   T3 reference) lives in `CAMEL_DATA_SOURCES.md`.*
-- **USD/SAR FX feed → RESOLVED (free):** **FRED series `DEXSAUS`** (USD/SAR spot) is the source — and the **FRED
-  connector already exists**, so the peg monitor (`trader/regime/peg.py`) activates for **$0**. → wire in **S9
-  slice 4**. *(Closes the Workstream-D gap for the peg.)*
+- **USD/SAR FX feed → ✅ DONE (S9 slice 4):** `features.py` reads **FRED `DEXSAUS`** → `peg_deviation_pct`; the
+  classifier raises `GEOPOLITICAL_RISK_OFF` on peg stress. Free (the FRED connector already existed).
 - **Connector base hardening (NEW):** add retry/backoff + descriptive-User-Agent discipline to `SourceConnector`
   (live-pull test 2026-06-07 hit SEC 403s on generic UA + GDELT 429 rate-limits). *(S8 cont. / ties to Workstream B.)*
 
 ### BACKLOG — smaller items with a home
-- **Alaa harvested items scheduled into sprint bodies** (so they aren't lost): screenshot-OCR manual entry → S13;
-  strategy-fit *selector* + strategy "mix" coherence UX → S11; yield-on-cost + moat matrix → S11; sector-cap
-  ≤40% (incl. ETF look-through) → S11 risk budgets.
+- **Per-portfolio positions/ledger (A2): PARTIAL.** `portfolios/holdings.py` (S11.5) gives a per-portfolio
+  weighted-avg holdings view + `reconcile_to_fund` (the S11 acceptance criterion at a basic level). The fund-level
+  `positions`/`ledger` remain the book of record; folding `portfolio_id` through them so every fill writes both
+  books in one transaction is the **remaining S12 item** (pairs with broker write-atomicity below).
+- **System-integration polish (S11.5 done; remainder):** `loop/driver.py` connects registry→full-Edge-Proof→loop;
+  remaining = drive it from a scheduled entrypoint (Workstream B) + per-portfolio context (pass `portfolio_id`).
+- **Alaa harvested items:** screenshot-OCR manual entry → S13; strategy-fit *selector* + "mix" coherence UX → S11
+  backlog (the *registry/matrix* shipped; the founder-facing selector UI did not); yield-on-cost + moat matrix →
+  S11 backlog; sector-cap ≤40% → landed in `portfolios/check_risk_budget` (S11).
 - **Health-monitor checks** `cpu/memory/broker/telegram/secrets` are hardcoded `"skipped"` — wire real checks
   (psutil for cpu/mem; live-cred pings for broker/telegram). *(Ops-hardening follow-up; add `psutil`.)*
 - **`data/quality.py`** "refine" was mis-tagged to S7 — refinement belongs with the data backbone (S8 cont.).
@@ -1027,9 +1036,11 @@ defence-in-depth `_is_tradeable` so a strategy never *proposes* a haram name), `
 base-rate (`base_rate_updater`), L2 auto weight **within a founder band** (`strategy_scorer`), regime affinity
 gated at **N≥20** (`regime_matcher`), anomaly detector, **L3 propose-only** (`improvement_proposer` →
 `learning_proposals` table; **no agent-callable apply** — L4 founder approves). Tests: `test_strategies.py` (13)
-+ `test_portfolios.py` (9) + `test_learning_engine.py` (5). *Strategies feed candidates to the S10.5 assembled
-loop → Edge Proof. Remaining: per-portfolio ledger reconciliation + intraday_monitor + congress_signal are
-backlog; the engine, registry, portfolios, and learning tiers are done.*
++ `test_portfolios.py` (9) + `test_learning_engine.py` (5). **S11.5 keystone integration shipped** (`loop/driver.py` —
+`run_strategy_tick` drives registry→context→mixer→**full** Edge Proof→assembled loop, proven by
+`tests/test_integration.py`; `portfolios/holdings.py` per-portfolio accounting + `reconcile_to_fund`). → 517 tests.
+*Remaining backlog: full portfolio-scoped positions/ledger rewrite (S12, with broker write-atomicity);
+intraday_monitor + congress_signal + the rest of the strategy roster are post-Edge-Lab.*
 
 ---
 

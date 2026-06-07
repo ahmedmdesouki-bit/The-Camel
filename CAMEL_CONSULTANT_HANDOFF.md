@@ -6,7 +6,7 @@
 >
 > **Snapshot date:** 2026-06-06 · **Repo:** https://github.com/ahmedmdesouki-bit/The-Camel
 > (branch `main`) · **Status:** Sprints S1–S7 complete · S8 core (10 connectors; rest deferred) · S9 in
-> progress (slices 1–2: entity resolution + Regime Engine) · 513 tests green · paper-mode only · on Roadmap v3 (S1–S14).
+> progress (slices 1–2: entity resolution + Regime Engine) · 517 tests green · paper-mode only · on Roadmap v3 (S1–S14).
 
 > ⚠️ **What this is:** a personal, educational, decision-support / engineering project for the
 > founder's **own** capital. It is **not** financial, legal, or Sharia advice, and **not** a
@@ -182,7 +182,7 @@ Learning Ledger, an append-only op log, and a GREEN/YELLOW/RED/BLACK health moni
 
 ---
 
-## 7. What's built — Phase 0, 513 tests green
+## 7. What's built — Phase 0, 517 tests green
 
 The **safety and evidence core is done.** Everything below runs in paper/simulation behind a human gate.
 
@@ -214,7 +214,7 @@ tampering; a malicious symbol is HTML-escaped in the dashboard, not injected; a 
 ## 8. Tech stack
 
 - **Language:** Python 3.12. `guardrail/` and `engine/` are kept pure (no I/O) for unit-testability.
-- **Tests:** pytest — 440 passing. Adversarial + integration suites included.
+- **Tests:** pytest — 517 passing. Adversarial + integration suites included.
 - **Data layer:** SQLite × 7 (Phase 0). Postgres/Supabase schema staged for later migration.
 - **Market data / broker:** Alpaca paper (free IEX feed); yfinance for quick prototypes.
 - **Harness:** a plain Python loop today (Claude Agent SDK adoption deferred until real tool-use
@@ -247,7 +247,7 @@ ops/           kill_switch / heartbeat / backup / secrets_manager / scheduled_ch
 dashboard/     read-only HTML view
 alerts/        telegram / daily report
 db/            CamelDbs (7-DB paths) + per-domain DDL
-tests/         25+ test files, 440 tests
+tests/         30+ test files, 517 tests
 docs/          the documentation set (see §15)
 ```
 
@@ -334,7 +334,7 @@ These are genuinely open and are the highest-value places for your feedback:
 ```bash
 git clone https://github.com/ahmedmdesouki-bit/The-Camel.git
 cd The-Camel
-python -m pytest -q          # expect: 440 passed
+python -m pytest -q          # expect: 517 passed
 ```
 
 - No credentials are required to run the test suite (Alpaca/Telegram stub out without keys).

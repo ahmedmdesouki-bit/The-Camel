@@ -11,12 +11,12 @@ autonomy is earned through a paper track record, never granted.
 > **Safety first. Evidence second. Autonomy last.**
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · Sprints **S1–S7 complete** · **S8 core** (10 connectors) · **S9 COMPLETE (slices 1–4)** · Dashboard v2 + founder alerts · **513 tests green** ·
+**Status:** Phase 0 (paper) · Sprints **S1–S7 complete** · **S8 core** (10 connectors) · **S9–S11 complete (+ S11.5 integration)** · Dashboard v2 + founder alerts · **517 tests green** ·
 7-DB architecture live · on **Roadmap v3** (S1–S14).
 
 ---
 
-## What's built (Phase 0 — paper, 513 tests green)
+## What's built (Phase 0 — paper, 517 tests green)
 
 The **safety and evidence core** is done. Everything runs in paper mode behind a human gate.
 
@@ -48,11 +48,11 @@ with **point-in-time discipline** (`event_date · reported_at · ingested_at · 
 | Sprint | Theme | One-line goal |
 |---|---|---|
 | **S8** ◑ core done | Data Intelligence Backbone | framework + provenance + 10 connectors (incl. ETF look-through) + news pipeline (injection-hardened); all 3 stub DBs real. *Remaining ~10 connectors + market-data + paid vendors deferred to a backlog* |
-| **S9** ◑ in progress | Knowledge Graph + Regime Engine | **slices 1–2 done**: entity resolver + 10-state Regime Engine. **Next:** event intelligence, Sharia cross-check (multi-state) |
-| **S9** | Knowledge Graph + Regime Engine | Entity resolution, event intelligence, 10-state regime classifier, Sharia cross-check |
-| **S10** | Full Edge Proof Engine | **17-check signal-conditioned** proof (multiple-testing penalty, signal decay, regime-filtered sample) + decision-quality dashboard |
-| **S11** | Strategy Registry + Learning | Trio: `core_dca` / `quality_momentum` / `etf_regime_rotation`; 4-tier learning engine |
-| **S12** | Edge Lab + ⭐ Sandbox Mode | **`sandbox`**: full system on live data + virtual money (the dress rehearsal that earns micro-live); two-engine cross-check; Sharia-drag quantified; **No-Edge protocol → DCA** |
+| **S9** ✅ | Knowledge Graph + Regime + Sharia cross-check | entity resolver + 10-state Regime Engine + event intelligence/`event_reactions` + multi-state AAOIFI Sharia cross-check (disagreement→freeze) + peg wiring |
+| **S10** ✅ | Full Edge Proof Engine | **17-check signal-conditioned** proof (multiple-testing penalty, signal decay, Sharia fail-safe, model-disagreement→human, shadow/enforcing) |
+| **S10.5** ✅ | Operator-Loop Assembly | §4 loop assembled (`loop/assembled.py`) — Phase-1 blocker closed; scheduled ops entrypoints |
+| **S11 (+S11.5)** ✅ | Strategy Registry + Portfolios + Learning | trio + dividend_growth + mixer + promotion ladder; 6 seed portfolios + lifecycle + risk budgets; 4-tier learning; **S11.5 driver wires it all end-to-end** |
+| **S12** ◀ NEXT | Edge Lab + ⭐ Sandbox Mode | **`sandbox`**: full system on live data + virtual money (the dress rehearsal that earns micro-live); two-engine cross-check; Sharia-drag quantified; **No-Edge protocol → DCA** |
 | **S13** | Micro-Live Readiness | Telegram approval channel, LiveBroker, limit-orders-only, $100–500 human-approved |
 | **S14** | Module Restructure | Flat layout → clean domain hierarchy (tests stay green) |
 
@@ -81,7 +81,7 @@ The repo path is 261 chars (over Windows MAX_PATH). Map a virtual drive first:
 ```powershell
 subst N: "<path-to-this-folder>"
 cd N:\
-python -m pytest -q          # 513 passed
+python -m pytest -q          # 517 passed
 ```
 
 *(For future work, cloning to a short path like `C:\camel` removes this friction.)*

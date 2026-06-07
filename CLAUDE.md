@@ -166,7 +166,9 @@ make a feature work. If a task would require bypassing the Constitution, stop an
 - **S10 ✅ Full Edge Proof** (`engine/edge_proof.py`, 17 checks + shadow/enforcing) · **S10.5 ✅ loop assembled**
   (`loop/assembled.py`, Phase-1 blocker closed) · **S11 ✅ Strategy Registry + Portfolio Engine + Learning**
   (`strategies/` trio + dividend_growth + mixer + promotion ladder; `portfolios/` 6 seed portfolios + lifecycle
-  + tolerance-band rebalancing; `learning/` 4-tier L1–L4). **→ 513 tests. NEXT = S12 (Edge Lab + Sandbox).**
+  + tolerance-band rebalancing; `learning/` 4-tier L1–L4) · **S11.5 ✅ integration keystone** (`loop/driver.py`:
+  registry→full Edge Proof→assembled loop, proven end-to-end; `portfolios/holdings.py` per-portfolio accounting
+  reconciles to the fund). **→ 517 tests. NEXT = S12 (Edge Lab + Sandbox).**
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
@@ -237,8 +239,9 @@ data/             provenance.py — point-in-time provenance fields + source_doc
                   playwright.py — headless browser adapter stub (NotImplementedError; live → S8 scraping policy, QA-only)
 
 governance/       config_guard.py — proves agent has no write path to founder config (S4)
-                  budget_kernel.py — spend limits + capital buckets (S4)
                   tool_permissions.py — Tool Permission Matrix (S4)
+                  beginner_mode.py — only-tightens rail (S6.6)
+                  (note: BudgetKernel lives in capital/budget_kernel.py, not here)
 
 engine/           thesis.py — ThesisCard + BaseRateCard (no I/O, no DB)
                   edge_proof_v0.py — evidence gate v0 from market.db (S4.5; cheapest first filter)
@@ -249,18 +252,12 @@ strategies/       ✅ S11 — base.py (BaseStrategy + Signal/Context/Meta + prom
                   registry.py — StrategyRegistry: register, lookup, activate/pause/kill, weight (band),
                   promote/demote, strategy-portfolio matrix + regime filter (signals_for)
                   core_dca.py · quality_momentum.py · etf_rotation.py · dividend_growth.py · dividends.py · mixer.py
-                  base.py — BaseStrategy abstract class (signal, entry, exit, sizing)
-                  trailing_stop.py — trailing floor + locking-gains exit mode
-                  dca_ladder.py — systematic laddering / DCA on dips
-                  etf_rotation.py — regime-based rotation between SPUS / HLAL / MNZL
-                  momentum.py — trend-following on compliant names
-                  mean_reversion.py — quality-dip accumulation
-                  congress_signal.py — congressional filing signal (feeds Edge Proof, not blind copy)
-                  mixer.py — StrategyMixer: blend by weight, regime affinity, live performance
+                  (⏳ backlog after the Edge Lab: trailing_stop · dca_ladder · momentum · mean_reversion · congress_signal — NOT on disk)
 
 portfolios/       ✅ S11 — engine.py: Portfolio + lifecycle + 6 seed portfolios + allocation +
                   tolerance-band rebalancing (suggestions, not auto-trades) + 4-level risk budgets +
-                  persistence (portfolios / portfolio_holdings tables)
+                  persistence (portfolios table)
+                  holdings.py — per-portfolio weighted-avg holdings + reconcile_to_fund (S11.5)
 
 learning/         ✅ S11 — 4-tier learning engine:
                   base_rate_updater.py — L1: update strategy base-rates after trade resolution
@@ -274,6 +271,7 @@ loop/             runner.py — LoopRunner (legacy LoopConfig harness; tests sti
                   assembled.py — ⭐ AssembledLoop (S10.5): the real §4 tick — Observe(regime)→Router→
                   Allocator(Edge+Constitution)→Budget→Approval→Act; closes the Phase-1 blocker
                   jobs.py — scheduled entrypoints (S10.5): run_daily_ops / run_weekly_safety (python -m loop.jobs)
+                  driver.py — ⭐ S11.5 keystone: registry→context→mixer→FULL Edge Proof→assembled loop (run_strategy_tick)
                   state.py — RunState + begin/update/finish_run (→ camel_portfolio.db)
                   scheduler.py — Windows Task Scheduler entrypoint (EOD, once daily)
                   intraday_monitor.py — ⏳ PLANNED (S11) 5-min position manager during market hours
@@ -304,7 +302,8 @@ alerts/           telegram.py — credential-safe one-way notifier (+approve/vet
                   brief.py — founder daily brief from the dashboard snapshot (any notifier)
                   daily.py — ops/health daily report delivery
 
-capital/          allocator.py — Allocator.request() routes through Constitution
+capital/          allocator.py — Allocator.request() routes through Edge Proof + Constitution
+                  budget_kernel.py — BudgetKernel: per-action + rolling spend limits + capital buckets (S4)
 
 ops/              kill_switch.py — halt / resume / is_halted (file flag)
 
@@ -445,7 +444,7 @@ Optimize for **evidence density, not feature count.**
 | S8 ~ | Data Intelligence Backbone (top-20 connectors) | **slices 1–5 done** (framework + provenance + 10 connectors incl. ETF look-through + news injection-hardening + scraping policy, 389 tests; all 3 stub DBs real); ~10 connectors + market-data + paid remain |
 | S8.5 | Real-Time Data Tier *(founder)* | streaming quotes + live-news + real-time monitor/alerts; separate realtime store (EOD bars untouched); monitoring-only unless quorum; **execution stays EOD** |
 | S9 ✅ | Knowledge Graph + Regime + Sharia cross-check | **slices 1–4 done** (entity resolver + 10-state Regime Engine + event intelligence/`event_reactions` + multi-state AAOIFI Sharia cross-check w/ disagreement→freeze + peg wiring), **465 tests** |
-| S10 ◑ engine built | Full Edge Proof Engine (17 checks) | **engine + gate done (478 tests):** `engine/edge_proof.py` — 17 checks, pre-registered thresholds, multiple-testing penalty, signal-decay, Sharia fail-safe, model-disagreement→human, shadow/enforcing, `edge_reports` log. *Remaining: feed real strategy signals (S11) + regime-conditioned sample + dashboard panels* |
+| ✅ S10 | Full Edge Proof Engine (17 checks) | `engine/edge_proof.py` — 17 checks, pre-registered thresholds, multiple-testing penalty, signal-decay, Sharia fail-safe, model-disagreement→human, shadow/enforcing, `edge_reports` log. **Now fed real strategy signals via the S11.5 driver.** *(Regime-conditioned sample + dashboard panels: backlog)* |
 | ✅ S10.5 | Operator-Loop Assembly + Runtime (Workstream A/B) | **DONE (486 tests):** `loop/assembled.py` assembles Observe→Router→Allocator(Edge+Constitution)→Budget→Approval→Act; invariant test proves **a buy with no EdgeReport is rejected by the assembled loop** (Phase-1 blocker CLOSED); `loop/jobs.py` scheduled daily/weekly entrypoints; still paper |
 | ✅ S11 (513 tests) | Strategy Registry + Portfolio Engine + Learning | >=3 strategies (trio incl. dividend_growth w/ **lot-level + gross→NRA-withholding→net** mechanics) pass Edge Proof; **multi-portfolio (lifecycle incubate→retire, tolerance-band rebalance, multi-benchmark, 6 seed portfolios, portfolio-scoped positions/ledger reconciling to fund)**; meets the 15-item acceptance checklist; never auto-edits the Constitution |
 | S12 | Edge Lab + realistic paper + Sandbox Mode | two-engine cross-check; delisted handled; beats simple DCA after costs; ⭐ sandbox (live data + virtual money) runs the full system; No-Edge protocol → DCA |
