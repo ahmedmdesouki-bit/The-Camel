@@ -102,11 +102,19 @@ def build_edge_report(
     )
 
 
-def _load_closes(market_db: str, symbol: str) -> List[float]:
+def _load_closes(market_db: str, symbol: str, as_of: Optional[str] = None) -> List[float]:
+    """Closes for a symbol, oldest→newest. **Point-in-time (P1-B):** pass `as_of` to see only bars
+    whose session date ≤ as_of AND that Camel was already allowed to use (`known_at` ≤ as_of, or
+    unset). With `as_of=None` (the live default) the behaviour is unchanged. This stops a backfill,
+    sandbox replay, or restated/adjusted bar from leaking look-ahead into the trade verdict."""
+    sql = "SELECT close FROM prices WHERE symbol=?"
+    args: list = [symbol]
+    if as_of is not None:
+        sql += " AND date <= ? AND (known_at IS NULL OR known_at <= ?)"
+        args += [as_of, as_of]
+    sql += " ORDER BY date ASC"
     with connection(market_db) as conn:
-        rows = conn.execute(
-            "SELECT close FROM prices WHERE symbol=? ORDER BY date ASC", (symbol,)
-        ).fetchall()
+        rows = conn.execute(sql, args).fetchall()
     return [r[0] for r in rows if r[0] is not None]
 
 
@@ -119,18 +127,20 @@ def evaluate_signal(
     estimated_cost: float = DEFAULT_COST,
     min_sample: int = DEFAULT_MIN_SAMPLE,
     data_fresh: bool = True,
+    as_of: Optional[str] = None,
 ) -> EdgeReport:
     """
     Read prices from camel_market.db, compute the signal's forward-return distribution, and
-    compare to the benchmark's median forward return over the same horizon.
+    compare to the benchmark's median forward return over the same horizon. `as_of` (P1-B) enforces
+    point-in-time honesty on both the symbol and the benchmark series.
     """
-    closes = _load_closes(market_db, symbol)
+    closes = _load_closes(market_db, symbol, as_of=as_of)
     fwd = compute_forward_returns(closes, horizon)
 
     benchmark_return: Optional[float] = None
     benchmark = DEFAULT_BENCHMARK
     if benchmark_symbol:
-        bench_fwd = compute_forward_returns(_load_closes(market_db, benchmark_symbol), horizon)
+        bench_fwd = compute_forward_returns(_load_closes(market_db, benchmark_symbol, as_of=as_of), horizon)
         benchmark = f"{benchmark_symbol}_BH"
         benchmark_return = median(bench_fwd) if bench_fwd else None
 

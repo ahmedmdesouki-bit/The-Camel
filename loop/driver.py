@@ -36,7 +36,7 @@ def build_context(dbs: CamelDbs, symbols: List[str], *, cash_usd: float = 0.0,
         regime = classify(build_features(dbs, as_of=as_of)).regime.value
     except Exception:                                   # pragma: no cover - defensive
         pass
-    closes = {s: _load_closes(dbs.market, s) for s in symbols}
+    closes = {s: _load_closes(dbs.market, s, as_of=as_of) for s in symbols}
     whitelist = {s: _sharia_status(dbs, s) for s in symbols}
     return StrategyContext(as_of=as_of, regime=regime, closes=closes, whitelist=whitelist,
                            holdings=holdings or {}, cash_usd=cash_usd)
@@ -61,7 +61,7 @@ def run_strategy_tick(dbs: CamelDbs, registry: StrategyRegistry, state: Portfoli
         er = evaluate_signal_full(
             dbs, bc.symbol, signal=(bc.theme or "blend"),
             signal_definition=f"blended:{'/'.join(sorted(bc.strategies))}",
-            budget_usd=budget_usd, mode=mode)
+            budget_usd=budget_usd, mode=mode, as_of=as_of)
         # synthesise the required ThesisCard fields from the signal (a real strategy supplies these)
         thesis = Thesis(invalidation="edge invalidated / Sharia drift",
                         profit_take="+15% or regime change", time_stop="90d")

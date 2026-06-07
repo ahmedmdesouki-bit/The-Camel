@@ -239,12 +239,14 @@ def evaluate_signal_full(dbs, symbol: str, signal: str, signal_definition: str, 
                          budget_usd: Optional[float] = None, mode: str = "enforcing",
                          regime_filtered_returns: Optional[List[float]] = None,
                          data_quality_score: float = 0.85,
-                         model_votes: Optional[Dict[str, str]] = None) -> FullEdgeReport:
+                         model_votes: Optional[Dict[str, str]] = None,
+                         as_of: Optional[str] = None) -> FullEdgeReport:
     """Load prices (camel_market.db) + the symbol's Sharia status (S9), build the inputs, and run the
-    full engine. Reuses the v0 loaders so v0 stays the cheapest first filter."""
-    closes = _load_closes(dbs.market, symbol)
+    full engine. Reuses the v0 loaders so v0 stays the cheapest first filter. `as_of` (P1-B) enforces
+    point-in-time honesty on the price series (no look-ahead from backfills/replays/restatements)."""
+    closes = _load_closes(dbs.market, symbol, as_of=as_of)
     fwd = compute_forward_returns(closes, horizon)
-    bench_fwd = compute_forward_returns(_load_closes(dbs.market, benchmark_symbol), horizon)
+    bench_fwd = compute_forward_returns(_load_closes(dbs.market, benchmark_symbol, as_of=as_of), horizon)
     bench_med = median(bench_fwd) if bench_fwd else None
     # "recent" = the most recent quarter of the signal's forward returns, for the decay test
     recent = fwd[-max(MIN_REGIME_SAMPLE, len(fwd) // 4):] if fwd else []

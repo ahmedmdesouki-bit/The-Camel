@@ -58,12 +58,29 @@ def _make_hash(ts: str, type_: str, symbol: str, amount: float,
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
+def _append_on_conn(conn: sqlite3.Connection, now: str, type_: str, symbol: str,
+                    amount: float, ref: str) -> int:
+    """Append one entry on an existing connection (no commit — the caller owns the transaction)."""
+    last = _last_row(conn)
+    prev_balance = last["balance_after"] if last else 0.0
+    prev_hash = last["hash"] if last else ""
+    balance_after = prev_balance + amount
+    h = _make_hash(now, type_, symbol, amount, balance_after, ref, prev_hash)
+    cur = conn.execute(
+        "INSERT INTO ledger (ts, type, symbol, amount, balance_after, ref, hash) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (now, type_, symbol, amount, balance_after, ref, h),
+    )
+    return cur.lastrowid
+
+
 def append_entry(
     db_path: str,
     type_: str,
     symbol: str,
     amount: float,
     ref: str = "",
+    conn: Optional[sqlite3.Connection] = None,
 ) -> int:
     """
     Append one ledger entry and return the new row id.
@@ -72,19 +89,15 @@ def append_entry(
     `balance_after` = previous balance + amount (running cash balance). The hash chains
     to the previous row, so any later edit is detectable by verify_hash_chain().
     A failed write propagates the sqlite error (the entry is never silently dropped).
-    """
-    _ensure_table(db_path)
-    now = datetime.now(timezone.utc).isoformat()
 
-    with connection(db_path) as conn:
-        last = _last_row(conn)
-        prev_balance = last["balance_after"] if last else 0.0
-        prev_hash = last["hash"] if last else ""
-        balance_after = prev_balance + amount
-        h = _make_hash(now, type_, symbol, amount, balance_after, ref, prev_hash)
-        cur = conn.execute(
-            "INSERT INTO ledger (ts, type, symbol, amount, balance_after, ref, hash) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (now, type_, symbol, amount, balance_after, ref, h),
-        )
-        return cur.lastrowid
+    **Atomicity (P1-A):** pass an open `conn` to enlist this write in a caller-owned transaction
+    (e.g. the broker writing orders + ledger + positions together). When `conn` is given the table
+    is assumed to exist and NOTHING is committed here — the outer `connection()` commits or rolls
+    back the whole unit. With `conn=None` the behaviour is unchanged (own table-ensure + own commit).
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    if conn is not None:
+        return _append_on_conn(conn, now, type_, symbol, amount, ref)
+    _ensure_table(db_path)
+    with connection(db_path) as own:
+        return _append_on_conn(own, now, type_, symbol, amount, ref)

@@ -25,7 +25,7 @@ from typing import Optional
 
 from db.sqlite import connection
 from guardrail.constitution import Action, Decision
-from ledger.writer import append_entry
+from ledger.writer import append_entry, _ensure_table as _ensure_ledger_table
 from broker.positions import apply_fill, held_qty, InsufficientPositionError
 
 
@@ -160,6 +160,15 @@ class PaperBroker:
                 raise InsufficientPositionError(
                     f"sell {qty:.6f} {symbol} exceeds held {have:.6f}")
 
+        is_buy = action.side.lower() == "buy"
+        ledger_type = "BUY" if is_buy else "SELL"
+        signed = -notional if is_buy else notional   # BUY = cash out, SELL = cash in
+
+        # P1-A: orders + ledger + positions in ONE transaction. If apply_fill raises (e.g. a
+        # phantom-sell re-check), the order row and the ledger cash entry roll back too — the
+        # books can never diverge from a mid-sequence failure. (Tables ensured first, outside
+        # the atomic block, so no nested connection deadlocks under WAL.)
+        _ensure_ledger_table(self.portfolio_db)
         with connection(self.portfolio_db) as conn:
             cur = conn.execute(
                 "INSERT INTO orders "
@@ -168,15 +177,10 @@ class PaperBroker:
                 (coid, symbol, action.side, qty, now, now, fill_price),
             )
             order_id = cur.lastrowid
-
-        is_buy = action.side.lower() == "buy"
-        ledger_type = "BUY" if is_buy else "SELL"
-        signed = -notional if is_buy else notional   # BUY = cash out, SELL = cash in
-        append_entry(self.portfolio_db, ledger_type, symbol,
-                     signed, ref=f"order_{order_id}")
-
-        # S6.6: keep the positions table in sync — weighted-avg cost on buy, realized P&L on sell.
-        apply_fill(self.portfolio_db, symbol, action.side, qty, fill_price)
+            append_entry(self.portfolio_db, ledger_type, symbol, signed,
+                         ref=f"order_{order_id}", conn=conn)
+            # keep the positions table in sync — weighted-avg cost on buy, realized P&L on sell.
+            apply_fill(self.portfolio_db, symbol, action.side, qty, fill_price, conn=conn)
 
         return Fill(
             order_id=order_id, symbol=symbol, side=action.side,

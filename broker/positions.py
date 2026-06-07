@@ -12,6 +12,7 @@ SELL — validate qty <= held, reduce qty, realize P&L = (price - avg_cost) * se
 This module is the single writer of the `positions` table. Pure SQL + arithmetic, no network.
 """
 from __future__ import annotations
+import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -77,51 +78,64 @@ def positions_market_value(portfolio_db: str) -> float:
     return sum(p.market_value for p in all_positions(portfolio_db))
 
 
-def apply_fill(portfolio_db: str, symbol: str, side: str, qty: float, price: float) -> Position:
+def apply_fill(portfolio_db: str, symbol: str, side: str, qty: float, price: float,
+               conn: Optional[sqlite3.Connection] = None) -> Position:
     """
     Update `positions` for one fill and return the resulting Position.
     Raises InsufficientPositionError if a SELL exceeds the held quantity.
+
+    **Atomicity (P1-A):** pass an open `conn` to enlist this update in a caller-owned transaction
+    (so a phantom-sell raise rolls back the order + ledger writes too). With `conn=None` the
+    behaviour is unchanged (own connection + own commit).
     """
     side = side.lower()
     if qty <= 0:
         raise ValueError("fill qty must be positive")
     now = _now()
-    with connection(portfolio_db) as conn:
-        r = conn.execute(
-            "SELECT qty, avg_cost, realized_pnl, opened_at FROM positions WHERE symbol=?",
-            (symbol,),
-        ).fetchone()
-        held = (r["qty"] if r else 0.0) or 0.0
-        avg = (r["avg_cost"] if r else 0.0) or 0.0
-        realized = (r["realized_pnl"] if r else 0.0) or 0.0
-        opened_at = (r["opened_at"] if r and r["opened_at"] else now)
+    if conn is not None:
+        return _apply_on_conn(conn, symbol, side, qty, price, now)
+    with connection(portfolio_db) as own:
+        return _apply_on_conn(own, symbol, side, qty, price, now)
 
-        if side == "buy":
-            new_qty = held + qty
-            new_avg = (held * avg + qty * price) / new_qty if new_qty > _EPS else 0.0
-        elif side == "sell":
-            if qty > held + _EPS:
-                raise InsufficientPositionError(
-                    f"sell {qty:.6f} {symbol} exceeds held {held:.6f}")
-            realized += (price - avg) * qty
-            new_qty = held - qty
-            new_avg = avg if new_qty > _EPS else 0.0
-        else:
-            raise ValueError(f"unknown side {side!r}")
 
-        status = "open" if new_qty > _EPS else "closed"
-        market_value = new_qty * price
-        unrealized = (price - new_avg) * new_qty if new_qty > _EPS else 0.0
+def _apply_on_conn(conn: sqlite3.Connection, symbol: str, side: str, qty: float,
+                   price: float, now: str) -> Position:
+    """The fill math + positions upsert, on an existing connection (no commit here)."""
+    r = conn.execute(
+        "SELECT qty, avg_cost, realized_pnl, opened_at FROM positions WHERE symbol=?",
+        (symbol,),
+    ).fetchone()
+    held = (r["qty"] if r else 0.0) or 0.0
+    avg = (r["avg_cost"] if r else 0.0) or 0.0
+    realized = (r["realized_pnl"] if r else 0.0) or 0.0
+    opened_at = (r["opened_at"] if r and r["opened_at"] else now)
 
-        conn.execute(
-            "INSERT INTO positions "
-            "(symbol, qty, avg_cost, market_price, market_value, unrealized_pnl, "
-            " realized_pnl, opened_at, updated_at, status) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?) "
-            "ON CONFLICT(symbol) DO UPDATE SET "
-            "qty=excluded.qty, avg_cost=excluded.avg_cost, market_price=excluded.market_price, "
-            "market_value=excluded.market_value, unrealized_pnl=excluded.unrealized_pnl, "
-            "realized_pnl=excluded.realized_pnl, updated_at=excluded.updated_at, status=excluded.status",
-            (symbol, new_qty, new_avg, price, market_value, unrealized, realized, opened_at, now, status),
-        )
+    if side == "buy":
+        new_qty = held + qty
+        new_avg = (held * avg + qty * price) / new_qty if new_qty > _EPS else 0.0
+    elif side == "sell":
+        if qty > held + _EPS:
+            raise InsufficientPositionError(
+                f"sell {qty:.6f} {symbol} exceeds held {held:.6f}")
+        realized += (price - avg) * qty
+        new_qty = held - qty
+        new_avg = avg if new_qty > _EPS else 0.0
+    else:
+        raise ValueError(f"unknown side {side!r}")
+
+    status = "open" if new_qty > _EPS else "closed"
+    market_value = new_qty * price
+    unrealized = (price - new_avg) * new_qty if new_qty > _EPS else 0.0
+
+    conn.execute(
+        "INSERT INTO positions "
+        "(symbol, qty, avg_cost, market_price, market_value, unrealized_pnl, "
+        " realized_pnl, opened_at, updated_at, status) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?) "
+        "ON CONFLICT(symbol) DO UPDATE SET "
+        "qty=excluded.qty, avg_cost=excluded.avg_cost, market_price=excluded.market_price, "
+        "market_value=excluded.market_value, unrealized_pnl=excluded.unrealized_pnl, "
+        "realized_pnl=excluded.realized_pnl, updated_at=excluded.updated_at, status=excluded.status",
+        (symbol, new_qty, new_avg, price, market_value, unrealized, realized, opened_at, now, status),
+    )
     return Position(symbol, new_qty, new_avg, price, market_value, realized, status)
