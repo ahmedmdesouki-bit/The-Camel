@@ -27,6 +27,7 @@ from db.sqlite import connection
 from guardrail.constitution import Action, Decision
 from ledger.writer import append_entry, _ensure_table as _ensure_ledger_table
 from broker.positions import apply_fill, held_qty, InsufficientPositionError
+from portfolios.holdings import apply_portfolio_fill
 
 
 class DuplicateOrderException(Exception):
@@ -122,12 +123,17 @@ class PaperBroker:
         _ensure_orders_table(portfolio_db)
 
     def submit(self, action: Action, decision: Decision,
-               client_order_id: Optional[str] = None) -> Fill:
+               client_order_id: Optional[str] = None,
+               portfolio_id: Optional[str] = None) -> Fill:
         """
         Simulate a fill.  Constitution decision must be allow=True.
         Idempotent: a stable client_order_id is generated if not supplied, and a repeat of
         the same id is refused (DuplicateOrderException). Writes to orders + ledger
         (BUY = cash out, SELL = cash in).
+
+        `portfolio_id` (S12): when supplied, the per-portfolio book (`portfolio_holdings`) is updated in
+        the SAME transaction as orders + ledger + positions, so the fund book and the portfolio book can
+        never diverge from a fill.
         """
         if not decision.allow:
             raise ValueError(f"Order blocked by Constitution: {decision.reason}")
@@ -181,6 +187,9 @@ class PaperBroker:
                          ref=f"order_{order_id}", conn=conn)
             # keep the positions table in sync — weighted-avg cost on buy, realized P&L on sell.
             apply_fill(self.portfolio_db, symbol, action.side, qty, fill_price, conn=conn)
+            # S12: when a portfolio is named, update its per-portfolio book in the SAME transaction.
+            if portfolio_id:
+                apply_portfolio_fill(None, portfolio_id, symbol, action.side, qty, fill_price, conn=conn)
 
         return Fill(
             order_id=order_id, symbol=symbol, side=action.side,

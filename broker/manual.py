@@ -9,8 +9,10 @@ propose step moves no money; only `record_fill` (a human-entered, real-world fil
 """
 from __future__ import annotations
 
+import re
 import uuid
 from dataclasses import dataclass
+from typing import Optional
 
 from db.paths import CamelDbs
 from db.sqlite import connection
@@ -57,6 +59,47 @@ def _compliance_warnings(dbs: CamelDbs, symbol: str, side: str) -> list:
     except Exception:                              # pragma: no cover - never break a real-money record
         pass
     return warnings
+
+
+_SIDE_WORDS = {"BUY": "buy", "BOUGHT": "buy", "SELL": "sell", "SOLD": "sell"}
+_NOT_A_TICKER = {"BUY", "SELL", "SOLD", "BOUGHT", "SAR", "USD", "AT", "QTY", "SHARES", "SHARE", "LIMIT", "MARKET"}
+
+
+def parse_fill_text(text: str) -> Optional[dict]:
+    """Parse a pasted Sahm/broker confirmation into {side, symbol, qty, price}. Tolerant of formats like
+    'Buy 10 SPUS @ 41.20', 'Bought 10 shares of SPUS at $41.20', 'SELL SPUS 5 48.90'. Returns None if it
+    cannot confidently extract all four (the founder then enters them manually rather than risk a bad book).
+
+    NB: image→text OCR is the founder/paid dependency (S15); this is the text→structured step."""
+    if not text:
+        return None
+    t = str(text).strip()
+    up = t.upper()
+    side = next((v for k, v in _SIDE_WORDS.items() if re.search(rf"\b{k}\b", up)), None)
+    if side is None:
+        return None
+    # ticker: first 1–5 letter uppercase token that isn't a side/currency word
+    symbol = next((tok for tok in re.findall(r"\b[A-Z]{1,5}\b", up) if tok not in _NOT_A_TICKER), None)
+    # price: the number after @ / at / $ (else the first decimal number)
+    pm = re.search(r"(?:@|\bAT\b|\$)\s*\$?\s*([0-9]+(?:\.[0-9]+)?)", up) or re.search(r"([0-9]+\.[0-9]+)", t)
+    # qty: the first standalone integer that isn't the price
+    price = float(pm.group(1)) if pm else None
+    qty = None
+    for m in re.findall(r"\b(\d+)\b", t):
+        if price is None or float(m) != price:
+            qty = int(m)
+            break
+    if not (symbol and price and qty):
+        return None
+    return {"side": side, "symbol": symbol, "qty": qty, "price": price}
+
+
+def record_fill_from_text(dbs: CamelDbs, text: str, *, ticket_id: str = "") -> Optional[dict]:
+    """Parse a pasted confirmation and record it. Returns None (records nothing) if parsing is not confident."""
+    parsed = parse_fill_text(text)
+    if parsed is None:
+        return None
+    return record_fill(dbs, ticket_id=ticket_id, **parsed)
 
 
 def record_fill(dbs: CamelDbs, *, symbol: str, side: str, qty: float, price: float,

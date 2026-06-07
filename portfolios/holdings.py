@@ -8,8 +8,9 @@ the S11 acceptance criterion ("portfolio-scoped positions that reconcile to the 
 """
 from __future__ import annotations
 
+import sqlite3
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from db.paths import CamelDbs
 from db.sqlite import connection
@@ -19,37 +20,48 @@ def _utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def apply_portfolio_fill(dbs: CamelDbs, portfolio_id: str, symbol: str, side: str,
-                         qty: float, price: float) -> dict:
+def _apply_pf_on_conn(conn: sqlite3.Connection, portfolio_id: str, symbol: str, side: str,
+                      qty: float, price: float) -> dict:
+    """The per-portfolio holding math + upsert on an existing connection (no commit here)."""
+    row = conn.execute(
+        "SELECT qty, avg_cost FROM portfolio_holdings WHERE portfolio_id=? AND symbol=?",
+        (portfolio_id, symbol)).fetchone()
+    cur_qty = row["qty"] if row else 0.0
+    cur_cost = row["avg_cost"] if row else 0.0
+
+    if side == "buy":
+        new_qty = cur_qty + qty
+        new_cost = ((cur_qty * cur_cost) + (qty * price)) / new_qty if new_qty else 0.0
+    else:  # sell / reduce
+        if qty > cur_qty + 1e-9:
+            raise ValueError(f"portfolio sell {qty} exceeds held {cur_qty} for {symbol}")
+        new_qty = cur_qty - qty
+        new_cost = cur_cost if new_qty > 0 else 0.0
+
+    conn.execute(
+        "INSERT INTO portfolio_holdings (portfolio_id, symbol, qty, avg_cost, market_value, updated_at) "
+        "VALUES (?,?,?,?,?,?) ON CONFLICT(portfolio_id, symbol) DO UPDATE SET "
+        "qty=excluded.qty, avg_cost=excluded.avg_cost, market_value=excluded.market_value, "
+        "updated_at=excluded.updated_at",
+        (portfolio_id, symbol, new_qty, round(new_cost, 6), round(new_qty * price, 6), _utcnow()),
+    )
+    return {"portfolio_id": portfolio_id, "symbol": symbol, "qty": new_qty, "avg_cost": round(new_cost, 6)}
+
+
+def apply_portfolio_fill(dbs: Optional[CamelDbs], portfolio_id: str, symbol: str, side: str,
+                         qty: float, price: float, conn: Optional[sqlite3.Connection] = None) -> dict:
     """Update one portfolio's holding for a fill (weighted-avg cost on buys; reduce qty on sells).
-    Raises ValueError if a sell exceeds the held quantity (no phantom sells, per-portfolio)."""
+    Raises ValueError if a sell exceeds the held quantity (no phantom sells, per-portfolio).
+
+    Pass an open `conn` (S12) to enlist this in the broker's single fund+portfolio transaction so both
+    books move together; otherwise it opens its own connection on `dbs.portfolio`."""
     side = side.lower()
     if qty <= 0:
         raise ValueError("fill qty must be positive")
-    with connection(dbs.portfolio) as conn:
-        row = conn.execute(
-            "SELECT qty, avg_cost FROM portfolio_holdings WHERE portfolio_id=? AND symbol=?",
-            (portfolio_id, symbol)).fetchone()
-        cur_qty = row["qty"] if row else 0.0
-        cur_cost = row["avg_cost"] if row else 0.0
-
-        if side == "buy":
-            new_qty = cur_qty + qty
-            new_cost = ((cur_qty * cur_cost) + (qty * price)) / new_qty if new_qty else 0.0
-        else:  # sell / reduce
-            if qty > cur_qty + 1e-9:
-                raise ValueError(f"portfolio sell {qty} exceeds held {cur_qty} for {symbol}")
-            new_qty = cur_qty - qty
-            new_cost = cur_cost if new_qty > 0 else 0.0
-
-        conn.execute(
-            "INSERT INTO portfolio_holdings (portfolio_id, symbol, qty, avg_cost, market_value, updated_at) "
-            "VALUES (?,?,?,?,?,?) ON CONFLICT(portfolio_id, symbol) DO UPDATE SET "
-            "qty=excluded.qty, avg_cost=excluded.avg_cost, market_value=excluded.market_value, "
-            "updated_at=excluded.updated_at",
-            (portfolio_id, symbol, new_qty, round(new_cost, 6), round(new_qty * price, 6), _utcnow()),
-        )
-    return {"portfolio_id": portfolio_id, "symbol": symbol, "qty": new_qty, "avg_cost": round(new_cost, 6)}
+    if conn is not None:
+        return _apply_pf_on_conn(conn, portfolio_id, symbol, side, qty, price)
+    with connection(dbs.portfolio) as own:
+        return _apply_pf_on_conn(own, portfolio_id, symbol, side, qty, price)
 
 
 def holdings(dbs: CamelDbs, portfolio_id: str) -> List[dict]:
