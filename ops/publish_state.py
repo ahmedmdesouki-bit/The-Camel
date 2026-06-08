@@ -26,16 +26,23 @@ def build_payload(dbs: CamelDbs, mode: str = "paper") -> dict:
     return {"id": 1, "state": build_snapshot(dbs, mode=mode)}
 
 
-def _post(url: str, service_key: str, payload: dict,
+def equity_point(snapshot: dict) -> dict:
+    """One row for the equity-curve table, derived from the snapshot KPIs (the paper track record)."""
+    k = snapshot.get("kpis", {})
+    return {"total_value": k.get("total_value"), "cash": k.get("cash"),
+            "positions_value": k.get("positions_value")}
+
+
+def _post(url: str, service_key: str, path: str, rows: list, prefer: str,
           opener: Optional[Callable[[urllib.request.Request], object]] = None) -> int:
-    """Upsert one row into system_state via the Supabase REST API. Returns the HTTP status."""
-    endpoint = f"{url.rstrip('/')}/rest/v1/system_state?on_conflict=id"
-    body = json.dumps([payload]).encode("utf-8")
+    """POST rows to a Supabase REST table. Returns the HTTP status."""
+    endpoint = f"{url.rstrip('/')}/rest/v1/{path}"
+    body = json.dumps(rows).encode("utf-8")
     req = urllib.request.Request(endpoint, data=body, method="POST", headers={
         "apikey": service_key,
         "Authorization": f"Bearer {service_key}",
         "Content-Type": "application/json",
-        "Prefer": "resolution=merge-duplicates,return=minimal",
+        "Prefer": prefer,
     })
     do = opener or urllib.request.urlopen
     with do(req) as resp:                                # noqa: S310 (trusted Supabase endpoint)
@@ -43,12 +50,21 @@ def _post(url: str, service_key: str, payload: dict,
 
 
 def publish(dbs: CamelDbs, *, url: Optional[str] = None, service_key: Optional[str] = None,
-            mode: str = "paper", opener=None) -> int:
+            mode: str = "paper", opener=None, append_equity: bool = True) -> int:
+    """Upsert the current state and (best-effort) append an equity point. Returns the state HTTP status."""
     url = url or os.environ.get("SUPABASE_URL", "")
     service_key = service_key or os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
     if not url or not service_key:
         raise RuntimeError("set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (brain-side env) to publish.")
-    return _post(url, service_key, build_payload(dbs, mode), opener=opener)
+    snapshot = build_snapshot(dbs, mode=mode)
+    status = _post(url, service_key, "system_state?on_conflict=id", [{"id": 1, "state": snapshot}],
+                   "resolution=merge-duplicates,return=minimal", opener=opener)
+    if append_equity:
+        try:                                             # the equity point is nice-to-have, never fatal
+            _post(url, service_key, "equity_points", [equity_point(snapshot)], "return=minimal", opener=opener)
+        except Exception:
+            pass
+    return status
 
 
 def main(argv=None) -> int:                              # pragma: no cover - CLI entrypoint

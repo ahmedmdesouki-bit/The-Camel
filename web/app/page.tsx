@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { getLatestSnapshot, isAllowed } from "@/lib/data";
+import { getLatestSnapshot, getEquityPoints, isAllowed } from "@/lib/data";
 import SignOut from "@/components/SignOut";
 import ControlBar from "@/components/ControlBar";
-import type { Snapshot } from "@/lib/types";
+import EquityChart from "@/components/EquityChart";
+import LiveRefresh from "@/components/LiveRefresh";
+import type { Snapshot, EquityPoint } from "@/lib/types";
 
 export const dynamic = "force-dynamic"; // always read the freshest published state
 
@@ -26,9 +28,11 @@ export default async function Page() {
   }
 
   const { snapshot, updatedAt } = await getLatestSnapshot();
+  const equity = await getEquityPoints();
 
   return (
     <main className="k-app">
+      <LiveRefresh />
       <header className="k-header">
         <div className="k-brand">
           <div className="k-seal">C</div>
@@ -43,7 +47,7 @@ export default async function Page() {
         </div>
       </header>
 
-      {snapshot ? <Dashboard snapshot={snapshot} updatedAt={updatedAt} email={email} /> : <Empty />}
+      {snapshot ? <Dashboard snapshot={snapshot} updatedAt={updatedAt} email={email} equity={equity} /> : <Empty />}
 
       <div className="k-seal-rule" />
       <footer className="k-footer">
@@ -85,7 +89,7 @@ function Card({ title, hint, children, col = 12 }: { title: string; hint?: strin
   );
 }
 
-function Dashboard({ snapshot: s, updatedAt, email }: { snapshot: Snapshot; updatedAt: string | null; email: string | null }) {
+function Dashboard({ snapshot: s, updatedAt, email, equity }: { snapshot: Snapshot; updatedAt: string | null; email: string | null; equity: EquityPoint[] }) {
   const k = s.kpis;
   const g = s.governance;
   return (
@@ -100,6 +104,11 @@ function Dashboard({ snapshot: s, updatedAt, email }: { snapshot: Snapshot; upda
       </div>
 
       <div className="k-grid">
+        {/* Equity curve (paper track record) */}
+        <Card title="Paper equity curve" hint="Total portfolio value over time — virtual money, recorded each publish." col={12}>
+          <EquityChart points={equity} />
+        </Card>
+
         {/* KPIs */}
         <Card title="Portfolio" hint="Paper book — virtual money only." col={8}>
           <div className="cml-statgrid">

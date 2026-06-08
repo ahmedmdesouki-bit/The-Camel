@@ -58,6 +58,21 @@ python -m ops.command_poller         # execute any queued web commands (run on a
 Schedule both with Windows Task Scheduler (e.g. publish every few minutes, poll every minute) so the window
 stays fresh and the control bar feels live.
 
+**Or one command** — [`scripts/run-brain.ps1`](../scripts/run-brain.ps1) does a full cycle (ingest → paper
+tick → publish → poll):
+```
+./scripts/run-brain.ps1 -Loop -Interval 300     # repeat every 5 min; Ctrl+C to stop
+```
+It reads a local `.env` for the env vars above, so you don't have to export them each time. (If `SUPABASE_*`
+aren't set it just runs the local paper tick and skips publish/poll.)
+
+### Live refresh + equity curve
+- `schema.sql` also creates **`equity_points`** — the publisher appends one row per run, and the dashboard
+  renders the **paper equity curve** (pure SVG, no chart library).
+- For instant updates, enable **Realtime** on `system_state`: Supabase → **Database → Replication** (or
+  Table editor → the table → enable Realtime). The app subscribes and refreshes on change; if you skip this,
+  it still auto-refreshes every 30s as a fallback.
+
 ## What's safe by construction
 - The web uses **only the anon key** → RLS lets it **read** state and **insert** a command, nothing else.
 - It can never write the system state or execute a command — only the brain (service-role) does.
@@ -67,7 +82,8 @@ stays fresh and the control bar feels live.
 - The app is `noindex` (kept out of search engines) and gated behind sign-in + the email allowlist.
 
 ## Roadmap for this app
-- **v1 (now):** read-only dashboard (status, KPIs, regime, positions, Edge verdicts, rejections, ledger,
-  Sharia whitelist) + the queued control bar.
-- **Next:** an equity-curve chart for the paper track record · live-refresh (Supabase Realtime) · a per-friend
-  read-only vs founder-control role split.
+- **v1 (done):** read-only dashboard (status, KPIs, regime, positions, Edge verdicts, rejections, ledger,
+  Sharia whitelist) · the queued control bar · the **paper equity curve** · **live refresh** (Realtime + 30s
+  fallback) · the one-command `run-brain.ps1`.
+- **Next:** a per-friend read-only vs founder-control role split · per-strategy/portfolio drill-down ·
+  a downloadable track-record export.

@@ -25,16 +25,24 @@ def test_build_payload_shape(dbs):
 
 
 def test_publish_posts_to_supabase(dbs):
-    seen = {}
+    calls = []
     def opener(req):
-        seen["url"] = req.full_url
-        seen["method"] = req.get_method()
-        seen["auth"] = req.headers.get("Authorization")
+        calls.append({"url": req.full_url, "method": req.get_method(),
+                      "auth": req.headers.get("Authorization")})
         return _Resp(status=201)
     status = publish(dbs, url="https://x.supabase.co", service_key="svc-key", opener=opener)
-    assert status == 201
-    assert seen["url"].endswith("/rest/v1/system_state?on_conflict=id")
-    assert seen["method"] == "POST" and seen["auth"] == "Bearer svc-key"
+    assert status == 201                                          # the state-upsert status
+    urls = [c["url"] for c in calls]
+    assert any(u.endswith("/rest/v1/system_state?on_conflict=id") for u in urls)
+    assert any(u.endswith("/rest/v1/equity_points") for u in urls)   # the equity point is appended too
+    assert all(c["method"] == "POST" and c["auth"] == "Bearer svc-key" for c in calls)
+
+
+def test_publish_without_equity(dbs):
+    calls = []
+    publish(dbs, url="https://x.supabase.co", service_key="svc", opener=lambda r: calls.append(r.full_url) or _Resp(),
+            append_equity=False)
+    assert all("equity_points" not in u for u in calls)           # opt-out works
 
 
 # ---- poller ----

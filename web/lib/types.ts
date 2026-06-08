@@ -41,3 +41,5 @@ export interface Snapshot {
 }
 
 export interface SystemStateRow { id: number; state: Snapshot; updated_at: string; }
+
+export interface EquityPoint { ts: string; total_value: number | null; cash: number | null; positions_value: number | null; }

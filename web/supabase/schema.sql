@@ -21,6 +21,25 @@ create policy "state readable by authenticated"
   to authenticated using (true);
 
 -- ============================================================================
+-- equity_points : one row per publish — the paper track record (for the equity-curve chart).
+-- ============================================================================
+create table if not exists public.equity_points (
+  id               bigserial primary key,
+  ts               timestamptz not null default now(),
+  total_value      double precision,
+  cash             double precision,
+  positions_value  double precision
+);
+create index if not exists equity_points_ts_idx on public.equity_points (ts desc);
+
+alter table public.equity_points enable row level security;
+
+drop policy if exists "equity readable by authenticated" on public.equity_points;
+create policy "equity readable by authenticated"
+  on public.equity_points for select
+  to authenticated using (true);
+
+-- ============================================================================
 -- commands : the web enqueues; the brain dequeues + executes (paper, behind all the gates).
 -- ============================================================================
 create table if not exists public.commands (
