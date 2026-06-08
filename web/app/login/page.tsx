@@ -34,11 +34,14 @@ export default function LoginPage() {
         </p>
       ) : (
         <form onSubmit={signIn}>
+          <label htmlFor="email" className="sr-only">Email address</label>
           <input
+            id="email"
             className="cml-input"
             style={{ width: "100%", marginBottom: 12 }}
             type="email"
             required
+            aria-label="Email address"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}

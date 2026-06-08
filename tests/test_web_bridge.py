@@ -72,6 +72,27 @@ def test_process_unknown_command(dbs):
     assert not res["ok"] and "unknown" in res["error"]
 
 
+def test_approve_fails_closed_without_founder_email(dbs):
+    # review HIGH: a missing CAMEL_FOUNDER_EMAIL must DENY approve/veto, never fail open.
+    request_approval(dbs, "refX")
+    res = command_poller.process_command(
+        dbs, {"type": "approve", "payload": {"ref": "refX"}, "requested_by": "anyone@x.com"},
+        founder_email="")
+    assert not res["ok"] and "CAMEL_FOUNDER_EMAIL" in res["error"]
+    assert not is_approved(dbs, "refX")
+
+
+def test_mark_sends_iso_timestamp_not_now_string(dbs):
+    # review BLOCKER: processed_at must be a real ISO timestamp, never the literal string "now()".
+    captured = {}
+    def opener(req):
+        captured["body"] = json.loads(req.data.decode())
+        return _Resp(status=204)
+    command_poller.mark("https://x.supabase.co", "svc", 5, "done", {"ok": True}, opener=opener)
+    pa = captured["body"]["processed_at"]
+    assert pa != "now()" and "T" in pa                       # ISO-8601, casts cleanly to timestamptz
+
+
 def test_poll_once_processes_and_marks(dbs):
     pending = [{"id": 7, "type": "run_tick", "payload": {"symbols": []}, "requested_by": "chiko@x.com"}]
     calls = {"patched": []}

@@ -16,7 +16,8 @@ from __future__ import annotations
 import json
 import os
 import urllib.request
-from typing import Callable, List, Optional
+from datetime import datetime, timezone
+from typing import List, Optional
 
 from db.paths import CamelDbs
 
@@ -38,7 +39,10 @@ def fetch_pending(url: str, key: str, opener=None) -> List[dict]:
 
 
 def mark(url: str, key: str, cmd_id: int, status: str, result: dict, opener=None) -> None:
-    body = {"status": status, "result": result, "processed_at": "now()"}
+    # processed_at must be a real ISO timestamp: PostgREST passes body values as data literals, and a
+    # timestamptz column rejects the string "now()" (only bare 'now' is special) — which would 4xx the
+    # PATCH and leave the command 'pending' forever, re-executing every poll. (review BLOCKER)
+    body = {"status": status, "result": result, "processed_at": datetime.now(timezone.utc).isoformat()}
     with _req(url, key, "PATCH", f"commands?id=eq.{int(cmd_id)}", body, opener):
         pass
 
@@ -56,8 +60,12 @@ def process_command(dbs: CamelDbs, cmd: dict, *, founder_email: str = "",
         return {"ok": True, **run_trading_tick(dbs, symbols=syms)}
 
     if ctype in ("approve", "veto"):
-        # founder-only: a friend may queue it, but only the founder's request is honored for a live decision.
-        if founder_email and requested_by != founder_email.lower():
+        # founder-only AND fail-closed: a friend may watch, but only the founder may resolve a live-decision
+        # gate. Refuse if no founder identity is configured (don't fail OPEN on a missing env var), or if the
+        # requester isn't the founder. (review HIGH — was `if founder_email and ...`, which skipped when unset)
+        if not founder_email:
+            return {"ok": False, "error": "approve/veto disabled: CAMEL_FOUNDER_EMAIL not set"}
+        if not requested_by or requested_by != founder_email.lower():
             return {"ok": False, "error": "approve/veto is founder-only"}
         ref = str(payload.get("ref") or "")
         if not ref:

@@ -21,11 +21,18 @@ runs the engine — it only shows what the brain published and queues requests t
 
 ## 1. Supabase (5 min)
 1. Create a project at https://supabase.com.
-2. **SQL Editor → run** [`supabase/schema.sql`](supabase/schema.sql) (creates `system_state` + `commands` with RLS).
-3. **Project Settings → API**: copy the **Project URL**, the **anon public** key, and the **service_role** key.
-4. **Authentication → Providers → Email**: enable it. (Optional: turn **off** "Allow new users to sign up" so
-   only people you invite can log in — invite friends under **Authentication → Users**.)
-5. **Authentication → URL Configuration**: add your site URL + `…/auth/callback` to the redirect allow-list
+2. **SQL Editor → run** [`supabase/schema.sql`](supabase/schema.sql) (creates `allowed_emails`, `system_state`,
+   `equity_points`, `commands` + the `is_allowlisted()` function and **friends-only RLS**).
+3. **Seed the allowlist** (this is the real gate — RLS denies everyone not in it):
+   ```sql
+   insert into public.allowed_emails (email) values ('you@example.com'), ('friend@example.com');
+   ```
+4. **Project Settings → API**: copy the **Project URL**, the **anon public** key, and the **service_role** key.
+5. **Authentication → Providers → Email**: enable it, and **turn OFF "Allow new users to sign up"** so strangers
+   can't self-provision an account — invite friends under **Authentication → Users**. (Load-bearing: with
+   signups on, anyone could create an account; RLS still blocks them unless they're in `allowed_emails`, but
+   disabling signups is the clean belt-and-suspenders.)
+6. **Authentication → URL Configuration**: add your site URL + `…/auth/callback` to the redirect allow-list
    (add both `http://localhost:3000` for local dev and your Vercel URL once you have it).
 
 ## 2. Deploy the web app to Vercel (5 min)
@@ -42,7 +49,9 @@ Local dev: `cd web && cp .env.example .env.local && npm install && npm run dev` 
 to avoid MAX_PATH — e.g. clone to `C:\camel`).
 
 ## 3. The brain side (publish state + run commands)
-On the machine that runs The Camel, set these env vars (the service-role key lives **only** here):
+**Prereq:** run these from the **repo root** with the Python project installed (`pip install -r requirements.txt`).
+They are part of the Python repo, not the `web/` app. On the machine that runs The Camel, set these env vars
+(the service-role key lives **only** here):
 ```
 SUPABASE_URL=https://YOUR-PROJECT.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
@@ -75,6 +84,9 @@ aren't set it just runs the local paper tick and skips publish/poll.)
 
 ## What's safe by construction
 - The web uses **only the anon key** → RLS lets it **read** state and **insert** a command, nothing else.
+- **Friends-only is enforced in the DATABASE** (RLS gates every table on the `allowed_emails` table via
+  `is_allowlisted()`), not just in the app — so nobody outside the allowlist can read state or enqueue a
+  command even if they hit PostgREST directly with the anon key.
 - It can never write the system state or execute a command — only the brain (service-role) does.
 - `run_tick` runs the full **Constitution + Edge Proof + Budget + approval** path (paper); `approve`/`veto`
   is **founder-only** (`CAMEL_FOUNDER_EMAIL`). **No path moves real money** — that still needs the founder's

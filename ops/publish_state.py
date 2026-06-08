@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import os
 import urllib.request
+from datetime import datetime, timezone
 from typing import Callable, Optional
 
 from db.paths import CamelDbs
@@ -57,7 +58,10 @@ def publish(dbs: CamelDbs, *, url: Optional[str] = None, service_key: Optional[s
     if not url or not service_key:
         raise RuntimeError("set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (brain-side env) to publish.")
     snapshot = build_snapshot(dbs, mode=mode)
-    status = _post(url, service_key, "system_state?on_conflict=id", [{"id": 1, "state": snapshot}],
+    # Author updated_at in the payload: the column DEFAULT now() only fires on INSERT, but every publish after
+    # the first is an UPDATE (upsert id=1) — so without this the "freshness" timestamp freezes. (review MED)
+    row = {"id": 1, "state": snapshot, "updated_at": datetime.now(timezone.utc).isoformat()}
+    status = _post(url, service_key, "system_state?on_conflict=id", [row],
                    "resolution=merge-duplicates,return=minimal", opener=opener)
     if append_equity:
         try:                                             # the equity point is nice-to-have, never fatal

@@ -11,18 +11,20 @@ export interface Governance {
   live_at_risk: number; paper_at_risk: number;
   gate_items: GateItem[]; gate_passed: number; gate_total: number;
 }
+// NB: numeric fields are `number | null` — the Python snapshot emits null when a SQLite column / JSON key
+// is missing (build_snapshot in dashboard/snapshot.py), and the render helpers below treat null as "—".
 export interface Position {
-  symbol: string; qty: number; avg_cost: number; market_price: number; market_value: number;
-  unrealized_pnl: number; realized_pnl: number; status: string;
+  symbol: string; qty: number | null; avg_cost: number | null; market_price: number | null;
+  market_value: number | null; unrealized_pnl: number | null; realized_pnl: number | null; status: string;
 }
-export interface LedgerRow { ts: string; type: string; symbol: string; amount: number; balance_after: number; }
+export interface LedgerRow { ts: string; type: string; symbol: string; amount: number | null; balance_after: number | null; }
 export interface Rejection { ts: string; blocked: boolean; symbol: string; reason: string; limit_hit: string; }
 export interface EdgeDecision {
   ts: string; symbol: string; signal: string; trade_allowed: boolean; reason: string;
-  sample_size: number; hit_rate: number; median_forward_return: number;
-  benchmark_excess_return: number; confidence: number;
+  sample_size: number | null; hit_rate: number | null; median_forward_return: number | null;
+  benchmark_excess_return: number | null; confidence: number | null;
 }
-export interface Regime { classified_at: string; regime: string; confidence: number; signals: string[]; }
+export interface Regime { classified_at: string; regime: string; confidence: number | null; signals: string[]; }
 export interface WhitelistRow { symbol: string; sharia_status: string; frozen: boolean; }
 
 export interface Snapshot {

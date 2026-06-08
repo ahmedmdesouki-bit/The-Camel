@@ -8,9 +8,9 @@ import type { Snapshot, EquityPoint } from "@/lib/types";
 
 export const dynamic = "force-dynamic"; // always read the freshest published state
 
-const money = (n: number | undefined) =>
+const money = (n: number | null | undefined) =>
   n == null ? "—" : `$${Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const pnlClass = (n: number | undefined) => (n == null ? "" : n > 0 ? "up" : n < 0 ? "down" : "");
+const pnlClass = (n: number | null | undefined) => (n == null ? "" : n > 0 ? "up" : n < 0 ? "down" : "");
 
 export default async function Page() {
   const supabase = createClient();
@@ -142,7 +142,8 @@ function Dashboard({ snapshot: s, updatedAt, email, equity }: { snapshot: Snapsh
         <Card title="Safety posture" hint={`${g.gate_passed}/${g.gate_total} guardrails confirmed — each item is a real boolean fact, not a score.`} col={6}>
           {g.gate_items.map((it, i) => (
             <div className="cml-gate__item" key={i}>
-              <span className={`cml-gate__mark cml-gate__mark--${it.ok ? "ok" : "no"}`}>{it.ok ? "✓" : "✕"}</span>
+              <span className={`cml-gate__mark cml-gate__mark--${it.ok ? "ok" : "no"}`}
+                role="img" aria-label={it.ok ? "confirmed" : "failed"}>{it.ok ? "✓" : "✕"}</span>
               {it.label}
             </div>
           ))}
@@ -194,7 +195,7 @@ function Dashboard({ snapshot: s, updatedAt, email, equity }: { snapshot: Snapsh
         <Card title="Guardrail decisions" hint="Constitution rejections, with reasons." col={6}>
           {s.guardrail.length ? (
             <table className="k-table">
-              <thead><tr><th></th><th>Symbol</th><th>Reason</th><th>Limit</th></tr></thead>
+              <thead><tr><th><span className="sr-only">State</span></th><th>Symbol</th><th>Reason</th><th>Limit</th></tr></thead>
               <tbody>
                 {s.guardrail.slice(0, 12).map((r, i) => (
                   <tr key={i}>
