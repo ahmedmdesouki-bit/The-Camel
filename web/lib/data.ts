@@ -27,10 +27,11 @@ export async function getEquityPoints(limit = 240): Promise<EquityPoint[]> {
   return (data as EquityPoint[]).slice().reverse(); // chronological for the chart
 }
 
-// Email allowlist (friends-only). Empty list => any authenticated user is allowed.
+// App-layer allowlist (belt-and-suspenders; the authoritative gate is the DB `allowed_emails` table via RLS).
+// FAIL-CLOSED to match the DB: an empty/unset list denies everyone (set NEXT_PUBLIC_ALLOWED_EMAILS in Vercel).
 export function isAllowed(email: string | null | undefined): boolean {
   const raw = process.env.NEXT_PUBLIC_ALLOWED_EMAILS || "";
   const list = raw.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
-  if (list.length === 0) return true;
+  if (list.length === 0) return false;
   return !!email && list.includes(email.toLowerCase());
 }

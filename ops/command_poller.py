@@ -91,7 +91,10 @@ def poll_once(dbs: CamelDbs, *, url: Optional[str] = None, key: Optional[str] = 
             mark(url, key, cmd["id"], "done" if result.get("ok") else "error", result, opener=opener)
         except Exception as exc:                          # one bad command must not stop the rest
             result = {"ok": False, "error": str(exc)}
-            mark(url, key, cmd["id"], "error", result, opener=opener)
+            try:                                          # the recovery status-write is itself best-effort —
+                mark(url, key, cmd["id"], "error", result, opener=opener)
+            except Exception:                             # a persistent PATCH failure must not halt the loop
+                pass
         out.append({"id": cmd.get("id"), "type": cmd.get("type"), "result": result})
     return out
 

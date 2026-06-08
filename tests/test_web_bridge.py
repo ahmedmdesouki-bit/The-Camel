@@ -105,3 +105,16 @@ def test_poll_once_processes_and_marks(dbs):
                                    founder_email="chiko@x.com", opener=opener)
     assert len(out) == 1 and out[0]["result"]["ok"]
     assert any("id=eq.7" in u for u in calls["patched"])     # the command was marked done
+
+
+def test_poll_once_survives_a_persistent_mark_failure(dbs):
+    # resilience: even if the status-write (PATCH) fails for every command, poll_once must process them all
+    # and never raise out of the loop.
+    pending = [{"id": 1, "type": "run_tick", "payload": {"symbols": []}},
+               {"id": 2, "type": "run_tick", "payload": {"symbols": []}}]
+    def opener(req):
+        if req.get_method() == "GET":
+            return _Resp(body=json.dumps(pending).encode())
+        raise RuntimeError("PATCH down")                     # every mark() fails
+    out = command_poller.poll_once(dbs, url="https://x.supabase.co", key="svc", opener=opener)
+    assert len(out) == 2                                      # both processed despite the mark failures

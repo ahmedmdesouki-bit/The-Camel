@@ -9,8 +9,9 @@
 -- allowed_emails : the friends-only allowlist. THE source of truth — RLS gates everything on it.
 --   >>> After running this file, add your + your friends' emails (lowercase):
 --       insert into public.allowed_emails (email) values ('you@example.com'), ('friend@example.com');
---   Leave it empty and NO ONE can read or write (fail-closed). Also disable email self-signup in
---   Supabase (Auth -> Providers -> Email) so strangers can't provision accounts.
+--   Leave it empty and NO ONE can read or write (fail-closed). Also, in Supabase Auth -> Providers -> Email:
+--   DISABLE self-signup (strangers can't provision accounts) and ENABLE "Confirm email" (so the JWT `email`
+--   claim is always a verified address — the gate trusts that claim).
 -- ============================================================================
 create table if not exists public.allowed_emails (email text primary key);
 alter table public.allowed_emails enable row level security;   -- locked: no policy => only the brain/SQL editor can read/write it

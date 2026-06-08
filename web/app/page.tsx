@@ -158,7 +158,7 @@ function Dashboard({ snapshot: s, updatedAt, email, equity }: { snapshot: Snapsh
                 {s.positions.filter((p) => (p.status || "open") === "open").map((p) => (
                   <tr key={p.symbol}>
                     <td className="cml-tick">{p.symbol}</td>
-                    <td className="k-fig">{p.qty}</td>
+                    <td className="k-fig">{p.qty ?? "—"}</td>
                     <td className="k-fig">{money(p.avg_cost)}</td>
                     <td className="k-fig">{money(p.market_value)}</td>
                     <td className={`k-fig ${pnlClass(p.unrealized_pnl)}`}>{money(p.unrealized_pnl)}</td>

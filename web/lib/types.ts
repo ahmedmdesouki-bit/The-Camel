@@ -38,7 +38,7 @@ export interface Snapshot {
   guardrail: Rejection[];
   edge_decisions: EdgeDecision[];
   regime: Regime | null;
-  regime_history: { classified_at: string; regime: string; confidence: number }[];
+  regime_history: { classified_at: string; regime: string; confidence: number | null }[];
   whitelist: WhitelistRow[];
 }
 
