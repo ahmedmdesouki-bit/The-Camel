@@ -88,25 +88,49 @@ def _budget_kernel(L: dict, fund: float, notional: float):
     ))
 
 
+def ensure_opening_balance(dbs: CamelDbs, amount: float) -> bool:
+    """Seed a one-time PAPER opening cash balance (a DEPOSIT) iff the ledger is empty. Returns True if it
+    wrote one. The paper book needs an opening balance before the router will route to 'trader' (it
+    requires cash_available); the *amount* is a founder choice, never auto-injected. Paper only."""
+    if amount is None or amount <= 0:
+        return False
+    from db.sqlite import connection
+    from ledger.writer import append_entry, _ensure_table as _ensure_ledger_table
+    _ensure_ledger_table(dbs.portfolio)
+    with connection(dbs.portfolio) as conn:
+        row = conn.execute("SELECT 1 FROM ledger LIMIT 1").fetchone()
+    if row is not None:
+        return False                                        # never double-deposit
+    append_entry(dbs.portfolio, "DEPOSIT", "", float(amount), ref="paper_opening_balance")
+    return True
+
+
 def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limits.yaml",
                      registry=None, notional_per_trade: float = 50.0,
-                     approval_fn=None) -> dict:
-    """The PRODUCTION post-close decision job — the Edge-gated *assembled* path (P1-C/D/E).
+                     approval_fn=None, broker=None, learn: bool = True) -> dict:
+    """The PRODUCTION post-close decision job — the FULL §4 loop, strung together (P1-C/D/E + S16).
 
     Unlike the legacy `loop/scheduler.py` heartbeat (which has no Edge Proof gate), this wires the full
     trust-inverted stack and is the entrypoint a founder schedules:
       - Constitution from `config/limits.yaml` → **phase has one founder-owned source** (P1-D),
       - a **Budget Kernel is injected** so the budget gate is never skipped (P1-C),
       - the **AssembledLoop** runs the strategy driver (Edge Proof → Constitution → Budget → Approval → Act),
-      - approval **withholds by default** (fail-safe) for any phase ≥ 1.
+      - approval **withholds by default** (fail-safe) for any phase ≥ 1,
+      - **Act is durable (S16):** a real `PaperBroker` fills → orders + ledger + positions in one txn,
+      - **the run is persisted (S16):** begin/finish a `runs` row so the ≥28-run live-readiness clock advances,
+      - **Measure → Learn (S16):** executed trades are recorded to the learning ledger, round-tripped trades
+        are resolved into win/loss, per-strategy base-rates are updated (L1), and systematic underperformance
+        files an L3 **propose-only** request — closing the loop's previously-open back half.
     Paper-by-default; nothing here flips a phase or moves real money.
     """
     import os
-    from guardrail.constitution import Constitution
+    from guardrail.constitution import Constitution, Decision
     from capital.allocator import Allocator
     from capital.budget_kernel import BudgetState
     from loop.assembled import AssembledLoop
     from loop.driver import run_strategy_tick
+    from loop.state import begin_run, finish_run
+    from broker.paper import PaperBroker
     from trader.strategies.registry import StrategyRegistry
     from trader.strategies.core_dca import CoreDCA
     from trader.strategies.quality_momentum import QualityMomentum
@@ -123,17 +147,72 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
         for s in (CoreDCA(), QualityMomentum(), DividendGrowth()):
             registry.register(s)
 
-    loop = AssembledLoop(
-        dbs, allocator=Allocator(constitution), budget_kernel=budget,
-        budget_state=BudgetState(), phase=phase,
-        approval_fn=approval_fn,                            # None → withhold by default (fail-safe)
-    )
-    tick = run_strategy_tick(dbs, registry, state, symbols=list(symbols),
-                             loop=loop, notional_per_trade=notional_per_trade)
+    # S16 — a real paper broker so "Act" is durable (orders + ledger + positions in one txn). The loop
+    # only calls this AFTER Edge Proof + Constitution + Budget + (phase-gated) Approval have passed, so the
+    # decision the broker receives is allow=True by construction; submit() re-asserts it defensively.
+    broker = broker or PaperBroker(dbs.portfolio, dbs.market)
+
+    def _execute(action):
+        return broker.submit(action, Decision(
+            allow=True, reason="approved by assembled loop (Edge+Constitution+Budget+Approval)"))
+
+    # S16 — persist a run row (the ≥28-run live-readiness clock can only advance if the tick records runs).
+    # The whole governed body is wrapped: if anything raises (regime classify, strategy signals, the driver's
+    # phase≥1 non-enforcing refusal, …) the run is finished as 'error' and NEVER left stuck 'running'.
+    run = begin_run(dbs.portfolio, phase=phase)
+    learn_summary: dict = {"resolved": 0, "strategies_updated": [], "proposals": []}
+    try:
+        loop = AssembledLoop(
+            dbs, allocator=Allocator(constitution), budget_kernel=budget,
+            budget_state=BudgetState(), phase=phase,
+            broker_execute=_execute,                        # S16: durable paper Act
+            approval_fn=approval_fn,                         # None → withhold by default (fail-safe)
+        )
+        tick = run_strategy_tick(dbs, registry, state, symbols=list(symbols),
+                                 loop=loop, notional_per_trade=notional_per_trade)
+
+        # Did the Act stage actually run? Only when not halted AND the router chose 'trader' (it leans to
+        # Wait without capital or a proven edge). Halt / Wait ticks did no governed Act work.
+        acted = (not tick.halted) and tick.router_path == "trader"
+        run.mark("observe", "skipped" if tick.halted else "ok", tick.regime)
+        run.mark("choose", "skipped" if tick.halted else "ok", tick.router_path)
+        run.mark("act", "ok" if acted else "skipped", {"executed": tick.executed})
+
+        # S16 — Measure → Learn (best-effort: learning must never crash a governed tick; system integrity
+        # ranks above learning speed). Skipped when halted — the kill switch means *do nothing*.
+        if learn and not tick.halted:
+            try:
+                from learning.measure import record_trade_decision, resolve_and_learn
+                for sym in tick.executed:                   # Measure: record each executed trade
+                    meta = (tick.candidate_meta or {}).get(sym, {})
+                    record_trade_decision(dbs, sym, meta.get("strategies", []))
+                learn_summary = resolve_and_learn(dbs, registry=registry)   # Measure(resolve) + Learn
+                run.mark("measure", "ok", {"recorded": len(tick.executed),
+                                           "resolved": learn_summary["resolved"]})
+                run.mark("learn", "ok", {"strategies_updated": len(learn_summary["strategies_updated"]),
+                                         "proposals": len(learn_summary["proposals"])})
+            except Exception as exc:                        # pragma: no cover - defensive
+                run.mark("measure", "error", error=str(exc))
+                run.mark("learn", "skipped", "measure failed")
+        else:
+            run.mark("measure", "skipped")
+            run.mark("learn", "skipped")
+
+        # Only a tick that did REAL governed work counts toward the ≥28-run live-readiness gate
+        # (ops/live_readiness counts outcome LIKE 'complete%'). A halted tick (kill switch) or a router
+        # 'wait' (no Act stage — e.g. unfunded book / no proven edge) gets a distinct, NON-counting outcome,
+        # so the autonomy clock can never be advanced by no-op ticks. (S16 review fix)
+        outcome = "halted" if tick.halted else ("complete" if tick.router_path == "trader" else "no_action")
+        finish_run(dbs.portfolio, run, outcome)
+    except Exception:
+        finish_run(dbs.portfolio, run, "error")             # never leave a runs row stuck 'running'
+        raise
+
     return {
         "phase": phase, "regime": tick.regime, "router_path": tick.router_path,
-        "executed": tick.executed,
+        "executed": tick.executed, "outcome": outcome,
         "budget_present": True, "fund_usd": state.fund_usd, "cash_usd": state.cash_usd,
+        "run_id": run.run_id, "learning": learn_summary,
     }
 
 
@@ -157,13 +236,22 @@ def main(argv=None) -> int:                              # pragma: no cover - CL
     p.add_argument("--config", default=os.environ.get("CAMEL_CONFIG", "config/limits.yaml"))
     p.add_argument("--symbols", default=os.environ.get("CAMEL_SYMBOLS", ""),
                    help="comma-separated symbols for the trading tick")
+    p.add_argument("--open-cash", type=float,
+                   default=float(os.environ.get("CAMEL_PAPER_OPENING_CASH", "0") or 0),
+                   help="one-time PAPER opening cash balance (DEPOSIT) if the ledger is empty; 0 = none")
     args = p.parse_args(argv)
 
+    from db.paths import init_all
     dbs = CamelDbs.from_dir(args.db_dir)
+    init_all(dbs)                                       # ensure all 7 schemas exist (idempotent) — the
+                                                        # tick reads the `positions`/`ledger` tables, so a
+                                                        # first run on an empty dir must create them first
     if args.job == "daily":
         print(run_daily_ops(dbs, dashboard_path=args.dashboard))
     elif args.job == "tick":
         syms = [s.strip() for s in args.symbols.split(",") if s.strip()]
+        if ensure_opening_balance(dbs, args.open_cash):
+            print(f"seeded paper opening balance: ${args.open_cash:,.2f}")
         print(run_trading_tick(dbs, symbols=syms, config_path=args.config))
     else:
         print(run_weekly_safety(dbs, args.backup_dir))

@@ -48,6 +48,9 @@ class TickResult:
     router_path: Optional[str] = None
     router_reason: str = ""
     outcomes: List[ActionOutcome] = field(default_factory=list)
+    # symbol -> {"strategies": [...], "theme": ...}; set by the driver so the Measure step can
+    # attribute an executed trade to the strategies that proposed it. (S16)
+    candidate_meta: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def executed(self) -> List[str]:
@@ -140,7 +143,16 @@ class AssembledLoop:
                     _oplog(self.dbs, "ACT", f"{sym} PENDING human approval")
                     continue
 
-            res = self.broker_execute(action)
+            # Act. A broker may legitimately refuse at fill time (no validated price, duplicate
+            # client-order-id, phantom-sell re-check). That must NOT crash the tick or count as a
+            # fill — record it as an execute_error and move on. (S16)
+            try:
+                res = self.broker_execute(action)
+            except Exception as exc:
+                result.outcomes.append(ActionOutcome(sym, "execute_error", False,
+                                                     f"broker refused fill: {exc}"))
+                _oplog(self.dbs, "ACT", f"{sym} EXECUTE FAILED: {exc}")
+                continue
             if self.budget_kernel is not None:
                 self.budget_state.spent_today += action.notional_usd
             result.outcomes.append(ActionOutcome(sym, "executed", True, "executed", result=str(res)))

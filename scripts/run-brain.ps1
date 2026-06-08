@@ -44,7 +44,14 @@ function Invoke-Cycle {
   Write-Host "`n=== Camel brain cycle @ $(Get-Date -Format 'u') ===" -ForegroundColor DarkCyan
   if (-not $NoIngest) {
     Write-Host "[1/4] ingest" -ForegroundColor DarkGray
-    python -m data.ingest --symbols $Symbols --series $Series --ciks $Ciks
+    # Build args as an array and only pass flags that have a value. PowerShell silently DROPS an empty
+    # string argument, so `--ciks $Ciks` with an empty $Ciks reached argparse as a bare `--ciks` and
+    # crashed it ("expected one argument"). Conditional flags avoid that for ciks/series/symbols.
+    $ingestArgs = @("-m", "data.ingest")
+    if ($Symbols) { $ingestArgs += @("--symbols", $Symbols) }
+    if ($Series)  { $ingestArgs += @("--series",  $Series) }
+    if ($Ciks)    { $ingestArgs += @("--ciks",    $Ciks) }
+    python @ingestArgs
   }
   Write-Host "[2/4] paper tick (Edge-gated)" -ForegroundColor DarkGray
   python -m loop.jobs tick --symbols $Symbols

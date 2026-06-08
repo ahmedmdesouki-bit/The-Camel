@@ -18,7 +18,8 @@ S10 ✅ (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 ✅ (Operato
 S11 ✅ (Strategy Registry + Portfolio Engine + Learning) →
 S12 ✅ (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 ✅ (Research Desk — framework built, DORMANT) →
 S13 ◑ (Micro-Live — readiness infra built, go-live FOUNDER-GATED) → S14 ✅ (architecture documented + physical reorg DONE — Trader Camel under `trader/`) →
-S15 ◑ (Paid tools & founder actions to cross "above the line" — the only remaining items; all paid or founder-gated)
+S16 ◔ (Operational Activation — close Measure→Learn + make the production tick FILL & persist `runs`; the CODE half of the path to a real track record — from the 2026-06-09 audit; executes BEFORE the S15 go-live) →
+S15 ◑ (Paid tools & founder actions to cross "above the line"; all paid or founder-gated)
 ```
 
 > **Post-S14 hardening push (2026-06-08):** all *free, non-founder* deferred work is now done — pre-live
@@ -26,7 +27,15 @@ S15 ◑ (Paid tools & founder actions to cross "above the line" — the only rem
 > discipline, full screener, doubtful persistence, shadow-phase guard, manual-fill guard), **S8 completed**
 > (free Stooq price connector + ingestion orchestrator + SEC-RSS 8-K connector + earnings-blackout rule), and
 > **S12/S13 code** (per-portfolio book threading + inbound approve/veto channel + manual-entry parser).
-> **603 tests green.** What's left is **S15 only** — see `docs/CAMEL_S15_PAID_AND_FOUNDER.md`.
+> **613 tests green.** ⚠️ **Correction (2026-06-09 verified audit):** "S15 only" was too optimistic. It holds for
+> *code-built-and-tested*, but an adversarial 6-dimension audit (independent agents, verified against source +
+> the live DBs) found the **operator does not yet run end-to-end on real data**: **Measure→Learn is wired
+> nowhere** and the production tick (`loop/jobs.run_trading_tick`) **doesn't fill or persist a `runs` row**, so
+> the ≥28-run track record S13 needs literally cannot be produced yet. The honest distances are: software
+> built+tested **~78%**, operationally-wired-and-proven **~12%**, autonomy *earned* **0%**. No core *safety*
+> claim was overstated (every guardrail is a tested hard wall) — the drift is all in *progress* claims. The
+> **free CODE to close this is now `### S16 — Operational Activation` (below)**; only after S16 lands do the
+> S15 paid/founder go-live steps apply. See `docs/CAMEL_S15_PAID_AND_FOUNDER.md` for the paid/founder catalogue.
 *(⭐ **Sandbox Mode** = the full system on live real-time data with virtual money — the founder-requested
 live dress rehearsal that produces the track record gating micro-live.)*
 
@@ -68,11 +77,19 @@ Optimize for **evidence density, not feature count.**
 > but it surfaced one structural gap, plus parallel workstreams and backlog items that need an explicit home so
 > they aren't lost between sprints. Everything below is now tracked here.
 
-### ⭐ WORKSTREAM A — Operator-loop assembly / integration — ✅ CLOSED (S10.5 + S11.5)
-**RESOLVED.** A1–A4 are done: the §4 loop is assembled in `loop/assembled.py` (every action routes through
+### ⭐ WORKSTREAM A — Operator-loop assembly / integration — ◑ DECISION-HALF CLOSED (S10.5+S11.5); LEARNING-HALF + DURABLE ACT RE-OPENED → S16
+**DECISION-HALF RESOLVED.** A1–A4 are done: the §4 loop is assembled in `loop/assembled.py` (every action routes through
 `Allocator.request()` → Edge Proof + Constitution; the invariant test proves a no-edge buy is rejected by the
-*assembled* loop — Phase-1 blocker closed), A2/A3 driven by the loop, A4 peg wired in S9 slice 4. **The S11.5
-keystone `loop/driver.py` then connected S9–S11 end-to-end:** registry → context → mixer → the **full** 17-check
+*assembled* loop — Phase-1 blocker closed), A2/A3 driven by the loop, A4 peg wired in S9 slice 4.
+> ⚠️ **Re-opened by the 2026-06-09 audit (→ S16):** the *decision half* of the loop (Observe→Router→Edge→
+> Constitution→Budget→Approval→Act-decision) is genuinely assembled and tested. But **(1) the Act has no durable
+> effect in the production tick** — `loop/jobs.run_trading_tick` injects no broker, so Act is a `'simulated_fill'`
+> string (no ledger/positions write, no `runs` row; only `trader/sandbox/runner.py` wires a real executor); and
+> **(2) Measure→Learn is wired NOWHERE** — the whole `learning/` package is imported only by its own tests. So the
+> full North Star loop (…→Act→Measure→Learn→Learning Ledger) is **not** strung together at runtime. Closing both
+> is **S16 — Operational Activation**.
+
+**The S11.5 keystone `loop/driver.py` then connected S9–S11 end-to-end:** registry → context → mixer → the **full** 17-check
 Edge Proof → assembled loop (proven by `tests/test_integration.py`). The original finding is kept below for the
 record.
 *(Original finding:)* the Camel was *a complete set of well-tested components with the integration layer largely
@@ -1275,6 +1292,89 @@ mapped to the code already built and waiting for it — is **`docs/CAMEL_S15_PAI
   a ≥28-day track record · the `config/limits.yaml` phase-flip with real (tiny) capital.
 
 *Not S15 (free code): the remaining free connectors (GPR/French/COT/OFAC) — the S14 physical reorg is now DONE.*
+
+---
+
+### S16 — Operational Activation & Loop-Closure  (close the loop; start the track-record clock)
+
+**Why this sprint exists — the 2026-06-09 verified audit.** A 6-dimension adversarial code audit (independent
+agents, verified against source + the live DBs) found that **"S1–S14 DONE" is true for code-built-and-tested but
+overstates operational reality.** Three honest distances: software built+tested **~78%**, operationally-wired-
+and-proven on real data **~12%**, autonomy actually *earned* **0%**. The safety core is real — **no core safety
+claim was overstated; every guardrail is a tested hard wall** — but the **operator does not yet run end-to-end on
+real data**, for two structural reasons this sprint closes:
+
+1. **The loop is open after Act.** Measure→Learn exists nowhere in the runtime — the entire `learning/` package
+   (base_rate_updater, strategy_scorer, regime_matcher, anomaly_detector, improvement_proposer) is imported only
+   by its own tests; `assembled.py` advertises "→ Learn" but `run_tick` stops at Act. The North Star loop's back
+   half is unbuilt at the integration level.
+2. **The production tick can't earn autonomy.** `loop/jobs.run_trading_tick` injects no broker, so its "Act" is a
+   `'simulated_fill'` string — no ledger entry, no `positions` write, **no `runs` row**. The ≥28-run track record
+   S13 requires literally **cannot be produced** by the founder-scheduled entrypoint; only `trader/sandbox/runner.py`
+   fills (and even it resolves no trades). Masked by a test asserting only `isinstance(out['executed'], list)`.
+
+Plus: **data is hollow** (verified on the live DBs: `prices=0, macro=0, runs=0` — Stooq now serves a JS anti-bot
+page, FRED needs a free key, `sharia/cross_check` has no caller so the whitelist is unpopulated), and the
+**Entrepreneur arm is ~10% of the Trader arm and wired into nothing** (the router can emit "entrepreneur" but no
+loop stage ever calls the gate/pipeline).
+
+**This sprint is the CODE half of the critical-path-to-live.** It must complete before the S13 ≥28-day clock can
+start and before the S15 go-live — those founder/paid/time steps depend on it.
+
+**Deliverables (all free code; paper-only; no guardrail is weakened):**
+- **A1 — Durable Act in the production tick (the keystone).** Inject a `PaperBroker`/realistic executor into
+  `loop/jobs.run_trading_tick` so "Act" places an order, appends to the SHA-256 ledger, updates the `positions`
+  table, **and** writes a `runs` row via `loop/state.py` (begin/finish_run). Without this the live-readiness
+  run-count is stuck at zero forever, regardless of elapsed time.
+- **A2 — Close Measure→Learn.** Add a trade-resolution / Measure step (resolve closed or marked positions → win/
+  loss outcomes) and call the L1/L2 learning updaters + `improvement_proposer.propose` on a schedule, writing to
+  `learning_ledger`. **Propose-only stays a hard wall** (no `apply()`/auto-apply; `decide()` needs a human).
+- **A3 — A working free price feed.** Stooq now returns a JS anti-bot page — **do NOT bypass bot-detection**; swap
+  to a working free source (or the keyed feed) and run `data/ingest` to populate `prices`.
+- **A4 — Populate + schedule the Sharia universe.** Wire `sharia/cross_check` (currently has no caller) and load
+  a real whitelist + a scheduled re-screen, so the fail-safe `_is_tradeable` guard has names it can clear.
+- **A5 — Evidence-gated per-strategy promotion (optional).** Make `registry.promote()` consult the now-real track
+  record instead of being a free state-setter (today it advances a rung with zero evidence check and no runtime
+  caller) — so the "autonomy earned per strategy" ladder becomes a mechanism, not documentation.
+- **A6 — Doc-drift correction.** Fix the optimistic drift the audit catalogued: test count 603→**613**; the
+  "closed loop" / "runs the assembled loop → Act" framing (it simulates); the sandbox-as-"micro-live track record"
+  claim (it records fills, resolves nothing, learns nothing); the weak `isinstance(...,list)` test; the stale
+  CLAUDE.md repo-map paths (post-S14 reorg) and the "13-check"/v0 docstring; and re-scope "two co-equal arms" to
+  "Trader wired; Entrepreneur engine-only" until a real product is in flight.
+- **A7 — Exit / position manager (the generator of closes).** ⚠️ Surfaced by the S16 QA: the Measure→Learn
+  machinery (A2) is correct and proven, but it only fires when a position **closes**, and the scheduled decision
+  path is **buy-only** (the driver proposes `side='buy'`; nothing sells). So in steady-state production no
+  round-trip ever completes and the Learn half stays dormant. A7 adds a **reduce-only, governed** exit step
+  (profit-take / stop-loss / time-stop on founder-owned thresholds; sells routed through the Constitution —
+  phantom-sell + frozen-close-only still apply — then the PaperBroker), so positions actually close, resolution
+  fires, and base-rates update from real round-trips. **Until A7 lands, do NOT describe the loop as auto-closing
+  in production** — A2 is "machinery wired + correct + unit-proven on driven closes", A7 makes it flow.
+
+**Gate (one line):** the production `loop.jobs tick` runs the FULL governed forward half on real free data and is
+**durable** — a passing-edge buy fills via the PaperBroker (orders + ledger + positions, one txn), the tick
+**writes a terminal `runs` row** (`complete` only when the Act stage ran; `no_action`/`halted`/`error` otherwise,
+so no-op ticks never advance the ≥28-run gate), and **Measure→Learn** records each executed trade and, on a
+**closed round-trip**, resolves it into a per-strategy base-rate update (round-trip P&L, one outcome per close) —
+each proven by a real-fill / runs-row / base-rate-delta test (NOT `isinstance`). **A7** then supplies the closes
+that make the Learn half fire end-to-end in steady-state production.
+
+**Explicitly NOT in S16 (stays founder/paid/time — S13/S15):** the free `FRED_API_KEY` signup, Windows
+Task-Scheduler registration, the ≥28-day elapsed clock, machine hardening, and the `config/limits.yaml`
+phase-flip with real capital. **No code in S16 crosses the live line** — it makes the *paper* operator actually
+run and learn, which is the prerequisite the go-live gates were always waiting on.
+
+**Sequencing within S16:** A1 + A2 first (highest leverage — they convert the engine into something that can
+record its own track record), then **A7** (exits, so the Learn half actually fires), then A3 + A4 (so the record
+is on real data), A6 alongside, A5 last.
+
+**STATUS: ◑ A1 + A2 DONE & QA-HARDENED (2026-06-09); A3/A4/A5/A7 remain.** A1 (durable Act + run persistence) and
+A2 (Measure→Learn machinery) are implemented, adversarially QA'd (6-agent review), and the QA's findings fixed:
+the production tick fills via a real `PaperBroker`, persists a graded terminal `runs` row (no-op/halted ticks do
+NOT advance the readiness clock), and runs a correct Measure→Learn (per-round-trip P&L, one outcome per close,
+propose-only L3, stable-reference anomaly). New code: `learning/measure.py`; rewrites of `loop/jobs.run_trading_tick`
++ `loop/assembled.py` (durable Act, fill-error isolation) + `loop/driver.py` (candidate attribution) + a
+`strategy_base_rates` table. **→ 626 tests green.** Remaining: **A7** (exits → closes → the Learn half fires in
+production), A3 (working free price feed), A4 (populated Sharia universe), A5 (evidence-gated promotion).
 
 ## Open decisions
 

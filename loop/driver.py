@@ -60,6 +60,7 @@ def run_strategy_tick(dbs: CamelDbs, registry: StrategyRegistry, state: Portfoli
 
     candidates: List[Action] = []
     edge_reports: Dict[str, object] = {}
+    meta: Dict[str, dict] = {}
     for bc in blended[:max_candidates]:
         if bc.symbol in ("CASH", ""):
             continue
@@ -73,6 +74,10 @@ def run_strategy_tick(dbs: CamelDbs, registry: StrategyRegistry, state: Portfoli
         candidates.append(Action(ActionType.TRADE, symbol=bc.symbol, side="buy",
                                  notional_usd=notional_per_trade, thesis=thesis, mode="paper"))
         edge_reports[bc.symbol] = er
+        # carry the proposing strategies so the Measure step (S16) can attribute the outcome
+        meta[bc.symbol] = {"strategies": sorted(bc.strategies), "theme": bc.theme or "blend"}
 
     loop = loop or AssembledLoop(dbs)
-    return loop.run_tick(candidates, state, edge_reports)
+    result = loop.run_tick(candidates, state, edge_reports)
+    result.candidate_meta = meta
+    return result

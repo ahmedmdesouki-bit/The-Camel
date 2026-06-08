@@ -183,6 +183,20 @@ make a feature work. If a task would require bypassing the Constitution, stop an
 - **7-DB architecture live.** All modules now use domain-specific SQLite files via `CamelDbs`.
 - **First look:** `python demo.py` → seeds the 7 DBs, runs one fully-governed tick, writes the read-only dashboard
   (offline, paper-only, no creds). Smoke-tested by `tests/test_demo.py`.
+- **⚠️ Reality check (2026-06-09 verified audit) → new sprint S16.** "The whole BUILD (S1–S14) is done" is true for
+  *code-built-and-tested*, but an adversarial 6-dimension audit (verified vs. source + the live DBs) found the
+  **operator does not yet run end-to-end on real data.** Honest distances: software built+tested **~78%**,
+  operationally-wired-and-proven **~12%**, autonomy *earned* **0%**. Two structural gaps: **(1) Measure→Learn is
+  wired nowhere** (the whole `learning/` package is imported only by its tests; `assembled.py` says "→ Learn" but
+  `run_tick` stops at Act); **(2) the production tick `loop/jobs.run_trading_tick` doesn't fill or persist a
+  `runs` row** (its "Act" is a `'simulated_fill'` string — no broker, no ledger, no positions, no run), so the
+  ≥28-run track record S13 needs cannot be produced yet. Data is also hollow (`prices=0, macro=0, runs=0`; Stooq
+  is bot-blocked, FRED needs a free key, `sharia/cross_check` has no caller) and the Entrepreneur arm is wired
+  into nothing. **No core SAFETY claim was overstated — every guardrail is a tested hard wall; the drift is all in
+  *progress* claims.** The free CODE to close this is **`### S16 — Operational Activation`** in
+  `docs/CAMEL_ROADMAP.md` (~1 focused week; A1 inject PaperBroker + write `runs`, A2 close Measure→Learn, A3 real
+  price feed, A4 populate Sharia universe, A6 doc-drift fixes). Test count is **613**, not 603. Only after S16
+  lands do the S15 paid/founder go-live steps apply.
 
 > Run pytest via N:\\ virtual drive (subst N: <outputs>) — the path is 261 chars
 > and hits Windows MAX_PATH without the virtual drive. `git config --global core.longpaths true`
@@ -477,6 +491,7 @@ Optimize for **evidence density, not feature count.**
 | S12.5 | Research Desk / Analyst Agents *(founder; design now, dormant)* | per-vertical research agents (Agent SDK — full roster incl. market-microstructure + execution/TCA) write evidence only via the **evidence-object contract**, never act; narrow/safe learning (no retrain, no Constitution edits); token budget; master switch defaults OFF |
 | S13 | Micro-Live Readiness (Phase 1) | all live-readiness boxes pass |
 | S14 | Module Restructure | full suite green after restructure |
+| ◑ S16 | **Operational Activation & Loop-Closure** (from the 2026-06-09 audit) | **A1+A2 DONE & QA-hardened (626 tests):** production `loop.jobs tick` FILLS via a real PaperBroker (orders+ledger+positions), persists a **graded** terminal `runs` row (`complete` only when the Act stage ran — no-op/halted ticks do NOT advance the ≥28-run gate), and runs a correct **Measure→Learn** (`learning/measure.py`: per-round-trip P&L, one outcome per close, propose-only L3). **Remaining: A7** (reduce-only governed exits → closes → the Learn half fires in production), A3 (price feed), A4 (Sharia universe), A5 (evidence-gated promotion). The CODE half of the path to a real track record; before S15 go-live. Detail: `docs/CAMEL_ROADMAP.md`. |
 
 **Open decisions, full sprint detail, and Definition of Done:**
 `docs/CAMEL_ROADMAP.md` + `docs/CAMEL_LIVE_READINESS.md`.

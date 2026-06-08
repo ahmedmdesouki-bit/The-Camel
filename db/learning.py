@@ -48,6 +48,18 @@ CREATE TABLE IF NOT EXISTS edge_reports (
     checks_json                     TEXT
 );
 
+-- S16 (L1 persistence): per-strategy hit-rate prior + sample, updated by the Learn step after trades
+-- resolve. A NUMBER store ONLY (base_rate + counts) — it never touches a rule, a weight band, or the
+-- Constitution (those stay founder-owned, L4). This is what makes the autonomy ladder evidence-backed.
+CREATE TABLE IF NOT EXISTS strategy_base_rates (
+    strategy_id   TEXT PRIMARY KEY,
+    base_rate     REAL DEFAULT 0.5,
+    n             INTEGER DEFAULT 0,
+    wins          INTEGER DEFAULT 0,
+    losses        INTEGER DEFAULT 0,
+    updated_at    TEXT
+);
+
 -- S11 (L3): the learning engine PROPOSES changes here; it never auto-applies them. A human (L4)
 -- approves out-of-band. status: pending | approved | rejected.
 CREATE TABLE IF NOT EXISTS learning_proposals (
