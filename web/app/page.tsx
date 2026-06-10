@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getLatestSnapshot, getEquityPoints, isAllowed } from "@/lib/data";
 import SignOut from "@/components/SignOut";
 import ControlBar from "@/components/ControlBar";
+import Kitchen from "@/components/Kitchen";
 import EquityChart from "@/components/EquityChart";
 import LiveRefresh from "@/components/LiveRefresh";
 import type { Snapshot, EquityPoint } from "@/lib/types";
@@ -104,6 +105,11 @@ function Dashboard({ snapshot: s, updatedAt, email, equity }: { snapshot: Snapsh
       </div>
 
       <div className="k-grid">
+        {/* THE KITCHEN — watch the desks work + steer the Opportunity Board (S17.7) */}
+        <Card title="The Kitchen" hint="The workforce at work — each desk's status, and the ranked, reasoned Opportunity Board you approve. Watch + control; the brain executes." col={12}>
+          <Kitchen desks={s.desks ?? []} board={s.board ?? []} />
+        </Card>
+
         {/* Equity curve (paper track record) */}
         <Card title="Paper equity curve" hint="Total portfolio value over time — virtual money, recorded each publish." col={12}>
           <EquityChart points={equity} />

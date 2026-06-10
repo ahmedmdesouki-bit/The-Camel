@@ -2,7 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isAllowed } from "@/lib/data";
 
-const ALLOWED_TYPES = new Set(["run_tick", "approve", "veto"]);
+const ALLOWED_TYPES = new Set([
+  "run_tick", "approve", "veto",
+  // S17.7 — the Kitchen controls. Still just QUEUED requests; the brain (command_poller) validates each
+  // as founder-only and acts. None moves money: they pause/run desks or mark a board row.
+  "pause_desk", "resume_desk", "run_desk",
+  "approve_proposal", "veto_proposal", "prioritize_proposal",
+]);
 
 // Enqueue a command for the brain. Authenticated + allowlisted only. The web NEVER executes anything —
 // it inserts a 'pending' row into `commands`; ops/command_poller.py on the brain side picks it up and runs

@@ -111,6 +111,43 @@ def _governance(dbs: CamelDbs, mode: str, cash: float, positions_value: float) -
     }
 
 
+def _desks(dbs: CamelDbs) -> List[dict]:
+    """S17.7 — the workforce's current desk status (latest run per desk + pause state), for the Kitchen."""
+    try:
+        from research.workforce import latest_desk_status
+        from governance.desk_control import all_control
+        status = latest_desk_status(dbs)
+        paused = all_control(dbs)
+        return [{"desk_id": k, "status": v["status"], "summary": v["summary"], "ts": v["ts"],
+                 "evidence_n": v["evidence_n"], "paused": paused.get(k, False)}
+                for k, v in status.items()]
+    except Exception:
+        return []
+
+
+def _board(dbs: CamelDbs) -> List[dict]:
+    """S17.7 — the live Opportunity Board (proposed rows, founder-ordered), for the Kitchen."""
+    try:
+        from loop.opportunity_board import current_board
+        out: List[dict] = []
+        for r in current_board(dbs):
+            try:
+                reasons = json.loads(r.get("reason_chain") or "[]")
+            except (ValueError, TypeError):
+                reasons = []
+            out.append({
+                "id": r.get("id"), "symbol": r.get("symbol"), "action": r.get("action"),
+                "score": _round(r.get("score"), 3), "regime": r.get("regime"),
+                "sharia_status": r.get("sharia_status"), "edge_allowed": bool(r.get("edge_allowed")),
+                "hit_rate": _round(r.get("hit_rate"), 3), "confidence": _round(r.get("confidence"), 2),
+                "recommended_action": r.get("recommended_action"),
+                "invalidation": r.get("invalidation"), "reason_chain": reasons,
+            })
+        return out
+    except Exception:
+        return []
+
+
 def build_snapshot(dbs: CamelDbs, mode: str = "paper") -> dict:
     """Return a JSON-serializable snapshot of the Camel's current governed state."""
     report = check(dbs, mode=mode)
@@ -207,4 +244,6 @@ def build_snapshot(dbs: CamelDbs, mode: str = "paper") -> dict:
             "symbol": w.get("symbol"), "sharia_status": w.get("sharia_status"),
             "frozen": bool(w.get("frozen")),
         } for w in whitelist],
+        "desks": _desks(dbs),                  # S17.7 — the Kitchen: workforce status
+        "board": _board(dbs),                  # S17.7 — the Kitchen: Opportunity Board
     }

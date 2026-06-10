@@ -26,6 +26,15 @@ export interface EdgeDecision {
 }
 export interface Regime { classified_at: string; regime: string; confidence: number | null; signals: string[]; }
 export interface WhitelistRow { symbol: string; sharia_status: string; frozen: boolean; }
+// S17.7 — the Kitchen
+export interface DeskStatus {
+  desk_id: string; status: string; summary: string; ts: string | null; evidence_n: number; paused: boolean;
+}
+export interface BoardRow {
+  id: number; symbol: string; action: string; score: number | null; regime: string;
+  sharia_status: string; edge_allowed: boolean; hit_rate: number | null; confidence: number | null;
+  recommended_action: string; invalidation: string; reason_chain: string[];
+}
 
 export interface Snapshot {
   mode: string;
@@ -40,6 +49,8 @@ export interface Snapshot {
   regime: Regime | null;
   regime_history: { classified_at: string; regime: string; confidence: number | null }[];
   whitelist: WhitelistRow[];
+  desks?: DeskStatus[];     // S17.7 — the Kitchen (optional: older snapshots predate it)
+  board?: BoardRow[];       // S17.7 — the Opportunity Board
 }
 
 export interface SystemStateRow { id: number; state: Snapshot; updated_at: string; }

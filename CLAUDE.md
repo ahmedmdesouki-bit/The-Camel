@@ -438,6 +438,7 @@ purpose-built docs under `docs/` - each is the single canonical home for its top
 | `docs/CAMEL_ARCHITECTURE.md` | Layered module map (S14) — how every package composes into the trust-inverted system |
 | `docs/CAMEL_PRELIVE_HARDENING.md` | QA-derived must-close-before-real-money checklist (P1–P4); 0 blockers, paper-safe today |
 | `docs/CAMEL_S15_PAID_AND_FOUNDER.md` | S15 — the only remaining work: paid tools + founder actions to go "above the line" |
+| `docs/CAMEL_S17_WORKFORCE.md` | S17 — the "named workforce": desks · supervisor · scheduler · Kitchen cockpit (1st slice BUILT: S17.1/S17.6/S17.7) |
 | `docs/CAMEL_CONSTITUTION.md` | The rules in prose (Sharia, risk, phase gates) |
 | `docs/CAMEL_DATA_CONTRACTS.md` | 7-DB schemas, point-in-time discipline, data quality |
 | `docs/CAMEL_TESTING.md` | Test strategy, adversarial + integration suites |

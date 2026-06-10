@@ -1399,6 +1399,24 @@ The wave-catching pipeline is now wired end-to-end in code; the only remaining i
 **Remaining = founder/paid/time only (S15 / S13):** the two free signups (Alpaca paper key, FRED key), running the
 Task-Scheduler script, the ≥28-day track record the daily cycle now accrues, and the founder's deliberate phase-flip.
 
+---
+
+### S17 — The Workforce (Desks · Supervisor · Scheduler · Kitchen)  ·  PLANNING
+
+**STATUS: ◑ FIRST SLICE BUILT (2026-06-10) — S17.1 desks + S17.6 Opportunity Board + S17.7 Kitchen DONE &
+QA-reviewed (700 tests). Remaining: S17.2 supervisor+cost-cap · S17.3 scheduler/DAG · S17.4 proposal
+self-check · S17.5 memory consolidate · S17.8 LLM desks.** Full plan + web-deploy note in `docs/CAMEL_S17_WORKFORCE.md`.
+Decomposes the one governed loop into named single-job **desks** (SCOUT data · HERALD news · ORACLE regime · MUFTI
+Sharia · QUANT edge · STEWARD portfolio · CONDUCTOR decision), a **supervisor** (auto-restart + a hard token/API-cost
+cap — the "runaway bill" guardrail), a **scheduler/DAG** (desks feed each other), a live **Kitchen** cockpit (watch
+desks work + founder-only watch-AND-control over an Opportunity Board via the existing command channel), plus Level-2
+(proposal self-check) and Level-3 (memory consolidation + patterns) hardening. **Activates and grows the dormant
+S12.5 Research-Desk framework** (`research/` — evidence-object contract + no-act guarantee, already built). Output =
+a ranked, reasoned, governed **Opportunity Board** ("where to put the money") the founder approves — never blind
+auto-trading, never advice. Sub-sprints S17.1–S17.8 are independently pickable; recommended first slice
+**S17.1 → S17.6 → S17.7**. Everything is buildable+testable now; the parts that become *real* money-insight light up
+when the founder adds the free Alpaca + FRED keys. No sub-sprint weakens the trust-inversion or moves real money.
+
 ## Open decisions
 
 **Resolved (founder + review round #5):**

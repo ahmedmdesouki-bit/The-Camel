@@ -74,6 +74,54 @@ CREATE TABLE IF NOT EXISTS learning_proposals (
     decided_at      TEXT
 );
 
+-- S17.6: the Opportunity Board — the CONDUCTOR's ranked, reasoned, governed PROPOSALS ("where to put the
+-- money"). Each row carries its full reason chain. A proposal is a PROPOSAL only: nothing here executes —
+-- acting on one still flows through the governed tick (Edge Proof → Constitution → Budget → Approval).
+CREATE TABLE IF NOT EXISTS opportunity_proposals (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts                  TEXT DEFAULT (datetime('now')),
+    symbol              TEXT,
+    action              TEXT,        -- buy | dca | wait | avoid
+    score               REAL,
+    regime              TEXT,
+    sharia_status       TEXT,
+    edge_allowed        INTEGER,
+    hit_rate            REAL,
+    sample_size         INTEGER,
+    confidence          REAL,
+    recommended_action  TEXT,
+    invalidation        TEXT,
+    reason_chain        TEXT,        -- JSON list of human-readable reasons (the evidence chain)
+    status              TEXT DEFAULT 'proposed',   -- proposed | approved | vetoed | expired
+    founder_rank        REAL,        -- S17.7 founder reorder override (NULL = use computed score)
+    decided_by          TEXT,
+    decided_at          TEXT
+);
+
+-- S17.7: desk pause/resume control (the Kitchen). The Workforce skips a paused desk. Founder-owned;
+-- the web only REQUESTS a pause via the command channel — the brain writes this row.
+CREATE TABLE IF NOT EXISTS desk_control (
+    desk_id     TEXT PRIMARY KEY,
+    paused      INTEGER DEFAULT 0,
+    updated_at  TEXT,
+    updated_by  TEXT
+);
+
+-- S17.1: the Workforce audit log — one row per desk run (history; the Kitchen derives current desk
+-- status from the latest row per desk_id). Append-only operational telemetry; carries no trade power.
+CREATE TABLE IF NOT EXISTS desk_runs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts          TEXT DEFAULT (datetime('now')),
+    desk_id     TEXT,
+    status      TEXT,        -- ok | empty | error
+    summary     TEXT,
+    metrics     TEXT,        -- JSON
+    evidence_n  INTEGER DEFAULT 0,
+    started_at  TEXT,
+    ended_at    TEXT,
+    error       TEXT
+);
+
 -- S12.5: the Research Desk writes EVIDENCE here and only here. It can never act — there is no
 -- execute path. Evidence flows into Edge Proof; it never bypasses a gate. The desk's master switch
 -- defaults OFF (dormant until capital + proven edge justify the token spend).

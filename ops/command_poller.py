@@ -77,6 +77,46 @@ def process_command(dbs: CamelDbs, cmd: dict, *, founder_email: str = "",
         decide(dbs, ref, approve=(ctype == "approve"), decided_by=requested_by or "web")
         return {"ok": True, "ref": ref, "approved": is_approved(dbs, ref)}
 
+    # S17.7 — the Kitchen controls. Founder-only + fail-closed (same gate as approve/veto): a friend may
+    # WATCH the desks and the board, but only the founder may STEER them. The web only *requests* these;
+    # the brain (here) validates and acts. None of them moves money — they pause/run desks or mark a
+    # board row; acting on an approved proposal still runs through the governed tick.
+    KITCHEN = ("pause_desk", "resume_desk", "run_desk",
+               "approve_proposal", "veto_proposal", "prioritize_proposal")
+    if ctype in KITCHEN:
+        if not founder_email:
+            return {"ok": False, "error": "kitchen controls disabled: CAMEL_FOUNDER_EMAIL not set"}
+        if not requested_by or requested_by != founder_email.lower():
+            return {"ok": False, "error": "kitchen controls are founder-only"}
+
+        if ctype in ("pause_desk", "resume_desk"):
+            from governance.desk_control import set_paused
+            desk = str(payload.get("desk") or "")
+            if not desk:
+                return {"ok": False, "error": "missing desk"}
+            set_paused(dbs, desk, paused=(ctype == "pause_desk"), by=requested_by)
+            return {"ok": True, "desk": desk, "paused": ctype == "pause_desk"}
+
+        if ctype == "run_desk":
+            from research.workforce import default_workforce
+            desk = str(payload.get("desk") or "")
+            syms = payload.get("symbols") or symbols or []
+            r = default_workforce().run_desk(dbs, desk, {"symbols": syms})
+            return {"ok": r.status != "error", "desk": desk, "status": r.status, "summary": r.summary}
+
+        # proposal controls
+        pid = payload.get("id")
+        if pid is None:
+            return {"ok": False, "error": "missing proposal id"}
+        if ctype in ("approve_proposal", "veto_proposal"):
+            from loop.opportunity_board import decide_proposal
+            ok = decide_proposal(dbs, int(pid), approve=(ctype == "approve_proposal"), by=requested_by)
+            return {"ok": ok, "proposal": int(pid),
+                    "decision": "approved" if ctype == "approve_proposal" else "vetoed"}
+        from loop.opportunity_board import prioritize_proposal
+        ok = prioritize_proposal(dbs, int(pid), float(payload.get("rank", 0)))
+        return {"ok": ok, "proposal": int(pid), "rank": float(payload.get("rank", 0))}
+
     return {"ok": False, "error": f"unknown command type {ctype!r}"}
 
 

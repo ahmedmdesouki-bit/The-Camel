@@ -114,3 +114,18 @@ a{color:var(--green-700)}
 .k-footer{text-align:center;font-family:var(--font-sans);font-size:var(--text-2xs);color:var(--text-faint);padding:var(--space-7) var(--space-7) 0}
 .k-seal-rule{height:2px;margin:var(--space-7) var(--space-7) 0;
   background:linear-gradient(90deg,transparent,var(--gold-600) 18%,var(--gold-400) 50%,var(--gold-600) 82%,transparent)}
+
+/* S17.7 — The Kitchen */
+.k-subhead{font-family:var(--font-serif);font-size:var(--text-md);color:var(--green-800);margin:6px 0 10px;font-weight:700}
+.k-deskgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:var(--space-3)}
+.k-desk{border:1px solid var(--line);border-left:3px solid var(--line-strong);border-radius:var(--radius-md);
+  padding:var(--space-3);background:var(--surface-card)}
+.k-desk--ok{border-left-color:var(--up-600)} .k-desk--error{border-left-color:var(--down-600)}
+.k-desk--paused{border-left-color:var(--gold-500);background:var(--accent-wash)}
+.k-desk--empty{border-left-color:var(--text-faint)}
+.k-desk__top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.k-desk__name{font-family:var(--font-mono);font-weight:700;font-size:var(--text-sm);color:var(--green-800);letter-spacing:.04em}
+.k-desk__job{font-family:var(--font-sans);font-size:var(--text-2xs);color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.k-desk__summary{font-family:var(--font-serif);font-size:var(--text-xs);color:var(--text-muted);margin:6px 0 8px;min-height:30px}
+.k-desk__ctl,.k-board__ctl{display:flex;gap:6px;flex-wrap:wrap}
+.k-desk__ctl .cml-btn,.k-board__ctl .cml-btn{padding:5px 10px;font-size:var(--text-2xs)}
