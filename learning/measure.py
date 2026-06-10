@@ -141,6 +141,15 @@ def _write_base_rate(learning_db: str, strategy_id: str, base_rate: float,
         )
 
 
+def strategy_evidence(dbs: CamelDbs, strategy_id: str) -> Dict[str, float]:
+    """The strategy's REAL track record, for the promotion ladder (S16-A5): {base_rate, n, wins, losses}.
+    No record → n=0 (which the evidence-gated `registry.promote` refuses). Read-only."""
+    _ensure_base_rates(dbs.learning)
+    row = _read_base_rate(dbs.learning, strategy_id, 0.0)
+    return {"base_rate": row["base_rate"], "n": row["n"],
+            "wins": row["wins"], "losses": row["losses"]}
+
+
 def _seed_rate_from_registry(registry, strategy_id: str) -> float:
     """A strategy's declared prior hit-rate, if the registry exposes it; else the neutral 0.5."""
     if registry is None:

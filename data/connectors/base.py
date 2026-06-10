@@ -14,6 +14,7 @@ The base handles provenance stamping, validation (drop anything not fully proven
 """
 from __future__ import annotations
 import json
+import re
 import time
 import urllib.error
 import urllib.request
@@ -37,6 +38,17 @@ DEFAULT_HEADERS = {
 
 # HTTP statuses worth retrying: 429 (rate limit) + the 5xx transient server-side band.
 _RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+
+
+_SECRET_PARAMS = re.compile(r"(?i)\b(api_key|apikey|api-key|token|apiToken|key|secret)=([^&\s]+)")
+
+
+def redact_url(url: str) -> str:
+    """Strip secret query-param VALUES from a URL before it is persisted anywhere (DB rows,
+    source_documents, logs). Keys ride in URLs for some vendors (FRED), and persisted rows are
+    backed up off-box — a key at rest in camel_macro.db is a leak (S16 QA). The param NAME is kept
+    so provenance stays readable; only the value is replaced."""
+    return _SECRET_PARAMS.sub(lambda m: f"{m.group(1)}=REDACTED", url or "")
 
 
 def http_get(url: str, headers: Optional[Dict[str, str]] = None, timeout: float = 20.0) -> str:
@@ -134,8 +146,9 @@ class SourceConnector:
         r["ingested_at"] = now
         r["known_at"] = now                         # Phase 0: known when ingested
         r["source_id"] = self.spec.source_id
-        r["source_url"] = url
-        r["source_document_id"] = r.get("source_document_id") or f"{self.spec.source_id}:{url}"
+        safe_url = redact_url(url)                  # never persist a key at rest (S16 QA)
+        r["source_url"] = safe_url
+        r["source_document_id"] = r.get("source_document_id") or f"{self.spec.source_id}:{safe_url}"
         r["content_hash"] = content_hash(raw)
         r["parser_version"] = self.parser_version
         r["data_quality_score"] = r.get("data_quality_score", 0.9)
@@ -147,10 +160,11 @@ class SourceConnector:
         now = now or _utcnow()
         fetched = stored = dropped = documents = 0
         for url in self.urls(**params):
-            raw = transport(url)
+            raw = transport(url)                    # the LIVE fetch needs the real key…
+            safe_url = redact_url(url)              # …but nothing persisted at rest may carry it (QA)
             record_source_document(db, SourceDocument(
-                source_id=self.spec.source_id, source_url=url,
-                source_document_id=f"{self.spec.source_id}:{url}",
+                source_id=self.spec.source_id, source_url=safe_url,
+                source_document_id=f"{self.spec.source_id}:{safe_url}",
                 content_hash=content_hash(raw), parser_version=self.parser_version,
                 fetched_at=now,
             ))

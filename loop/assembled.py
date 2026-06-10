@@ -94,6 +94,41 @@ class AssembledLoop:
         self.approval_fn = approval_fn or (lambda a: False)
         self.phase = phase
 
+    def run_exits(self, proposals: List[Any], state: PortfolioState) -> List[ActionOutcome]:
+        """Execute governed, reduce-only exits (S16-A7) for the EXISTING book — independent of the
+        opportunity router (managing held risk is not a new opportunity). Authority chain per sell:
+        kill switch → Allocator (sells are Edge-exempt by design; the Constitution enforces whitelist,
+        close-only-for-frozen, phantom-sell and oversell) → phase-gated human approval → broker.
+        Sells consume NO budget (they free cash). `proposals` are ExitProposal-shaped (symbol, qty,
+        notional_usd, rule, reason)."""
+        if is_halted():
+            log.warning("Kill switch active — exits skipped.")
+            return []
+        outcomes: List[ActionOutcome] = []
+        for p in proposals:
+            sym = getattr(p, "symbol", "?")
+            action = Action(ActionType.TRADE, symbol=sym, side="sell",
+                            notional_usd=float(getattr(p, "notional_usd", 0.0)), mode="paper")
+            alloc = self.allocator.request(action, state)            # edge-exempt; Constitution decides
+            if not alloc.approved:
+                outcomes.append(ActionOutcome(sym, "edge_or_constitution", False, alloc.decision.reason))
+                _oplog(self.dbs, "EXIT", f"{sym} BLOCKED ({p.rule}): {alloc.decision.reason}")
+                continue
+            if self.phase >= 1:                                      # live exits also need a human
+                if not self.approval_fn(action):
+                    outcomes.append(ActionOutcome(sym, "approval", False, "awaiting human approval"))
+                    _oplog(self.dbs, "EXIT", f"{sym} PENDING human approval ({p.rule})")
+                    continue
+            try:
+                res = self.broker_execute(action)
+            except Exception as exc:                                 # a refused fill must not crash the tick
+                outcomes.append(ActionOutcome(sym, "execute_error", False, f"broker refused fill: {exc}"))
+                _oplog(self.dbs, "EXIT", f"{sym} EXECUTE FAILED ({p.rule}): {exc}")
+                continue
+            outcomes.append(ActionOutcome(sym, "executed", True, p.reason, result=str(res)))
+            _oplog(self.dbs, "EXIT", f"{sym} CLOSED ({p.rule}): {p.reason} ({res})")
+        return outcomes
+
     def run_tick(self, candidates: List[Action], state: PortfolioState,
                  edge_reports: Optional[Dict[str, Any]] = None) -> TickResult:
         if is_halted():

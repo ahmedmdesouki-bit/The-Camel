@@ -170,7 +170,8 @@ class Constitution:
             return Decision(False, "Withdrawals are forbidden by the Constitution.", "no_withdrawals")
 
         if t == ActionType.ADD_WHITELIST:
-            if not a.approved_by or not a.scan_id:
+            # stripped: a whitespace-only "approval" is no approval (S16 QA — tightens only)
+            if not (a.approved_by or "").strip() or not (a.scan_id or "").strip():
                 return Decision(False, "Whitelist add needs founder approval + a logged SHARIA SCAN.", "whitelist_unapproved")
             return Decision(True, "Whitelist add approved.")
 

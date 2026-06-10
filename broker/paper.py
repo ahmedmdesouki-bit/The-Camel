@@ -162,11 +162,24 @@ class PaperBroker:
         # (The Constitution's value-based guard is the first wall; this is the precise second wall.)
         if action.side.lower() == "sell":
             have = held_qty(self.portfolio_db, symbol)
+            # S16 full-close clamp: a sell within a hair of the whole position IS a full close —
+            # the caller sized it from qty×price and float round-trips (notional/fill_price) can land
+            # ±1 ulp either side of `have`. Clamping kills both failure modes: an honest close being
+            # refused as a phantom sell, and a dust residue that never reaches status='closed' (so the
+            # round-trip never resolves and nothing is learned). The guard below still rejects any
+            # genuine oversell — the clamp window is relative-1e-6, the guard stays absolute-1e-9.
+            if have > 0 and abs(qty - have) <= have * 1e-6:
+                qty = have
             if qty > have + 1e-9:
                 raise InsufficientPositionError(
                     f"sell {qty:.6f} {symbol} exceeds held {have:.6f}")
 
         is_buy = action.side.lower() == "buy"
+        if not is_buy:
+            # cash received = the ACTUAL shares sold × fill price, so after a full-close clamp the ledger
+            # entry and the position delta stay exactly consistent (no dust between cash and shares).
+            # For an unclamped sell this equals the requested notional anyway. (S16 QA)
+            notional = qty * fill_price
         ledger_type = "BUY" if is_buy else "SELL"
         signed = -notional if is_buy else notional   # BUY = cash out, SELL = cash in
 

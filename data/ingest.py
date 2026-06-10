@@ -82,6 +82,36 @@ def default_jobs(symbols: Optional[List[str]] = None, series: Optional[List[str]
     return jobs
 
 
+# ---- Alpaca price path (S16-A3) — the real free EOD feed once the founder provisions keys ----
+
+def have_alpaca_keys() -> bool:
+    return bool(os.environ.get("ALPACA_API_KEY")) and bool(os.environ.get("ALPACA_API_SECRET"))
+
+
+def alpaca_backfill(market_db: str, symbols: List[str], *, days: int = 400,
+                    fetcher=None) -> dict:
+    """Best-effort Alpaca daily-bar backfill → camel_market.db `prices` (source='alpaca').
+
+    Needs the founder-provisioned free keys (ALPACA_API_KEY / ALPACA_API_SECRET) + `alpaca-py`.
+    `days` covers both the first historical fill and the daily incremental top-up (store_price upserts,
+    so re-ingesting overlapping bars is harmless). `fetcher` is injectable for hermetic tests — the
+    default is the real `data.alpaca.fetch_bars`. Any failure (missing keys, package, network) is
+    reported as an error string, never raised: one bad source must not stop the rest."""
+    import datetime as _dt
+    try:
+        if fetcher is None:
+            from data.alpaca import fetch_bars as fetcher          # late import: alpaca-py optional
+        from data.store import store_price
+        end = _dt.date.today()
+        start = end - _dt.timedelta(days=max(1, int(days)))
+        records = fetcher(list(symbols), start, end)
+        for rec in records:
+            store_price(market_db, rec, source="alpaca")
+        return {"stored": len(records), "symbols": sorted({r["symbol"] for r in records})}
+    except Exception as exc:
+        return {"error": str(exc)}
+
+
 def main(argv=None) -> int:                               # pragma: no cover - CLI entrypoint
     import argparse
     p = argparse.ArgumentParser(description="The Camel — data ingestion orchestrator")
@@ -89,6 +119,9 @@ def main(argv=None) -> int:                               # pragma: no cover - C
     p.add_argument("--symbols", default=os.environ.get("CAMEL_SYMBOLS", ""))
     p.add_argument("--series", default=os.environ.get("CAMEL_SERIES", ""))
     p.add_argument("--ciks", default=os.environ.get("CAMEL_CIKS", ""))
+    p.add_argument("--alpaca-days", type=int,
+                   default=int(os.environ.get("CAMEL_ALPACA_DAYS", "400") or 400),
+                   help="Alpaca backfill window in days (used only when ALPACA_API_KEY/SECRET are set)")
     args = p.parse_args(argv)
 
     def _split(s):
@@ -97,8 +130,13 @@ def main(argv=None) -> int:                               # pragma: no cover - C
     from db.paths import init_all
     dbs = CamelDbs.from_dir(args.db_dir)
     init_all(dbs)
-    jobs = default_jobs(_split(args.symbols), _split(args.series), _split(args.ciks))
-    print(run_ingestion(dbs, jobs))
+    symbols = _split(args.symbols)
+    results = run_ingestion(dbs, default_jobs(symbols, _split(args.series), _split(args.ciks)))
+    # S16-A3: Alpaca is the REAL free price feed (Stooq now serves a JS anti-bot page) — it runs
+    # whenever the founder has provisioned the free keys, alongside (not instead of) the manifest.
+    if symbols and have_alpaca_keys():
+        results["alpaca"] = alpaca_backfill(dbs.market, symbols, days=args.alpaca_days)
+    print(results)
     return 0
 
 

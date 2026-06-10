@@ -46,6 +46,14 @@ def run_daily_ops(dbs: CamelDbs, *, mode: str = "paper", notifier=None,
     except Exception as exc:
         summary["errors"]["brief"] = str(exc)
 
+    # S16-A4 — the quarterly re-screen schedule, surfaced daily: whitelist names never re-screened or
+    # past next_review_at. Reporting only — clearing a name takes an actual quorum-bound re-screen.
+    try:
+        from sharia.universe import rescreen_due
+        summary["sharia_rescreen_due"] = rescreen_due(dbs)
+    except Exception as exc:
+        summary["errors"]["sharia_rescreen"] = str(exc)
+
     return summary
 
 
@@ -68,6 +76,19 @@ def _build_portfolio_state(dbs: CamelDbs):
     fund = cash + sum(positions.values())
     return PortfolioState(fund_usd=fund, cash_usd=cash, positions=positions,
                           whitelist=load_whitelist(dbs.sharia))
+
+
+def _apply_mtm(state, marks: dict) -> None:
+    """Mark positions to market AND resync fund_usd = cash + Σ positions (S16 QA fix).
+
+    Marking position values without recomputing the fund total hands the Constitution an internally
+    inconsistent state: a depreciated book overstates fund_usd → the 20% concentration cap loosens;
+    an appreciated book understates it → the tiered cash buffer loosens. Both rails drift fail-open
+    by the marks-vs-fills gap. This keeps the invariant cash + Σ positions == fund on every leg."""
+    for sym, mv in marks.items():
+        if sym in state.positions:
+            state.positions[sym] = mv
+    state.fund_usd = state.cash_usd + sum(state.positions.values())
 
 
 def _budget_kernel(L: dict, fund: float, notional: float):
@@ -168,15 +189,53 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
             broker_execute=_execute,                        # S16: durable paper Act
             approval_fn=approval_fn,                         # None → withhold by default (fail-safe)
         )
-        tick = run_strategy_tick(dbs, registry, state, symbols=list(symbols),
+
+        # S16-A7 — manage the EXISTING book first: governed reduce-only exits run BEFORE any new buy
+        # (free the cash, enforce invalidations, de-risk frozen names). Failure handling is LOUD via
+        # two distinct paths: a broken reader/rule RAISES (→ the outer handler grades the run 'error'),
+        # and a broker-refused exit fill is detected below and ALSO grades the run 'error' — risk
+        # management never fails silently. Closes created here feed Measure→Learn this same tick.
+        from trader.execution.exits import build_exit_proposals
+        proposals, mtm, skipped_no_price = build_exit_proposals(dbs, state.whitelist, limits=constitution.L)
+        _apply_mtm(state, mtm)                              # mark positions to market AND resync fund_usd
+                                                            # (marks without a fund resync skew the
+                                                            # concentration + cash-buffer rails — QA)
+        exit_outcomes = loop.run_exits(proposals, state) if proposals else []
+        exits_executed = [o.symbol for o in exit_outcomes if o.stage == "executed" and o.approved]
+        exits_blocked = [(o.symbol, o.reason) for o in exit_outcomes
+                         if o.stage == "edge_or_constitution"]
+        exit_errors = [(o.symbol, o.reason) for o in exit_outcomes if o.stage == "execute_error"]
+        if exit_errors:
+            # A de-risking order that the broker REFUSED is a risk-management failure — grade the run
+            # 'error' (non-counting) and do NOT proceed to add new risk on top of a broken exit path.
+            run.mark("act", "error", error=f"exit fills refused: {exit_errors}")
+            finish_run(dbs.portfolio, run, "error")
+            return {"phase": phase, "regime": None, "router_path": None, "executed": [],
+                    "exits": exits_executed, "exits_blocked": exits_blocked, "exit_errors": exit_errors,
+                    "exit_skipped_no_price": skipped_no_price, "outcome": "error",
+                    "budget_present": True, "fund_usd": state.fund_usd, "cash_usd": state.cash_usd,
+                    "run_id": run.run_id, "learning": learn_summary}
+        if exits_executed:
+            state = _build_portfolio_state(dbs)             # cash/positions changed → rebuild,
+            _apply_mtm(state, {s: v for s, v in mtm.items()  # then re-mark what remains open
+                               if s in state.positions})
+
+        # a symbol exited THIS tick is not a buy candidate THIS tick — no same-tick churn, and the
+        # Measure baseline for the closed round-trip stays unambiguous (QA finding)
+        buy_symbols = [s for s in symbols if s not in set(exits_executed)]
+        tick = run_strategy_tick(dbs, registry, state, symbols=buy_symbols,
                                  loop=loop, notional_per_trade=notional_per_trade)
 
-        # Did the Act stage actually run? Only when not halted AND the router chose 'trader' (it leans to
-        # Wait without capital or a proven edge). Halt / Wait ticks did no governed Act work.
-        acted = (not tick.halted) and tick.router_path == "trader"
+        # Did the Act stage actually DO anything? Only real fills count — an executed buy or an
+        # executed exit. A routed-but-fully-blocked buy leg (e.g. phase≥1 approval withheld on every
+        # candidate) is governed *deciding*, not governed *acting*, and must not advance the ≥28-run
+        # readiness clock. (QA: router_path=='trader' alone over-counted.)
+        acted = (not tick.halted) and (bool(tick.executed) or bool(exits_executed))
         run.mark("observe", "skipped" if tick.halted else "ok", tick.regime)
         run.mark("choose", "skipped" if tick.halted else "ok", tick.router_path)
-        run.mark("act", "ok" if acted else "skipped", {"executed": tick.executed})
+        run.mark("act", "ok" if acted else "skipped",
+                 {"executed": tick.executed, "exits": exits_executed,
+                  "exits_blocked": exits_blocked, "exit_skipped_no_price": skipped_no_price})
 
         # S16 — Measure → Learn (best-effort: learning must never crash a governed tick; system integrity
         # ranks above learning speed). Skipped when halted — the kill switch means *do nothing*.
@@ -199,10 +258,10 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
             run.mark("learn", "skipped")
 
         # Only a tick that did REAL governed work counts toward the ≥28-run live-readiness gate
-        # (ops/live_readiness counts outcome LIKE 'complete%'). A halted tick (kill switch) or a router
-        # 'wait' (no Act stage — e.g. unfunded book / no proven edge) gets a distinct, NON-counting outcome,
-        # so the autonomy clock can never be advanced by no-op ticks. (S16 review fix)
-        outcome = "halted" if tick.halted else ("complete" if tick.router_path == "trader" else "no_action")
+        # (ops/live_readiness counts outcome LIKE 'complete%'). A halted tick (kill switch) or a pure
+        # 'wait' (no buy leg AND no exits — e.g. unfunded book / no proven edge) gets a distinct,
+        # NON-counting outcome, so the autonomy clock can never be advanced by no-op ticks. (S16)
+        outcome = "halted" if tick.halted else ("complete" if acted else "no_action")
         finish_run(dbs.portfolio, run, outcome)
     except Exception:
         finish_run(dbs.portfolio, run, "error")             # never leave a runs row stuck 'running'
@@ -210,7 +269,7 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
 
     return {
         "phase": phase, "regime": tick.regime, "router_path": tick.router_path,
-        "executed": tick.executed, "outcome": outcome,
+        "executed": tick.executed, "exits": exits_executed, "outcome": outcome,
         "budget_present": True, "fund_usd": state.fund_usd, "cash_usd": state.cash_usd,
         "run_id": run.run_id, "learning": learn_summary,
     }

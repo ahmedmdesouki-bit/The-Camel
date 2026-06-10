@@ -43,7 +43,7 @@ $havePublish = $env:SUPABASE_URL -and $env:SUPABASE_SERVICE_ROLE_KEY
 function Invoke-Cycle {
   Write-Host "`n=== Camel brain cycle @ $(Get-Date -Format 'u') ===" -ForegroundColor DarkCyan
   if (-not $NoIngest) {
-    Write-Host "[1/4] ingest" -ForegroundColor DarkGray
+    Write-Host "[1/5] ingest" -ForegroundColor DarkGray
     # Build args as an array and only pass flags that have a value. PowerShell silently DROPS an empty
     # string argument, so `--ciks $Ciks` with an empty $Ciks reached argparse as a bare `--ciks` and
     # crashed it ("expected one argument"). Conditional flags avoid that for ciks/series/symbols.
@@ -53,15 +53,17 @@ function Invoke-Cycle {
     if ($Ciks)    { $ingestArgs += @("--ciks",    $Ciks) }
     python @ingestArgs
   }
-  Write-Host "[2/4] paper tick (Edge-gated)" -ForegroundColor DarkGray
+  Write-Host "[2/5] paper tick (Edge-gated, exits-managed)" -ForegroundColor DarkGray
   python -m loop.jobs tick --symbols $Symbols
+  Write-Host "[3/5] daily ops (heartbeat + dashboard + founder brief + Sharia re-screen nag)" -ForegroundColor DarkGray
+  python -m loop.jobs daily
   if ($havePublish) {
-    Write-Host "[3/4] publish state -> web" -ForegroundColor DarkGray
+    Write-Host "[4/5] publish state -> web" -ForegroundColor DarkGray
     python -m ops.publish_state
-    Write-Host "[4/4] run queued web commands" -ForegroundColor DarkGray
+    Write-Host "[5/5] run queued web commands" -ForegroundColor DarkGray
     python -m ops.command_poller
   } else {
-    Write-Host "[3-4] SUPABASE_* not set -> skipping publish/poll (local paper run only)" -ForegroundColor Yellow
+    Write-Host "[4-5] SUPABASE_* not set -> skipping publish/poll (local paper run only)" -ForegroundColor Yellow
   }
 }
 

@@ -76,9 +76,11 @@ def test_registry_register_and_active():
 
 
 def test_promotion_ladder_one_rung_and_demote_to_cooldown():
+    # S16-A5: a rung is EARNED — promotion needs a real track record (or a named founder override).
     reg = StrategyRegistry(); reg.register(QualityMomentum())     # starts at backtest
-    assert reg.promote("quality_momentum") == PromotionMode.REALISTIC_PAPER
-    assert reg.promote("quality_momentum") == PromotionMode.SHADOW
+    ev = {"base_rate": 0.6, "n": 25}                              # a sufficient track record
+    assert reg.promote("quality_momentum", evidence=ev) == PromotionMode.REALISTIC_PAPER
+    assert reg.promote("quality_momentum", evidence=ev) == PromotionMode.SHADOW
     assert reg.demote("quality_momentum") == PromotionMode.REALISTIC_PAPER   # failure → cooldown, not deleted
 
 

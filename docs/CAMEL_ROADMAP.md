@@ -18,8 +18,8 @@ S10 ✅ (Full Edge Proof, 17-check; shadow/enforcing) → ⭐ S10.5 ✅ (Operato
 S11 ✅ (Strategy Registry + Portfolio Engine + Learning) →
 S12 ✅ (Edge Lab + realistic paper + ⭐ Sandbox Mode + No-Edge protocol) → S12.5 ✅ (Research Desk — framework built, DORMANT) →
 S13 ◑ (Micro-Live — readiness infra built, go-live FOUNDER-GATED) → S14 ✅ (architecture documented + physical reorg DONE — Trader Camel under `trader/`) →
-S16 ◔ (Operational Activation — close Measure→Learn + make the production tick FILL & persist `runs`; the CODE half of the path to a real track record — from the 2026-06-09 audit; executes BEFORE the S15 go-live) →
-S15 ◑ (Paid tools & founder actions to cross "above the line"; all paid or founder-gated)
+S16 ✅ (Operational Activation — CODE-COMPLETE: A1 durable Act + A2 Measure→Learn + A7 governed exits + A3 Alpaca feed + A4 Sharia universe + A5 evidence-gated promotion + Edge Lab harness + scheduler; 671 tests; the full wave-catching pipeline wired end-to-end) →
+S15 ◑ (Paid tools & founder actions to cross "above the line"; all paid or founder-gated — now the ONLY remaining work)
 ```
 
 > **Post-S14 hardening push (2026-06-08):** all *free, non-founder* deferred work is now done — pre-live
@@ -1367,14 +1367,37 @@ run and learn, which is the prerequisite the go-live gates were always waiting o
 record its own track record), then **A7** (exits, so the Learn half actually fires), then A3 + A4 (so the record
 is on real data), A6 alongside, A5 last.
 
-**STATUS: ◑ A1 + A2 DONE & QA-HARDENED (2026-06-09); A3/A4/A5/A7 remain.** A1 (durable Act + run persistence) and
-A2 (Measure→Learn machinery) are implemented, adversarially QA'd (6-agent review), and the QA's findings fixed:
-the production tick fills via a real `PaperBroker`, persists a graded terminal `runs` row (no-op/halted ticks do
-NOT advance the readiness clock), and runs a correct Measure→Learn (per-round-trip P&L, one outcome per close,
-propose-only L3, stable-reference anomaly). New code: `learning/measure.py`; rewrites of `loop/jobs.run_trading_tick`
-+ `loop/assembled.py` (durable Act, fill-error isolation) + `loop/driver.py` (candidate attribution) + a
-`strategy_base_rates` table. **→ 626 tests green.** Remaining: **A7** (exits → closes → the Learn half fires in
-production), A3 (working free price feed), A4 (populated Sharia universe), A5 (evidence-gated promotion).
+**STATUS: ✅ S16 CODE-COMPLETE — A1–A7 + Edge Lab harness + scheduler DONE & QA-HARDENED (2026-06-09/10). → 671 tests green.**
+The wave-catching pipeline is now wired end-to-end in code; the only remaining inputs are founder/paid/time (below).
+- **A1 — durable Act + run persistence** ✅ `loop/jobs.run_trading_tick` fills via a real `PaperBroker` (orders+ledger+
+  positions, one txn); persists a GRADED terminal `runs` row (`complete` only when the Act stage actually FILLED —
+  no-op/halted/error ticks never advance the ≥28-run readiness gate); failure → `error`, never stuck `running`.
+- **A2 — Measure→Learn** ✅ `learning/measure.py`: per-round-trip P&L (delta from an at-open baseline, not lifetime
+  cumulative), ONE outcome per economic close, persistent per-strategy base-rate (L1), propose-only L3 on
+  underperformance (stable-reference anomaly). Now actually FIRES because A7 generates the closes.
+- **A7 — governed exits (the generator of closes)** ✅ `trader/execution/exits.py` + `AssembledLoop.run_exits`:
+  reduce-only profit-take / stop-loss / time-stop / sharia-exit on founder-owned `limits.yaml` thresholds (sign-typo
+  sanity-checked); every sell routed through Constitution (whitelist-required, close-only-for-frozen, phantom/oversell)
+  → phase-gated approval → broker; sells Edge-exempt, consume no budget; kill-switch honored. Wired into the tick
+  BEFORE buys, with a mark-to-market + fund resync so the marks can't skew the buy leg's concentration/cash rails.
+  **The e2e test proves the full loop in ONE scheduled tick: held position hits +X% → governed exit fills → run
+  grades `complete` → round-trip resolves → base-rate moves.** The Learn half now fires in production.
+- **A3 — real free price feed** ✅ `data.ingest.alpaca_backfill` (+`have_alpaca_keys`, CLI): the instant the founder
+  provisions free Alpaca keys, real EOD history flows (Stooq is bot-blocked); error-tolerant, injectable, never raises.
+- **A4 — Sharia universe** ✅ `sharia/universe.py`: founder-gated `seed_universe` through the Constitution's
+  ADD_WHITELIST gate (fail-closed on blank founder; kill-switch refuses); **only the vetted default ETFs land
+  `compliant`, any other symbol seeds `pending_review` (buy-blocked) until a real screen**; quarterly `rescreen_due`
+  schedule surfaced in daily ops + the brain cycle.
+- **A5 — evidence-gated promotion** ✅ `registry.promote()` is allow-on-proof (≥20 resolved round-trips, finite
+  base-rate ≥ 0.5) and the two LIVE rungs are **founder-only regardless of evidence** — the agent can earn paper
+  autonomy, never live capital.
+- **Edge Lab harness** ✅ `python -m trader.edgelab.run --symbols …` → real history → two-engine backtest →
+  per-bar-normalized walk-forward → beats-DCA → **EDGE / NO_EDGE→DCA** verdict per symbol.
+- **Scheduler** ✅ `scripts/register-tasks.ps1` (founder runs once, elevated): daily brain cycle + weekly safety.
+- Connector URLs are now **secret-redacted at rest** (`data/connectors/base.redact_url`) — no API key persists in DB
+  rows / source_documents / backups. Two adversarial QA fleets (FAIL→fixed) + an independent re-verify pass cleared it.
+**Remaining = founder/paid/time only (S15 / S13):** the two free signups (Alpaca paper key, FRED key), running the
+Task-Scheduler script, the ≥28-day track record the daily cycle now accrues, and the founder's deliberate phase-flip.
 
 ## Open decisions
 

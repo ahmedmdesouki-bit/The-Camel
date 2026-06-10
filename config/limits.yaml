@@ -16,3 +16,10 @@ cash_tiers:                   # tiered minimum cash buffer by fund size
   - {max_fund: 1000,   min_cash_pct: 0.0}
   - {max_fund: 10000,  min_cash_pct: 0.10}
   - {max_fund: 1.0e12, min_cash_pct: 0.10}
+
+# Exit rules (S16-A7, reduce-only; enforced by trader/execution/exits.py every tick).
+# Sanity-checked at load: profit_take must be > 0, stop_loss < 0, time_stop_days > 0 —
+# a sign typo refuses to run rather than liquidating the book.
+exit_profit_take_pct: 0.15    # close at +15%
+exit_stop_loss_pct: -0.08     # close at -8% (the written invalidation, enforced)
+exit_time_stop_days: 90       # close a thesis that hasn't resolved in 90 days

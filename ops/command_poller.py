@@ -57,7 +57,10 @@ def process_command(dbs: CamelDbs, cmd: dict, *, founder_email: str = "",
     if ctype == "run_tick":
         from loop.jobs import run_trading_tick
         syms = payload.get("symbols") or symbols or [s for s in os.environ.get("CAMEL_SYMBOLS", "").split(",") if s]
-        return {"ok": True, **run_trading_tick(dbs, symbols=syms)}
+        res = run_trading_tick(dbs, symbols=syms)
+        # a tick that graded 'error' (e.g. a refused de-risking exit) marks the command 'error', not
+        # 'done' — the web queue must reflect a failed governed run, never silently succeed. (S16 QA)
+        return {"ok": res.get("outcome") != "error", **res}
 
     if ctype in ("approve", "veto"):
         # founder-only AND fail-closed: a friend may watch, but only the founder may resolve a live-decision

@@ -16,6 +16,10 @@ from trader.strategies.base import (
 )
 
 
+class PromotionEvidenceError(RuntimeError):
+    """Raised when a promotion is requested without the track record to back it (S16-A5)."""
+
+
 class StrategyRegistry:
     def __init__(self):
         self._strats: Dict[str, BaseStrategy] = {}
@@ -53,11 +57,48 @@ class StrategyRegistry:
         return clamped
 
     # ---- promotion ladder (one rung at a time; failure demotes to cooldown) ----
-    def promote(self, sid: str) -> PromotionMode:
+    # S16-A5: a rung is EARNED, never granted. Promotion requires either a real track record
+    # (evidence = {"base_rate": ..., "n": ...} from `strategy_base_rates`, via
+    # learning.measure.strategy_evidence) or the founder's explicit, named override.
+    MIN_EVIDENCE_N = 20            # resolved round-trips before any rung advances
+    MIN_EVIDENCE_BASE_RATE = 0.5   # the track record must at least not refute the strategy
+
+    def promote(self, sid: str, *, evidence: Optional[dict] = None,
+                by_founder: str = "") -> PromotionMode:
+        """Advance one rung IFF the evidence clears the bar (or a named founder overrides).
+
+        ALLOW-ON-PROOF (not refuse-on-bad): the rung advances only when the evidence affirmatively
+        clears every check — so a NaN/garbage base_rate FAILS (a NaN survives any refuse-comparison;
+        QA-probed). The two LIVE rungs are FOUNDER-ONLY regardless of evidence: no track record, however
+        good, lets the agent promote itself into real money — that is the founder's explicit act.
+
+        Raises PromotionEvidenceError otherwise."""
+        import math
         meta = self._strats[sid].meta
         nxt = can_promote(meta.mode)
-        if nxt is not None:
-            meta.mode = nxt
+        if nxt is None:
+            return meta.mode
+        founder = bool((by_founder or "").strip())
+        if nxt in (PromotionMode.LIVE_SMALL, PromotionMode.LIVE_SCALE) and not founder:
+            raise PromotionEvidenceError(
+                f"promotion of '{sid}' to {nxt.value} refused: live rungs are founder-only — "
+                f"evidence earns paper autonomy, never live capital.")
+        if not founder:
+            ev = evidence or {}
+            try:
+                n = int(ev.get("n", 0) or 0)
+                br = float(ev.get("base_rate", 0.0) or 0.0)
+            except (TypeError, ValueError):
+                n, br = 0, 0.0
+            ok = (n >= self.MIN_EVIDENCE_N
+                  and math.isfinite(br)
+                  and br >= self.MIN_EVIDENCE_BASE_RATE)
+            if not ok:
+                raise PromotionEvidenceError(
+                    f"promotion of '{sid}' to {nxt.value} refused: evidence n={n} (need "
+                    f">={self.MIN_EVIDENCE_N}), base_rate={br!r} (need finite and >="
+                    f"{self.MIN_EVIDENCE_BASE_RATE:.2f}). Autonomy is earned, not granted.")
+        meta.mode = nxt
         return meta.mode
 
     def demote(self, sid: str) -> PromotionMode:

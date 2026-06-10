@@ -108,7 +108,11 @@ def _apply_on_conn(conn: sqlite3.Connection, symbol: str, side: str, qty: float,
     held = (r["qty"] if r else 0.0) or 0.0
     avg = (r["avg_cost"] if r else 0.0) or 0.0
     realized = (r["realized_pnl"] if r else 0.0) or 0.0
-    opened_at = (r["opened_at"] if r and r["opened_at"] else now)
+    # S16: a buy that re-opens a FLAT row starts a NEW round-trip — its age clock restarts. Keeping
+    # the original opened_at made every re-bought name instantly time-stopped (the exit engine read
+    # the first-ever open), creating a daily sell/re-buy churn loop. (QA finding)
+    reopening = side == "buy" and held <= _EPS
+    opened_at = now if (r is None or not r["opened_at"] or reopening) else r["opened_at"]
 
     if side == "buy":
         new_qty = held + qty
@@ -135,7 +139,8 @@ def _apply_on_conn(conn: sqlite3.Connection, symbol: str, side: str, qty: float,
         "ON CONFLICT(symbol) DO UPDATE SET "
         "qty=excluded.qty, avg_cost=excluded.avg_cost, market_price=excluded.market_price, "
         "market_value=excluded.market_value, unrealized_pnl=excluded.unrealized_pnl, "
-        "realized_pnl=excluded.realized_pnl, updated_at=excluded.updated_at, status=excluded.status",
+        "realized_pnl=excluded.realized_pnl, opened_at=excluded.opened_at, "   # reopen resets the clock (S16)
+        "updated_at=excluded.updated_at, status=excluded.status",
         (symbol, new_qty, new_avg, price, market_value, unrealized, realized, opened_at, now, status),
     )
     return Position(symbol, new_qty, new_avg, price, market_value, realized, status)
