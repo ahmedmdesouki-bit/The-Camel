@@ -44,20 +44,31 @@ _REVIEW_DAYS = 90         # quarterly (mirrors sharia/cross_check._REVIEW_DAYS)
 
 
 def seed_universe(dbs: CamelDbs, approved_by: str, symbols: Optional[Dict[str, str]] = None,
-                  source: str = "founder_seed") -> Dict[str, str]:
+                  source: str = "founder_seed", names: Optional[Dict[str, str]] = None) -> Dict[str, str]:
     """Add the founder-approved universe to the whitelist, one Constitution-gated name at a time.
 
     FAIL-CLOSED: a blank `approved_by` raises — seeding is a founder act, never an agent default.
-    Returns {symbol: 'added' | the Constitution's rejection reason}."""
+    `names` (optional, symbol→legal entity name) feeds the OFAC sanctions guard: a name on the SDN list is
+    REFUSED before it can be whitelisted. Inert for the default ETF seed (no single sanctionable issuer);
+    load-bearing the moment the founder seeds an individual equity by name.
+    Returns {symbol: 'added' | a rejection reason}."""
     if not (approved_by or "").strip():
         raise ValueError("seed_universe requires a founder identity (approved_by) — refusing.")
     symbols = symbols or dict(DEFAULT_UNIVERSE)
+    names = names or {}
     gate = Constitution()
     state = PortfolioState(fund_usd=0.0, cash_usd=0.0)
     today = datetime.now(timezone.utc).date().isoformat()
 
     results: Dict[str, str] = {}
     for sym, asset_type in symbols.items():
+        # OFAC sanctions hard wall (S17): a sanctioned entity never enters the tradeable universe.
+        ename = names.get(sym)
+        if ename:
+            from sharia.sanctions import is_sanctioned
+            if is_sanctioned(dbs, ename):
+                results[sym] = f"REFUSED: '{ename}' is on the OFAC SDN sanctions list"
+                continue
         scan_id = f"seed-{today}-{sym}"
         decision = gate.evaluate(Action(ActionType.ADD_WHITELIST, symbol=sym,
                                         approved_by=approved_by, scan_id=scan_id), state)

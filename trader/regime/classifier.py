@@ -29,6 +29,7 @@ class Regime(str, Enum):
 
 # thresholds (founder-tunable later; deliberately explicit for auditability)
 USD_STRONG = 120.0          # DTWEXBGS broad USD index level considered "strong"
+GPR_HIGH = 150.0            # geopolitical risk index (baseline ~100 by construction); >= 150 = elevated
 
 
 @dataclass
@@ -52,6 +53,7 @@ def classify(f: Dict[str, Optional[float]]) -> RegimeResult:
     unemp = f.get("unemployment")
     oil = f.get("oil_change_pct")
     usd = f.get("usd")
+    gpr = f.get("gpr")
 
     if cpi is not None and cpi >= 4.0:
         s[Regime.INFLATION_SHOCK] += 1.0; sig.append(f"cpi_yoy={cpi:.1f}>=4")
@@ -80,9 +82,14 @@ def classify(f: Dict[str, Optional[float]]) -> RegimeResult:
     if peg_dev is not None and abs(peg_dev) >= 0.5:
         s[Regime.GEOPOLITICAL_RISK_OFF] += 1.0; s[Regime.USD_STRENGTH_EM_PRESSURE] += 0.5
         sig.append(f"sar_peg_drift={peg_dev:+.2f}%")
+    # Geopolitical Risk Index (Caldara-Iacoviello, S17) — an elevated reading is a direct risk-off signal.
+    # Baseline ~100; only fires >= GPR_HIGH, so a benign world never perturbs the regime.
+    if gpr is not None and gpr >= GPR_HIGH:
+        s[Regime.GEOPOLITICAL_RISK_OFF] += 1.0
+        sig.append(f"gpr={gpr:.0f}>={GPR_HIGH:.0f}")
 
     if not s:
-        have_data = any(v is not None for v in (cpi, curve, hy, vix, ff, unemp, oil, usd))
+        have_data = any(v is not None for v in (cpi, curve, hy, vix, ff, unemp, oil, usd, gpr))
         if have_data:
             return RegimeResult(Regime.RECOVERY, 0.4, ["benign: no stress signals"], dict(f))
         return RegimeResult(Regime.UNKNOWN, 0.0, ["no macro data"], dict(f))

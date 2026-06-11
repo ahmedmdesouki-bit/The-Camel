@@ -26,6 +26,7 @@ DEFAULT_SERIES = {
     "cpi": "CPIAUCSL",
     "oil": "DCOILWTICO",
     "usd_sar": "DEXSAUS",        # S9 slice 4: USD/SAR spot → the peg monitor (free, FRED)
+    "gpr": "GPR",                # S17: Caldara-Iacoviello Geopolitical Risk Index (free, CC BY)
 }
 
 
@@ -98,4 +99,5 @@ def build_features(dbs: CamelDbs, series: Dict[str, str] = None,
         "cpi_yoy": _yoy(pts("cpi")),
         "oil_change_pct": _yoy(pts("oil")),
         "peg_deviation_pct": peg.get("deviation_pct"),   # USD/SAR drift vs the 3.75 peg
+        "gpr": _latest(pts("gpr")),                      # geopolitical risk index level (baseline ~100)
     }

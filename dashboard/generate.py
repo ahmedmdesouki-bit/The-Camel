@@ -222,8 +222,22 @@ def _ops(s: dict) -> str:
             f"</div></div>")
 
 
+def _strategies_view(s: dict) -> str:
+    rows = [[_tick(x["id"]), _esc(x["name"]), _badge(_esc(x["rung"]), "neutral"),
+             _esc(x["regimes"]), _fig(f"{x['max_position_pct']}%"), _fig(x["base_rate"])]
+            for x in s.get("strategies", [])]
+    tbl = _table(['Strategy', 'Name', 'Promotion rung', 'Regimes', 'Max position', 'Prior base-rate'],
+                 rows, empty='no strategies registered')
+    return (f"<div class='view' data-view='strategies'>"
+            + _card('Strategy roster', tbl,
+                    hint="Each strategy PROPOSES only — every signal still clears the full Edge Proof + "
+                         "Constitution. A strategy advances its promotion rung only on a real Edge-Lab "
+                         "track record (autonomy is earned, not granted).")
+            + "</div>")
+
+
 _NAV = [("overview", "Overview"), ("portfolio", "Portfolio"), ("decisions", "Decisions"),
-        ("regime", "Regime"), ("sharia", "Sharia"), ("ops", "Ops")]
+        ("regime", "Regime"), ("strategies", "Strategies"), ("sharia", "Sharia"), ("ops", "Ops")]
 
 
 def build_dashboard_html(dbs: CamelDbs, mode: str = "paper") -> str:
@@ -247,7 +261,8 @@ def build_dashboard_html(dbs: CamelDbs, mode: str = "paper") -> str:
         f"box-shadow:0 1px 6px rgba(201,161,74,.5)}}"
         for vid, _ in _NAV)
 
-    views = _overview(s) + _portfolio(s) + _decisions(s) + _regime(s) + _sharia(s) + _ops(s)
+    views = (_overview(s) + _portfolio(s) + _decisions(s) + _regime(s) + _strategies_view(s)
+             + _sharia(s) + _ops(s))
 
     halt_banner = ("<div class='k-halt-banner'>⛔ Kill switch engaged — the loop is frozen and no actions "
                    "will execute until a human resumes.</div>") if halted else ""

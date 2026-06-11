@@ -82,6 +82,14 @@ def _edge(s: dict) -> str:
     return "Recent Edge-Proof verdicts:\n" + "\n".join(lines)
 
 
+def _strategies(s: dict) -> str:
+    st = s.get("strategies", [])
+    if not st:
+        return "No strategies registered."
+    lines = [f"  {x['id']:<18} rung {x['rung']:<16} regimes: {x['regimes']}" for x in st]
+    return "Strategy roster (each proposes only; rung = promotion ladder):\n" + "\n".join(lines)
+
+
 def _why(s: dict, symbol: str) -> str:
     sym = (symbol or "").upper().strip()
     for r in s["board"]:
@@ -117,6 +125,7 @@ def coach(dbs: CamelDbs, question: str, *, mode: str = "paper") -> str:
         (("regime", "macro"), _regime),
         (("safe", "gate", "risk"), _safety),
         (("desk", "workforce"), _desks),
+        (("strateg",), _strategies),
         (("edge",), _edge),
     ]
     for keys, fn in routes:

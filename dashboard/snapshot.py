@@ -148,6 +148,36 @@ def _board(dbs: CamelDbs) -> List[dict]:
         return []
 
 
+def _strategies() -> List[dict]:
+    """The strategy roster + fit metadata (the S11 registry/matrix surfaced read-only for the founder).
+    Reflects the BUILT strategies and their promotion rung — not live positions. A new strategy ships
+    un-promoted and earns its rung via the Edge Lab."""
+    try:
+        from trader.strategies.core_dca import CoreDCA
+        from trader.strategies.quality_momentum import QualityMomentum
+        from trader.strategies.dividend_growth import DividendGrowth
+        from trader.strategies.etf_rotation import ETFRegimeRotation
+        from trader.strategies.momentum import TimeSeriesMomentum
+        from trader.strategies.mean_reversion import MeanReversion
+        from trader.strategies.dca_ladder import DCALadder
+        roster = [CoreDCA(), QualityMomentum(), DividendGrowth(), ETFRegimeRotation(),
+                  TimeSeriesMomentum(), MeanReversion(), DCALadder()]
+        out: List[dict] = []
+        for st in roster:
+            m = st.meta
+            out.append({
+                "id": m.id, "name": m.name, "family": m.thesis_family,
+                "status": getattr(m.status, "value", str(m.status)),
+                "rung": getattr(m.mode, "value", str(m.mode)),
+                "regimes": ", ".join(m.applicable_regimes) if m.applicable_regimes else "all",
+                "max_position_pct": _round(m.max_single_position * 100, 1),
+                "base_rate": _round(m.base_rate, 2),
+            })
+        return out
+    except Exception:
+        return []
+
+
 def build_snapshot(dbs: CamelDbs, mode: str = "paper") -> dict:
     """Return a JSON-serializable snapshot of the Camel's current governed state."""
     report = check(dbs, mode=mode)
@@ -246,4 +276,5 @@ def build_snapshot(dbs: CamelDbs, mode: str = "paper") -> dict:
         } for w in whitelist],
         "desks": _desks(dbs),                  # S17.7 — the Kitchen: workforce status
         "board": _board(dbs),                  # S17.7 — the Kitchen: Opportunity Board
+        "strategies": _strategies(),           # S17 — the strategy roster + fit metadata (read-only)
     }

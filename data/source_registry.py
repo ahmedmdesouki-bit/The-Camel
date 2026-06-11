@@ -113,3 +113,15 @@ SEC_RSS = register(SourceSpec(
     base_url="https://www.sec.gov", requires_api_key=False,
     requires_cross_check=True, reliability_tier=1,
 ))
+
+GPR = register(SourceSpec(
+    source_id="gpr", source_name="Caldara-Iacoviello Geopolitical Risk Index", source_type="macro",
+    base_url="https://www.matteoiacoviello.com/gpr_files", requires_api_key=False,
+    allowed_for_decisioning=True, reliability_tier=1,   # Fed economists; published CC BY 4.0
+))
+
+OFAC = register(SourceSpec(
+    source_id="ofac", source_name="US Treasury OFAC SDN sanctions list", source_type="alt",
+    base_url="https://www.treasury.gov/ofac/downloads", requires_api_key=False,
+    allowed_for_decisioning=True, reliability_tier=1,
+))
