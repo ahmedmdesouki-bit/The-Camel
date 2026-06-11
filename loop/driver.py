@@ -79,5 +79,37 @@ def run_strategy_tick(dbs: CamelDbs, registry: StrategyRegistry, state: Portfoli
 
     loop = loop or AssembledLoop(dbs)
     result = loop.run_tick(candidates, state, edge_reports)
+
+    # No-Edge → DCA fallback (S17): if the loop traded nothing on a proven edge but capital is idle, the
+    # honest default is mechanical DCA into the compliant core — edge-EXEMPT (it's the benchmark, not a
+    # bet). This NEVER resurrects a rejected alpha candidate: it deploys ONLY into the core ETF(s) the
+    # `core_dca` strategy named, and the Constitution stays the Sharia/risk wall inside `run_dca`. The
+    # decision itself is delegated to the S12 protocol fn (resolve_no_edge) so there is one source of truth:
+    # edge proven → active strategy (no DCA); no edge + capital → DCA; no edge + no capital → wait.
+    if not result.halted and not result.executed:
+        from trader.edgelab.no_edge import resolve_no_edge, DCA_FALLBACK
+        edge_proven = (result.router_path == "trader")     # the router only picks 'trader' on proven edge
+        if resolve_no_edge(edge_allowed=edge_proven, has_capital=state.cash_usd > 0).path == DCA_FALLBACK:
+            dca_actions: List[Action] = []
+            seen = set()
+            for sig in signals:
+                if (getattr(sig, "strategy_id", "") == "core_dca"
+                        and str(getattr(sig, "action", "")).lower() == "buy"
+                        and sig.symbol not in seen):
+                    seen.add(sig.symbol)
+                    thesis = Thesis(invalidation="removed from the compliant core / Sharia drift",
+                                    profit_take="long-term accumulation (no profit target)",
+                                    time_stop="none - perpetual DCA")
+                    dca_actions.append(Action(ActionType.TRADE, symbol=sig.symbol, side="buy",
+                                              notional_usd=notional_per_trade, thesis=thesis, mode="paper"))
+                    # attribute the fill to core_dca so the Measure step (S16) tracks its base-rate
+                    meta[sig.symbol] = {"strategies": ["core_dca"], "theme": "core", "dca": True}
+            if dca_actions:
+                dca_outcomes = loop.run_dca(dca_actions, state)
+                result.outcomes.extend(dca_outcomes)
+                if any(o.stage == "executed" and o.approved for o in dca_outcomes):
+                    result.router_path = "dca"
+                    result.router_reason = "no proven edge + idle capital -> DCA into the compliant core"
+
     result.candidate_meta = meta
     return result

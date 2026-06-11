@@ -129,6 +129,56 @@ class AssembledLoop:
             _oplog(self.dbs, "EXIT", f"{sym} CLOSED ({p.rule}): {p.reason} ({res})")
         return outcomes
 
+    def run_dca(self, dca_actions: List[Action], state: PortfolioState) -> List[ActionOutcome]:
+        """Execute edge-EXEMPT DCA buys into the compliant core (S17 — the No-Edge fallback).
+
+        The honest default when NO candidate proves an edge but capital is idle: mechanical accumulation
+        into the already-Sharia-screened, whitelisted core ETF. This is the benchmark itself, NOT an alpha
+        bet — so it is edge-exempt (the Allocator is called with `require_edge=False`, exactly as reduce-only
+        sells are). The edge-exemption is the ONLY relaxation: every other wall still stands, in order —
+            kill switch → Allocator(require_edge=False; the Constitution still enforces whitelist,
+            cash-buffer, concentration, illiquidity, kill switch) → Budget Kernel → phase-gated human
+            Approval → broker.
+        Router-independent (like exits): deploying idle cash into the core is the no-edge default, not a new
+        opportunity the router must select. An ALPHA buy can never reach here — the driver only ever passes
+        the core_dca target(s), never a rejected alpha candidate. Returns ActionOutcomes (stage 'executed'
+        on a real fill)."""
+        if is_halted():
+            log.warning("Kill switch active — DCA skipped.")
+            return []
+        outcomes: List[ActionOutcome] = []
+        for action in dca_actions:
+            sym = getattr(action, "symbol", "?")
+            # edge-EXEMPT by design: no edge_report, require_edge=False. The Constitution is still the wall.
+            alloc = self.allocator.request(action, state, require_edge=False)
+            if not alloc.approved:
+                outcomes.append(ActionOutcome(sym, "edge_or_constitution", False, alloc.decision.reason))
+                _oplog(self.dbs, "DCA", f"{sym} BLOCKED (constitution): {alloc.decision.reason}")
+                continue
+            if self.budget_kernel is not None:
+                bd = self.budget_kernel.check(action.notional_usd, self.budget_state)
+                if not bd.allow:
+                    outcomes.append(ActionOutcome(sym, "budget", False, bd.reason))
+                    _oplog(self.dbs, "DCA", f"{sym} BLOCKED (budget): {bd.reason}")
+                    continue
+            if self.phase >= 1:                          # live DCA still needs a human, every time
+                if not self.approval_fn(action):
+                    outcomes.append(ActionOutcome(sym, "approval", False, "awaiting human approval"))
+                    _oplog(self.dbs, "DCA", f"{sym} PENDING human approval")
+                    continue
+            try:
+                res = self.broker_execute(action)
+            except Exception as exc:                     # a refused fill must not crash the tick
+                outcomes.append(ActionOutcome(sym, "execute_error", False, f"broker refused fill: {exc}"))
+                _oplog(self.dbs, "DCA", f"{sym} EXECUTE FAILED: {exc}")
+                continue
+            if self.budget_kernel is not None:
+                self.budget_state.spent_today += action.notional_usd
+            outcomes.append(ActionOutcome(sym, "executed", True,
+                                          "no-edge DCA into the compliant core", result=str(res)))
+            _oplog(self.dbs, "DCA", f"{sym} EXECUTED ({res})")
+        return outcomes
+
     def run_tick(self, candidates: List[Action], state: PortfolioState,
                  edge_reports: Optional[Dict[str, Any]] = None) -> TickResult:
         if is_halted():
