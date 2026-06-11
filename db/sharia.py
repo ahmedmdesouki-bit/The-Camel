@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS whitelist (
 
 CREATE TABLE IF NOT EXISTS sharia_events (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts                  TEXT DEFAULT (datetime('now')),
+    ts                  TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     event_type          TEXT,
     symbol              TEXT,
     reason              TEXT,

@@ -9,7 +9,7 @@ from db.sqlite import connection
 DDL = """
 CREATE TABLE IF NOT EXISTS learning_ledger (
     id                          INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts                          TEXT DEFAULT (datetime('now')),
+    ts                          TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     decision_type               TEXT,   -- TRADE | PRODUCT | RESEARCH | WAIT
     thesis_summary              TEXT,
     expected_outcome            TEXT,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS learning_ledger (
 -- S10: full 17-check Edge Proof reports (the decision-quality audit trail).
 CREATE TABLE IF NOT EXISTS edge_reports (
     id                              INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts                              TEXT DEFAULT (datetime('now')),
+    ts                              TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     symbol                          TEXT,
     signal                          TEXT,
     signal_definition_hash          TEXT,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS strategy_base_rates (
 -- approves out-of-band. status: pending | approved | rejected.
 CREATE TABLE IF NOT EXISTS learning_proposals (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts              TEXT DEFAULT (datetime('now')),
+    ts              TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     proposal_type   TEXT,        -- activate | deactivate | regime_affinity | weight_band | ...
     strategy_id     TEXT,
     detail          TEXT,        -- JSON
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS learning_proposals (
 -- acting on one still flows through the governed tick (Edge Proof → Constitution → Budget → Approval).
 CREATE TABLE IF NOT EXISTS opportunity_proposals (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts                  TEXT DEFAULT (datetime('now')),
+    ts                  TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     symbol              TEXT,
     action              TEXT,        -- buy | dca | wait | avoid
     score               REAL,
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS desk_control (
 -- status from the latest row per desk_id). Append-only operational telemetry; carries no trade power.
 CREATE TABLE IF NOT EXISTS desk_runs (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts          TEXT DEFAULT (datetime('now')),
+    ts          TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     desk_id     TEXT,
     status      TEXT,        -- ok | empty | error
     summary     TEXT,
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS desk_runs (
 -- defaults OFF (dormant until capital + proven edge justify the token spend).
 CREATE TABLE IF NOT EXISTS research_evidence (
     id                      INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts                      TEXT DEFAULT (datetime('now')),
+    ts                      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     desk                    TEXT,        -- which vertical desk produced it
     claim                   TEXT,
     scope                   TEXT,        -- instrument / portfolio / sector
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS research_evidence (
 -- Canonical home (was previously created only ad-hoc by research/memory.py). Read-only telemetry.
 CREATE TABLE IF NOT EXISTS memory_consolidation (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts      TEXT DEFAULT (datetime('now')),
+    ts      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     summary TEXT
 );
 

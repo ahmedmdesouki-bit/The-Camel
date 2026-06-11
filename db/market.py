@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS prices (
     source      TEXT,
     event_date  TEXT,                              -- when the bar's session occurred
     reported_at TEXT,                              -- when the data vendor published it
-    ingested_at TEXT DEFAULT (datetime('now')),    -- when Camel collected it
+    ingested_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),    -- when Camel collected it
     known_at    TEXT,                              -- when Camel was allowed to use it
     PRIMARY KEY (symbol, date, source)
 );

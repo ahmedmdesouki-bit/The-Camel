@@ -8,7 +8,29 @@ there is no schema here, so there is no second source of truth for the schema.
 """
 import sqlite3
 from contextlib import contextmanager
-from typing import Iterator
+from datetime import datetime, timezone
+from typing import Iterator, Optional
+
+
+def utcnow_iso() -> str:
+    """The canonical 'now' for the app layer: UTC, ISO-8601, timezone-AWARE. Use this everywhere a row's
+    timestamp is set from Python, so every persisted timestamp has the same (tz-aware) shape. The SQLite
+    column defaults emit the same shape (strftime ...Z) for rows the app doesn't stamp."""
+    return datetime.now(timezone.utc).isoformat()
+
+
+def parse_ts(s) -> Optional[datetime]:
+    """Parse any timestamp this codebase persists into a tz-AWARE UTC datetime, tolerantly: ISO-8601 with
+    an offset or 'Z' (the app + new-default format) AND the legacy SQLite `datetime('now')` shape
+    ('YYYY-MM-DD HH:MM:SS', naive → assumed UTC). Returns None on junk. This is what makes mixed historical
+    timestamp formats safe to compare."""
+    if not s:
+        return None
+    try:
+        d = datetime.fromisoformat(str(s).strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
 
 
 @contextmanager

@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS positions (
     unrealized_pnl  REAL    DEFAULT 0,
     realized_pnl    REAL    DEFAULT 0,        -- S6.6: realized on sells
     opened_at       TEXT,
-    updated_at      TEXT    DEFAULT (datetime('now')),
+    updated_at      TEXT    DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     status          TEXT    DEFAULT 'open'    -- open | closed
 );
 
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS runs (
 
 CREATE TABLE IF NOT EXISTS guardrail_events (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts          TEXT DEFAULT (datetime('now')),
+    ts          TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     action_json TEXT,
     decision    INTEGER,
     reason      TEXT,
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS approvals (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     action_ref  TEXT,
     status      TEXT DEFAULT 'pending',
-    requested_at TEXT DEFAULT (datetime('now')),
+    requested_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     decided_at  TEXT,
     decided_by  TEXT,
     channel     TEXT
@@ -82,13 +82,13 @@ CREATE TABLE IF NOT EXISTS tasks (
     task_type   TEXT,
     payload     TEXT,                              -- JSON
     status      TEXT DEFAULT 'pending',            -- pending | running | done | failed
-    created_at  TEXT DEFAULT (datetime('now')),
+    created_at  TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     updated_at  TEXT
 );
 
 CREATE TABLE IF NOT EXISTS op_log (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts          TEXT DEFAULT (datetime('now')),
+    ts          TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     event_type  TEXT,                              -- STATE_TRANSITION | TOOL_CALL | ROUTER | ...
     detail      TEXT
 );

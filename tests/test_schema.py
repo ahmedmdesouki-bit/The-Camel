@@ -49,3 +49,24 @@ def test_feature_ensure_is_a_noop_against_canonical(dbs):
     _ensure_table(dbs.learning)
     _ensure_sanctions(dbs.sharia)
     assert (_objs(dbs.learning, "table") | _objs(dbs.learning, "index")) == before
+
+
+def test_timestamp_helpers():
+    from db.sqlite import utcnow_iso, parse_ts
+    now = parse_ts(utcnow_iso())
+    assert now is not None and now.tzinfo is not None                 # the app 'now' is tz-aware
+    assert parse_ts("2026-06-11T16:30:45.123Z").tzinfo is not None    # new-default 'Z' shape
+    assert parse_ts("2026-06-11T16:30:45+00:00").tzinfo is not None   # app isoformat shape
+    assert parse_ts("2026-06-11 16:30:45").tzinfo is not None         # legacy SQLite naive -> assumed UTC
+    assert parse_ts("") is None and parse_ts("garbage") is None
+
+
+def test_default_timestamp_is_tz_aware(dbs):
+    """A row the app doesn't stamp now gets the standardized tz-aware default (not the legacy naive shape)."""
+    from db.sqlite import connection, parse_ts
+    init_all(dbs)
+    with connection(dbs.learning) as conn:
+        conn.execute("INSERT INTO memory_consolidation (summary) VALUES ('x')")
+        ts = conn.execute("SELECT ts FROM memory_consolidation ORDER BY id DESC LIMIT 1").fetchone()[0]
+    assert "T" in ts and ts.endswith("Z")                            # standardized shape
+    assert parse_ts(ts).tzinfo is not None
