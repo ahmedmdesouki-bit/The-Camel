@@ -48,26 +48,15 @@ _REF_PREFIX = "s16"
 
 
 def _ensure_base_rates(learning_db: str) -> None:
-    # Canonical schema lives in db/learning.py; this defensive ensure lets the Learn step run before
-    # init_all() on a fresh dir (mirrors the pattern used by ledger/positions/runs writers).
-    with connection(learning_db) as conn:
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS strategy_base_rates ("
-            " strategy_id TEXT PRIMARY KEY, base_rate REAL DEFAULT 0.5, n INTEGER DEFAULT 0,"
-            " wins INTEGER DEFAULT 0, losses INTEGER DEFAULT 0, updated_at TEXT)"
-        )
+    # Single source of truth is db/learning.py; this defensive ensure lets the Learn step run pre-init_all().
+    from db.learning import init_learning_db
+    init_learning_db(learning_db)
 
 
 def _ensure_proposals(learning_db: str) -> None:
-    # Defensive ensure so an L3 underperformance proposal is never silently dropped on a dir where
-    # init_all() has not run (improvement_proposer.propose itself does no CREATE). Mirrors db/learning.py.
-    with connection(learning_db) as conn:
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS learning_proposals ("
-            " id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT DEFAULT (datetime('now')),"
-            " proposal_type TEXT, strategy_id TEXT, detail TEXT, rationale TEXT,"
-            " status TEXT DEFAULT 'pending', decided_by TEXT, decided_at TEXT)"
-        )
+    # Single source of truth is db/learning.py; defensive ensure so an L3 proposal is never dropped pre-init.
+    from db.learning import init_learning_db
+    init_learning_db(learning_db)
 
 
 def _encode_ref(symbol: str, strategies: List[str], base: float) -> str:

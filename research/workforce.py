@@ -92,12 +92,9 @@ class OperatorDesk(Desk):
 # ---- audit ----
 
 def _ensure_desk_runs(learning_db: str) -> None:
-    with connection(learning_db) as conn:
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS desk_runs ("
-            " id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT DEFAULT (datetime('now')), desk_id TEXT,"
-            " status TEXT, summary TEXT, metrics TEXT, evidence_n INTEGER DEFAULT 0,"
-            " started_at TEXT, ended_at TEXT, error TEXT)")
+    # Single source of truth is db/learning.py.
+    from db.learning import init_learning_db
+    init_learning_db(learning_db)
 
 
 def record_desk_run(dbs: CamelDbs, r: DeskResult) -> int:

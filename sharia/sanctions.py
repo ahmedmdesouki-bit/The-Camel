@@ -50,11 +50,9 @@ def parse_sdn(raw: str) -> List[dict]:
 
 
 def _ensure_table(sharia_db: str) -> None:
-    with connection(sharia_db) as conn:
-        conn.execute("CREATE TABLE IF NOT EXISTS sanctions ("
-                     " id INTEGER PRIMARY KEY AUTOINCREMENT, ent_num TEXT, name TEXT, normalized TEXT,"
-                     " sdn_type TEXT, program TEXT, source TEXT DEFAULT 'ofac', ingested_at TEXT)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_sanctions_norm ON sanctions(normalized)")
+    # Single source of truth is db/sharia.py.
+    from db.sharia import init_sharia_db
+    init_sharia_db(sharia_db)
 
 
 def refresh_sanctions(dbs: CamelDbs, transport: Optional[Callable[[str], str]] = None,

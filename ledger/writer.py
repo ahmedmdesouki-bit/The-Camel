@@ -20,21 +20,10 @@ from db.sqlite import connection
 
 
 def _ensure_table(db_path: str) -> None:
-    # Canonical schema for `ledger` lives in db/portfolio.py; this defensive
-    # CREATE IF NOT EXISTS only lets the writer run before init_all() has been called.
-    with connection(db_path) as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS ledger (
-                id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                ts           TEXT,
-                type         TEXT,
-                symbol       TEXT,
-                amount       REAL,
-                balance_after REAL,
-                ref          TEXT,
-                hash         TEXT
-            )
-        """)
+    # Single source of truth for the schema is db/portfolio.py; this defensive ensure just lets the
+    # writer run before init_all() has been called on a fresh dir.
+    from db.portfolio import init_portfolio_db
+    init_portfolio_db(db_path)
 
 
 def _last_row(conn: sqlite3.Connection) -> Optional[dict]:

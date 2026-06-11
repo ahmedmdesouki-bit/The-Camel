@@ -45,14 +45,9 @@ class Proposal:
 
 
 def _ensure_table(learning_db: str) -> None:
-    with connection(learning_db) as conn:
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS opportunity_proposals ("
-            " id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT DEFAULT (datetime('now')), symbol TEXT,"
-            " action TEXT, score REAL, regime TEXT, sharia_status TEXT, edge_allowed INTEGER,"
-            " hit_rate REAL, sample_size INTEGER, confidence REAL, recommended_action TEXT,"
-            " invalidation TEXT, reason_chain TEXT, status TEXT DEFAULT 'proposed', founder_rank REAL,"
-            " decided_by TEXT, decided_at TEXT)")
+    # Single source of truth is db/learning.py.
+    from db.learning import init_learning_db
+    init_learning_db(learning_db)
 
 
 def _current_regime(dbs: CamelDbs) -> str:

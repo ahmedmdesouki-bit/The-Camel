@@ -73,28 +73,10 @@ def _last_close(market_db: str, symbol: str) -> Optional[float]:
 
 
 def _ensure_orders_table(portfolio_db: str) -> None:
-    # Canonical schema for `orders` lives in db/portfolio.py; this defensive
-    # CREATE IF NOT EXISTS only lets the broker run before init_all() has been called.
-    with connection(portfolio_db) as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS orders (
-                id              INTEGER PRIMARY KEY AUTOINCREMENT,
-                client_order_id TEXT UNIQUE,
-                symbol          TEXT,
-                side            TEXT,
-                qty             REAL,
-                type            TEXT DEFAULT 'market',
-                limit_price     REAL,
-                status          TEXT,
-                broker          TEXT DEFAULT 'paper',
-                mode            TEXT DEFAULT 'paper',
-                approval_id     TEXT,
-                thesis_id       TEXT,
-                created_at      TEXT,
-                filled_at       TEXT,
-                fill_price      REAL
-            )
-        """)
+    # Single source of truth for the schema is db/portfolio.py; this defensive ensure just lets the
+    # broker run before init_all() has been called.
+    from db.portfolio import init_portfolio_db
+    init_portfolio_db(portfolio_db)
 
 
 @dataclass

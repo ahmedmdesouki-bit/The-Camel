@@ -74,10 +74,9 @@ def detect_patterns(desks: Dict[str, dict], strategies: Dict[str, dict]) -> List
 
 
 def _persist(dbs: CamelDbs, summary: dict) -> None:
+    from db.learning import init_learning_db
+    init_learning_db(dbs.learning)            # single source of truth is db/learning.py
     with connection(dbs.learning) as conn:
-        conn.execute("CREATE TABLE IF NOT EXISTS memory_consolidation ("
-                     " id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT DEFAULT (datetime('now')),"
-                     " summary TEXT)")
         conn.execute("INSERT INTO memory_consolidation (summary) VALUES (?)", (json.dumps(summary),))
 
 

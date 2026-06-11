@@ -16,10 +16,9 @@ from db.sqlite import connection
 
 
 def _ensure(learning_db: str) -> None:
-    with connection(learning_db) as conn:
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS desk_control ("
-            " desk_id TEXT PRIMARY KEY, paused INTEGER DEFAULT 0, updated_at TEXT, updated_by TEXT)")
+    # Single source of truth is db/learning.py.
+    from db.learning import init_learning_db
+    init_learning_db(learning_db)
 
 
 def set_paused(dbs: CamelDbs, desk_id: str, paused: bool, by: str = "founder") -> None:
