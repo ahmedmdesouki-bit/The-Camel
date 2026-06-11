@@ -42,12 +42,37 @@ def build_context(dbs: CamelDbs, symbols: List[str], *, cash_usd: float = 0.0,
                            holdings=holdings or {}, cash_usd=cash_usd)
 
 
+def _last_buy_at(dbs: CamelDbs, symbol: str) -> Optional[str]:
+    """Most-recent filled BUY timestamp for `symbol` (orders table), or None — the DCA cadence anchor."""
+    from db.sqlite import connection
+    try:
+        with connection(dbs.portfolio) as conn:
+            row = conn.execute(
+                "SELECT filled_at FROM orders WHERE symbol=? AND lower(side)='buy' AND status='filled' "
+                "ORDER BY id DESC LIMIT 1", (symbol,)).fetchone()
+        return row[0] if row and row[0] else None
+    except Exception:
+        return None
+
+
+def _within_days(ts: str, now_iso: str, days: float) -> bool:
+    from datetime import datetime, timezone
+
+    def _p(s):
+        d = datetime.fromisoformat(s)
+        return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+    try:
+        return (_p(now_iso) - _p(ts)).total_seconds() < days * 86400.0
+    except Exception:
+        return False
+
+
 def run_strategy_tick(dbs: CamelDbs, registry: StrategyRegistry, state: PortfolioState, *,
                       symbols: List[str], portfolio_id: Optional[str] = None,
                       mixer: Optional[StrategyMixer] = None, loop: Optional[AssembledLoop] = None,
                       notional_per_trade: float = 50.0, budget_usd: Optional[float] = None,
                       max_candidates: int = 5, mode: str = "enforcing",
-                      as_of: Optional[str] = None) -> TickResult:
+                      as_of: Optional[str] = None, dca_cadence_days: float = 1.0) -> TickResult:
     """Drive one full governed tick from live strategy signals. Returns the assembled-loop TickResult."""
     # P2-F: shadow/non-enforcing Edge Proof passes the gate vacuously (it logs without blocking). That is
     # only safe for paper calibration — refuse it the moment real capital is in play (phase >= 1).
@@ -92,11 +117,19 @@ def run_strategy_tick(dbs: CamelDbs, registry: StrategyRegistry, state: Portfoli
         if resolve_no_edge(edge_allowed=edge_proven, has_capital=state.cash_usd > 0).path == DCA_FALLBACK:
             dca_actions: List[Action] = []
             seen = set()
+            from datetime import datetime as _dt, timezone as _tz
+            _ref_now = as_of or _dt.now(_tz.utc).isoformat()
             for sig in signals:
                 if (getattr(sig, "strategy_id", "") == "core_dca"
                         and str(getattr(sig, "action", "")).lower() == "buy"
                         and sig.symbol not in seen):
                     seen.add(sig.symbol)
+                    # DCA cadence: don't re-accumulate into a name already bought within the window.
+                    # Default 1 day -> at most one DCA per name per day (stops a sub-daily loop from
+                    # DCA-ing every tick); raise dca_cadence_days to ~28 for true monthly DCA.
+                    _last = _last_buy_at(dbs, sig.symbol)
+                    if _last is not None and _within_days(_last, _ref_now, dca_cadence_days):
+                        continue
                     thesis = Thesis(invalidation="removed from the compliant core / Sharia drift",
                                     profit_take="long-term accumulation (no profit target)",
                                     time_stop="none - perpetual DCA")

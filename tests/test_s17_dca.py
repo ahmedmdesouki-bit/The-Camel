@@ -8,6 +8,8 @@ it, and ALPHA buys still require a proven edge. These tests pin all of that, inc
 production `run_trading_tick` that DCAs into the core via the real PaperBroker and grades the run
 'complete', advancing the >=28-run live-readiness clock on a no-edge name.
 """
+from datetime import datetime, timedelta, timezone
+
 from db.sqlite import connection
 from ledger.writer import append_entry
 from data.store import store_price
@@ -177,6 +179,51 @@ def test_production_tick_unfunded_stays_no_action(dbs, tmp_path):
     """No capital -> no DCA -> 'no_action'. The DCA fallback never inflates the readiness clock on an
     empty book."""
     _seed(dbs, cash=0.0)
+    reg = StrategyRegistry()
+    reg.register(CoreDCA())
+    out = run_trading_tick(dbs, symbols=["SPUS"], config_path=_yaml(tmp_path), registry=reg)
+    assert out["executed"] == [] and out["outcome"] == "no_action"
+    from ops.live_readiness import _paper_runs
+    assert _paper_runs(dbs) == 0
+
+
+def test_dca_cadence_blocks_second_buy_same_day(dbs, tmp_path):
+    """DCA cadence (default 1 day): a second tick the same day does NOT re-DCA the core — at most one
+    accumulation per name per day, so a sub-daily loop can't over-trade itself into the ground."""
+    _seed(dbs)
+    reg = StrategyRegistry()
+    reg.register(CoreDCA())
+    first = run_trading_tick(dbs, symbols=["SPUS"], config_path=_yaml(tmp_path), registry=reg)
+    assert first["executed"] == ["SPUS"] and first["outcome"] == "complete"
+    second = run_trading_tick(dbs, symbols=["SPUS"], config_path=_yaml(tmp_path), registry=reg)
+    assert second["executed"] == [] and second["outcome"] == "no_action"    # cadence-blocked
+
+
+# ================= P2-C: data-quality gate (Constitution rule #8) wired into the buy path =================
+
+def test_data_eligible_fresh_unknown_source_passes(dbs):
+    """A freshly-stored price (unknown source) is decision-eligible: an unknown source label is not 'stale'
+    nor 'single-source' — fail-open, freshness is the dominant gate."""
+    from data.quality import data_eligible
+    _seed(dbs)                                                         # store_price stamps ingested_at=now
+    assert data_eligible(dbs, "SPUS").decision_eligible
+
+
+def test_data_eligible_no_price_data_fails(dbs):
+    """Fail-safe: a name with no price data at all is ineligible to drive a buy."""
+    from data.quality import data_eligible
+    q = data_eligible(dbs, "NOPE")
+    assert not q.decision_eligible
+
+
+def test_stale_price_drops_name_from_buy_rule8(dbs, tmp_path):
+    """Constitution rule #8 WIRED: a STALE core price is decision-ineligible -> dropped from the buy set ->
+    no DCA fires even with capital (the dropped name is absent from the strategy whitelist, so its signal is
+    filtered). The readiness clock cannot advance on stale data."""
+    _seed(dbs)                                                         # SPUS compliant, priced, $10k cash
+    stale = (datetime.now(timezone.utc) - timedelta(hours=100)).isoformat()
+    with connection(dbs.market) as conn:
+        conn.execute("UPDATE prices SET ingested_at=? WHERE symbol='SPUS'", (stale,))
     reg = StrategyRegistry()
     reg.register(CoreDCA())
     out = run_trading_tick(dbs, symbols=["SPUS"], config_path=_yaml(tmp_path), registry=reg)

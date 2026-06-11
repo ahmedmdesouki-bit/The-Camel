@@ -223,6 +223,23 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
         # a symbol exited THIS tick is not a buy candidate THIS tick — no same-tick churn, and the
         # Measure baseline for the closed round-trip stays unambiguous (QA finding)
         buy_symbols = [s for s in symbols if s not in set(exits_executed)]
+
+        # Constitution rule #8 (S4 data/quality, wired P2-C): a buy candidate's price data must be
+        # decision-eligible (fresh + not from a rejected source) before it can drive a BUY. A dropped name
+        # is also absent from the strategy context whitelist, so its signal is filtered — which removes it
+        # from the No-Edge->DCA core too. Exits are deliberately UNAFFECTED: de-risking a held name must
+        # never be blocked by stale data.
+        from data.quality import data_eligible
+        from loop.assembled import _oplog
+        eligible_buys = []
+        for s in buy_symbols:
+            q = data_eligible(dbs, s)
+            if q.decision_eligible:
+                eligible_buys.append(s)
+            else:
+                _oplog(dbs, "DATA", f"{s} INELIGIBLE for buy (rule #8): {q.reason}")
+        buy_symbols = eligible_buys
+
         tick = run_strategy_tick(dbs, registry, state, symbols=buy_symbols,
                                  loop=loop, notional_per_trade=notional_per_trade)
 

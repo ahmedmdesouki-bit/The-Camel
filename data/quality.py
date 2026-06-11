@@ -59,3 +59,44 @@ def score(
                     + 0.20 * rep_factor + 0.25 * agree_factor, 3)
 
     return QualityScore(quality, eligible, "; ".join(reasons) or "ok")
+
+
+# ---- wiring (P2-C): turn the previously-dead `decision_eligible` flag into a LIVE rule-#8 gate ----
+
+# Price-feed source NAMES trusted to drive a decision (the `source` column in `prices`). The name-level
+# companion to security/source_allowlist.py (which works on URLs/hosts). A source proven unreliable is moved
+# to REJECTED and hard-blocked. An UNKNOWN source is NOT blocked (fail-open) — a missing label is neither
+# "stale" nor "single-source"; freshness + Edge-Proof sample-size stay the dominant gates.
+APPROVED_PRICE_SOURCES = {"alpaca", "stooq", "sec_edgar", "fred", "treasury", "world_bank", "bls", "bea", "eia"}
+REJECTED_PRICE_SOURCES: set = set()
+
+
+def data_eligible(dbs, symbol: str, *, now: str = None, max_age_hours: float = 24.0,
+                  require_quorum: bool = False) -> QualityScore:
+    """Constitution rule #8 at decision time: is `symbol`'s price data fit to drive a BUY?
+
+    Wires the previously-dead `QualityScore.decision_eligible` into the live path. A name is INELIGIBLE
+    (dropped from the buy set, logged) when its latest price is STALE or from a REJECTED source.
+    `require_quorum` stays False by default: a single APPROVED end-of-day source is acceptable for the
+    whitelisted ETF core — multi-source quorum is enforced only once more than one price feed exists.
+    Fail-safe: no price data at all -> ineligible. (Freshness is a LIVE concept — callers in a point-in-time
+    backtest skip this gate, where the `known_at` discipline governs instead.)
+    """
+    from datetime import datetime, timezone
+    from db.sqlite import connection
+    from data.freshness import check_symbol_freshness
+    now = now or datetime.now(timezone.utc).isoformat()
+    fr = check_symbol_freshness(dbs.market, symbol, now, max_age_hours)
+    if not fr.fresh:
+        return QualityScore(0.0, False, fr.reason)
+    with connection(dbs.market) as conn:
+        latest = conn.execute("SELECT MAX(date) FROM prices WHERE symbol=?", (symbol,)).fetchone()[0]
+        srcs = [r[0] for r in conn.execute(
+            "SELECT DISTINCT source FROM prices WHERE symbol=? AND date=?", (symbol, latest)).fetchall() if r[0]]
+    low = {(s or "").lower() for s in srcs}
+    reputation = ("rejected" if low & REJECTED_PRICE_SOURCES
+                  else "approved" if low & APPROVED_PRICE_SOURCES
+                  else "unknown")
+    return score(source_count=max(1, len(srcs)), freshness_hours=fr.age_hours or 0.0,
+                 source_agreement=1.0, source_reputation=reputation,
+                 max_age_hours=max_age_hours, require_quorum=require_quorum)
