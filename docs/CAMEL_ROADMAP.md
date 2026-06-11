@@ -1288,10 +1288,17 @@ mapped to the code already built and waiting for it — is **`docs/CAMEL_S15_PAI
   backtests) · Benzinga (news) · Finnhub (earnings calendar) · Alpaca (live + IEX websocket) · IBKR (Phase 2).
 - **Founder credentials (free to provision):** FRED/BEA/EIA keys · Telegram bot token + chat id · Alpaca
   trade-only key · real SEC contact UA · OCR for Sahm screenshots.
-- **Founder machine + go-live:** machine hardening · Task-Scheduler wiring (`data.ingest`, `loop.jobs tick`) ·
-  a ≥28-day track record · the `config/limits.yaml` phase-flip with real (tiny) capital.
+- **Founder machine + go-live:** machine hardening · Task-Scheduler wiring (`data.ingest`, `loop.jobs tick`)
+  — ✅ **daily + weekly tasks registered (2026-06-11)**, currently **run-when-logged-on** · a ≥28-day track
+  record · the `config/limits.yaml` phase-flip with real (tiny) capital.
+- ⭐ **NEXT (founder-machine task): run the brain HEADLESS.** Convert the scheduled tasks to *run whether the
+  founder is logged on or not* — Task Scheduler "Run whether user is logged on or not" + a stored credential
+  (or a dedicated service account / a small always-on box). Needs **elevation + a saved password**, so it's a
+  founder act; the daily/weekly tasks and the short-path `C:\camel` repo are already in place for it. Until
+  then the PC must be awake + logged in at the trigger time for the cycle to fire.
 
-*Not S15 (free code): the remaining free connectors (GPR/French/COT/OFAC) — the S14 physical reorg is now DONE.*
+*Not S15 (free code): all free connectors incl. **GPR + OFAC are now DONE**; the S14 physical reorg is DONE;
+the local repo is relocated to the short path **`C:\camel`** (drops the MAX_PATH friction for tasks + tests).*
 
 ---
 
