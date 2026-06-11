@@ -161,6 +161,18 @@ Windows Task Scheduler per the S6 machine-setup checklist.)*
   + 11 sectors, doubtful = passed-with-a-note (not auto-frozen). `test_sharia.py` boundary tests updated to 30%.
 - **Broker write-atomicity** (positions↔ledger transaction) → **S12** (already owned). **Earnings blackout** →
   **S8** (needs earnings calendar). **Max cancel/replace order handling** → **S13** (LiveBroker). **IBKR** → Phase 2.
+- ⭐ **Cross-tick transaction atomicity (data-layer review 2026-06-11) → pre-Phase-1.** The broker fill is
+  atomic (orders + ledger + positions in one txn), but a full governed tick spans MULTIPLE transactions
+  (begin-run → exits → act → measure→learn → finish-run), so a mid-tick crash can leave a run half-graded or
+  learning partially applied. Phase 0 tolerates it — the fill (the only money-moving write) is atomic and
+  `finish_run` grades fail-safe — but before Phase 1, wrap the consequential legs of a tick into a single unit
+  (or a saga + compensation) so a crash can't leave the books and the run record inconsistent.
+- ⭐ **Postgres / Supabase migration (data-layer review 2026-06-11) → Phase 1.** The SQLite per-domain DDL is
+  now the single source of truth and `python -m db.dump_schema` emits the authoritative live schema;
+  `db/schema.sql` holds the regenerate-process + the RLS/permissions "second wall" design. Remaining = the
+  actual translation (SQLite types → Postgres, JSON → jsonb, INTEGER flags → boolean; keep every UNIQUE + the
+  point-in-time columns) and enforcing the RLS grants — done when multi-device / remote-dashboard / real
+  capital justifies the operational cost.
 
 *(Doc-drift items found in the same sweep — phantom repo-map modules, stale test counts/sprint statuses, the
 AAOIFI threshold mismatch, and stale cross-references — were corrected in place; see the 2026-06-07 changelog entry.)*
