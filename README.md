@@ -11,18 +11,20 @@ autonomy is earned through a paper track record, never granted.
 > **Safety first. Evidence second. Autonomy last.**
 > LLM proposes · Math tests · Guardrails decide · Humans approve what's risky · Autonomy is earned, not granted.
 
-**Status:** Phase 0 (paper) · **Roadmap v3 build S1–S14 complete** (full stack: data → Edge Proof → Constitution → Budget → assembled loop → Edge Lab + Sandbox; research desk + micro-live readiness fail-safe by default) · Dashboard (Design-System skin) + founder alerts · **603 tests green** ·
+**Status:** Phase 0 (paper) · **Roadmap build S1–S16 complete** (full stack: data → Edge Proof → Constitution → Budget → assembled loop → Edge Lab + Sandbox → operational activation; research desk + micro-live readiness fail-safe by default) · **data taps live** (Alpaca prices + FRED macro — regime classifies on real Fed data) · **first real paper fill recorded** (the ≥28-run readiness clock has started) · Dashboard (Design-System skin) + founder alerts + read-only **camel-coach** · **748 tests green** ·
 7-DB architecture live. Remaining steps are deliberately **founder-gated** (machine hardening · ≥28-day paper/sandbox track record · the live phase-flip with real money).
 
 > **New here? Run `python demo.py`** — one command seeds sample data, drives one fully-governed tick through the whole stack, and writes the read-only dashboard. Fully offline, paper-only, no credentials. See **[Try it](#try-it-one-command)** below.
 
 ---
 
-## What's built (Phase 0 — paper, 603 tests green)
+## What's built (Phase 0 — paper, 748 tests green)
 
-**The entire Roadmap v3 build (S1–S14) is done.** The full trust-inverted stack — data → knowledge → Edge
-Proof → Constitution → Budget → assembled loop → Edge Lab + Sandbox → micro-live readiness — runs in paper
-mode behind a human gate, fail-safe by default. Everything below is implemented, tested, and on `main`.
+**The Roadmap build (S1–S16) is done.** The full trust-inverted stack — data → knowledge → Edge
+Proof → Constitution → Budget → assembled loop → Edge Lab + Sandbox → operational activation → micro-live
+readiness — runs in paper mode behind a human gate, fail-safe by default. The data taps are **live** (free
+Alpaca + FRED), and the loop has recorded its **first real paper fill**. Everything below is implemented,
+tested, and on `main`.
 
 | | Sprint | What shipped |
 |---|---|---|
@@ -47,21 +49,27 @@ mode behind a human gate, fail-safe by default. Everything below is implemented,
 | ◑ | **S13** Micro-Live readiness | approval gate (withholds by default) + inbound approve/veto channel; Sahm **ManualBroker** + paste-a-confirmation parser; **gated LiveBroker** (refuses without phase ≥ 1 + creds); readiness checklist (NOT-READY by default). All fail-safe — **go-live is the founder's explicit act** |
 | ✅ | **S14** Architecture + module reorg | the layered module map (`docs/CAMEL_ARCHITECTURE.md`) + the **physical reorg** — the whole Trader Camel under `trader/` (engine · edgelab · execution · strategies · portfolios · sandbox · regime · events) |
 | ✅ | **QA + pre-live hardening** | full 5-dimension line-by-line QA/QC (**0 blockers**); broker **write-atomicity**, point-in-time `known_at`, vintage-aware schemas, the production Edge-gated tick with a single founder-owned phase source + injected Budget Kernel |
+| ✅ | **S16** Operational activation | durable **Act** (real PaperBroker fills + graded `runs` row) → **Measure → Learn** closed; governed reduce-only **exits**; **No-Edge → DCA** wired into the live tick (edge-exempt DCA into the compliant core; alpha still needs a proven edge) + the data-quality gate (rule #8) + a DCA cadence guard. **First real paper fill recorded** |
+| ◑ | **S17** The Workforce | named **desks** (SCOUT/HERALD/ORACLE/MUFTI/QUANT/STEWARD/CONDUCTOR) · the **Opportunity Board** · the **Kitchen** cockpit · **S17.2 Supervisor** (token/API **cost cap** + retry/quarantine) · **S17.3** DAG scheduler · **S17.4** proposal self-check · **S17.5** memory consolidation. *(S17.8 LLM desks deferred — needs API spend.)* Plus the backlog strategies (`momentum` · `mean_reversion` · `dca_ladder`) and **camel-coach** (read-only Q&A; reports, never advises) |
 
 Plus the **7-database SQLite architecture** (market / macro / fundamentals / news / sharia / portfolio / learning)
 with **point-in-time discipline** (`event_date · reported_at · ingested_at · known_at`) so backtests can't cheat.
 
 ## What's left — S15 (paid tools + founder actions)
 
-**S1–S14 are built, hardened, organized, and fail-safe (603 tests green).** The *only* remaining work is
-crossing "above the line" into real, scheduled, live operation — which by definition is **not free code**: it
-is **paid vendors** and **founder actions**. Each item is mapped to the code already built and waiting for it in
+**S1–S16 are built, hardened, organized, and fail-safe (748 tests green), and the free data taps are now
+LIVE** — the founder provisioned the free **Alpaca** (paper IEX prices) and **FRED** (macro) keys, real bars
+and macro series are flowing, the regime classifies on real Fed data, and the loop has recorded its first
+real paper fill. The *only* remaining work is crossing "above the line" into real, scheduled, live operation —
+which by definition is **not free code**: it is **paid vendors** and **founder actions**. Each item is mapped
+to the code already built and waiting for it in
 [`docs/CAMEL_S15_PAID_AND_FOUNDER.md`](docs/CAMEL_S15_PAID_AND_FOUNDER.md).
 
 | Category | Items |
 |---|---|
-| 💳 **Paid vendors** | EODHD (dividends + 2nd fundamentals) · Sharadar (survivorship-free backtests) · Benzinga (news) · Finnhub (earnings calendar) · Alpaca (live + IEX websocket) · IBKR (Phase 2) |
-| 🔑 **Founder credentials** (free to provision) | FRED / BEA / EIA keys · Telegram bot token + chat id · Alpaca trade-only key · real SEC contact UA · OCR for Sahm screenshots |
+| ✅ **Free data taps (done)** | **Alpaca** paper IEX prices · **FRED** macro/regime — both live; the daily cycle ingests from them |
+| 💳 **Paid vendors** | EODHD (dividends + 2nd fundamentals) · Sharadar (survivorship-free backtests) · Benzinga (news) · Finnhub (earnings calendar) · Alpaca (live trading + IEX websocket) · IBKR (Phase 2) |
+| 🔑 **Founder credentials** (free to provision) | BEA / EIA keys · Telegram bot token + chat id · Alpaca **trade-only** key (for live) · real SEC contact UA · OCR for Sahm screenshots |
 | 🖥️ **Founder machine + go-live** | machine hardening · Windows Task-Scheduler wiring (`data.ingest`, `loop.jobs tick`) · a **≥28-day paper/sandbox track record** · the `config/limits.yaml` **phase-flip** with real (tiny) capital |
 
 *Below the line is done. Above it is yours — no code crosses that line on its own.* Full sprint history +
@@ -89,7 +97,7 @@ What you'll see it prove:
 - Flip the seeded macro to an inverted curve and the Opportunity Router goes to **Wait** — no edge, no trade.
 
 ```bash
-pytest -q          # then run the suite — expect 603 passed
+pytest -q          # then run the suite — expect 748 passed
 ```
 
 ## Where to start
@@ -118,7 +126,7 @@ The repo path is 261 chars (over Windows MAX_PATH). Map a virtual drive first:
 ```powershell
 subst N: "<path-to-this-folder>"
 cd N:\
-python -m pytest -q          # 603 passed
+python -m pytest -q          # 748 passed
 ```
 
 *(For future work, cloning to a short path like `C:\camel` removes this friction.)*
