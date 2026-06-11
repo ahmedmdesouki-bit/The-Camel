@@ -76,6 +76,23 @@ CREATE TABLE IF NOT EXISTS etf_holdings (
     -- publish/correction) is INSERTed as a new row rather than silently INSERT-OR-IGNOREd away.
     UNIQUE(source_id, etf, holding_ticker, event_date, reported_at)
 );
+
+-- S17: OFAC SDN sanctions snapshot — a sanctioned entity never enters the tradeable universe.
+-- Canonical home (was previously created only ad-hoc by sharia/sanctions.py).
+CREATE TABLE IF NOT EXISTS sanctions (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    ent_num     TEXT,
+    name        TEXT,
+    normalized  TEXT,
+    sdn_type    TEXT,
+    program     TEXT,
+    source      TEXT DEFAULT 'ofac',
+    ingested_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_sanctions_norm ON sanctions(normalized);
+
+-- Hot path: the latest Sharia status per symbol (sharia_status WHERE symbol=? ORDER BY id DESC).
+CREATE INDEX IF NOT EXISTS idx_sharia_status_symbol ON sharia_status(symbol);
 """ + SOURCE_DOCUMENTS_DDL
 
 

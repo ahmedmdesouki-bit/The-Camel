@@ -144,6 +144,20 @@ CREATE TABLE IF NOT EXISTS research_evidence (
     compliance_status       TEXT,
     known_at                TEXT
 );
+
+-- S17.5: append-only consolidated operational-memory digests (desk reliability + detected patterns).
+-- Canonical home (was previously created only ad-hoc by research/memory.py). Read-only telemetry.
+CREATE TABLE IF NOT EXISTS memory_consolidation (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts      TEXT DEFAULT (datetime('now')),
+    summary TEXT
+);
+
+-- Hot-path indexes for the audit/telemetry queries that currently scan.
+CREATE INDEX IF NOT EXISTS idx_learning_ledger_type ON learning_ledger(decision_type);
+CREATE INDEX IF NOT EXISTS idx_opportunity_proposals_status ON opportunity_proposals(status);
+CREATE INDEX IF NOT EXISTS idx_desk_runs_desk ON desk_runs(desk_id, id);
+CREATE INDEX IF NOT EXISTS idx_edge_reports_symbol ON edge_reports(symbol);
 """
 
 

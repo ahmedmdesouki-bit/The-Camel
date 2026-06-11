@@ -29,6 +29,9 @@ def connection(path: str) -> Iterator[sqlite3.Connection]:
     # Persistent per-DB and idempotent; guarded so a filesystem that rejects WAL is non-fatal.
     try:
         conn.execute("PRAGMA journal_mode=WAL")
+        # Wait up to 5s for a lock instead of failing instantly — so an overlapping writer (e.g. a manual
+        # run-brain during the scheduled one) backs off rather than raising "database is locked".
+        conn.execute("PRAGMA busy_timeout=5000")
     except sqlite3.Error:
         pass
     try:

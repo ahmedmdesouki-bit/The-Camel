@@ -47,6 +47,10 @@ CREATE TABLE IF NOT EXISTS regime_history (
     signals         TEXT,    -- JSON array
     features        TEXT     -- JSON object
 );
+
+-- Hot path: the regime feature builder reads macro_observations WHERE series_id=? on every classification.
+-- The UNIQUE(source_id, series_id, …) index can't serve a series_id-leading lookup, so add an explicit one.
+CREATE INDEX IF NOT EXISTS idx_macro_obs_series ON macro_observations(series_id, event_date);
 """ + SOURCE_DOCUMENTS_DDL
 
 
