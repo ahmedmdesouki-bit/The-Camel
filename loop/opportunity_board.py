@@ -202,6 +202,11 @@ def prioritize_proposal(dbs: CamelDbs, proposal_id: int, rank: float) -> bool:
 def main(argv=None) -> int:                                  # pragma: no cover - CLI entrypoint
     import argparse
     import os
+    import sys
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")             # Windows cp1252 console can't print →/—
+    except Exception:
+        pass
     p = argparse.ArgumentParser(description="The Camel — build the Opportunity Board")
     p.add_argument("--db-dir", default=os.environ.get("CAMEL_DB_DIR", "."))
     p.add_argument("--symbols", default=os.environ.get("CAMEL_SYMBOLS", ""))

@@ -97,8 +97,17 @@ def evaluate_universe(market_db: str, symbols: List[str], *, rule: str = "sma_tr
             for s in symbols]
 
 
+def _utf8_stdout() -> None:                                  # pragma: no cover - CLI cosmetic
+    import sys
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")             # Windows cp1252 console can't print →/—
+    except Exception:
+        pass
+
+
 def main(argv=None) -> int:                                 # pragma: no cover - CLI entrypoint
     import argparse
+    _utf8_stdout()
     p = argparse.ArgumentParser(description="The Camel — Edge Lab verdict on real history")
     p.add_argument("--symbols", default=os.environ.get("CAMEL_SYMBOLS", "SPUS,HLAL"))
     p.add_argument("--rule", default="sma_trend", choices=sorted(RULES))

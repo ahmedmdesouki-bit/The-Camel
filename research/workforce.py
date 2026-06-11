@@ -183,6 +183,11 @@ def default_workforce() -> Workforce:
 
 def main(argv=None) -> int:                               # pragma: no cover - CLI entrypoint
     import argparse
+    import sys
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")          # Windows cp1252 console can't print →/—
+    except Exception:
+        pass
     p = argparse.ArgumentParser(description="The Camel — the desk workforce")
     p.add_argument("cmd", choices=["list", "run", "cycle"])
     p.add_argument("desk", nargs="?", default="")

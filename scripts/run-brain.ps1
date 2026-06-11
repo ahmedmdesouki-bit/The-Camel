@@ -24,6 +24,7 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
+$env:PYTHONIOENCODING = "utf-8"   # the brain prints →/— etc.; Windows cp1252 console would otherwise crash
 Set-Location (Split-Path $PSScriptRoot -Parent)   # repo root
 
 # ---- load .env (simple KEY=VALUE) ----
