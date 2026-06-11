@@ -70,3 +70,15 @@ def test_default_timestamp_is_tz_aware(dbs):
         ts = conn.execute("SELECT ts FROM memory_consolidation ORDER BY id DESC LIMIT 1").fetchone()[0]
     assert "T" in ts and ts.endswith("Z")                            # standardized shape
     assert parse_ts(ts).tzinfo is not None
+
+
+def test_dump_schema_is_authoritative_and_complete():
+    """The generator dumps the live schema for all 7 DBs incl. the formerly-orphan tables + indexes —
+    so the Phase-1 Postgres migration is driven by reality, not the (now-quarantined) schema.sql."""
+    from db.dump_schema import dump_schema, render, DB_ORDER
+    s = dump_schema()
+    assert set(s.keys()) == set(DB_ORDER)
+    text = render(s)
+    for obj in ("prices", "macro_observations", "orders", "ledger", "positions", "whitelist",
+                "sanctions", "desk_runs", "memory_consolidation", "idx_macro_obs_series"):
+        assert obj in text

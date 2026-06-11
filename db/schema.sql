@@ -1,88 +1,57 @@
--- The Camel × StockSense v11 — Supabase / Postgres schema (Sprint 1)
--- Second wall after the Guardrail Service: DB permissions make the ledger
--- append-only and limits read-only to the agent role.
-
-create table if not exists whitelist (
-  id uuid primary key default gen_random_uuid(),
-  symbol text unique not null,
-  asset_type text default 'etf',
-  sharia_status text default 'unknown',   -- compliant | non_compliant | unknown
-  frozen boolean default false,
-  approved_by text,
-  scanned_at timestamptz,
-  source text
-);
-
-create table if not exists instruments (
-  symbol text primary key,
-  name text, sector text, market text default 'US', currency text default 'USD'
-);
-
-create table if not exists prices (
-  symbol text, date date, open numeric, high numeric, low numeric,
-  close numeric, volume bigint, adj_close numeric, source text,
-  ingested_at timestamptz default now(),
-  primary key (symbol, date, source)
-);
-
-create table if not exists theses (
-  id uuid primary key default gen_random_uuid(),
-  symbol text, side text, thesis text,
-  invalidation text, profit_take text, time_stop text,
-  base_rate_json jsonb, created_by text, created_at timestamptz default now(),
-  status text default 'open'
-);
-
-create table if not exists orders (
-  id uuid primary key default gen_random_uuid(),
-  symbol text, side text, qty numeric, type text, limit_price numeric,
-  status text, broker text, mode text,             -- paper | live
-  approval_id uuid, thesis_id uuid references theses(id),
-  created_at timestamptz default now(), filled_at timestamptz, fill_price numeric
-);
-
-create table if not exists positions (
-  symbol text primary key, qty numeric, avg_cost numeric,
-  market_value numeric, unrealized_pnl numeric, updated_at timestamptz default now()
-);
-
--- append-only
-create table if not exists ledger (
-  id uuid primary key default gen_random_uuid(),
-  ts timestamptz default now(), type text, symbol text,
-  amount numeric, balance_after numeric, ref text, hash text
-);
-
-create table if not exists guardrail_events (
-  id uuid primary key default gen_random_uuid(),
-  ts timestamptz default now(), action_json jsonb,
-  decision boolean, reason text, limit_hit text
-);
-
-create table if not exists approvals (
-  id uuid primary key default gen_random_uuid(),
-  action_ref text, status text default 'pending',     -- pending|approved|vetoed|timeout
-  requested_at timestamptz default now(), decided_at timestamptz,
-  decided_by text, channel text
-);
-
-create table if not exists products (
-  id uuid primary key default gen_random_uuid(),
-  name text, url text, business_model text, sharia_status text,
-  status text, mrr numeric default 0, created_at timestamptz default now()
-);
-
-create table if not exists runs (
-  id uuid primary key default gen_random_uuid(),
-  started_at timestamptz default now(), ended_at timestamptz,
-  phase int, steps_json jsonb, outcome text
-);
-
-create table if not exists config (key text primary key, value jsonb);
-
--- ============ RLS sketch (enforce with the 'camel' role) ============
--- alter table ledger enable row level security;
--- create policy camel_ledger_insert on ledger for insert to camel with check (true);
--- revoke update, delete on ledger from camel;            -- append-only
--- revoke insert, update, delete on config from camel;    -- founder-owned limits
--- grant select on config to camel;
+-- =============================================================================
+--  The Camel — Phase-1 Supabase / Postgres MIGRATION TARGET  (design + process)
+-- =============================================================================
+--
+--  ⚠️  THIS FILE IS NOT THE SCHEMA.  The single source of truth for the schema is the
+--      per-domain DDL in db/*.py (run by db.paths.init_all). An earlier hand-maintained
+--      Postgres copy of every table lived here and DRIFTED ~16 sprints behind (it was
+--      missing macro_observations, edge_reports, desk_runs, opportunity_proposals,
+--      research_evidence, sanctions, sharia_status, the portfolio/learning tables, and
+--      the point-in-time columns). Rather than re-drift, the table DDL has been removed.
+--
+--  This file now holds the two things that ARE durable design (not a table copy):
+--    (1) the PROCESS to regenerate the Postgres DDL from the live schema, and
+--    (2) the RLS / permissions model — the "second wall" that SQLite cannot enforce but
+--        Postgres can, and which is the whole point of migrating.
+--
+-- -----------------------------------------------------------------------------
+--  (1) Regenerate the Postgres DDL before migrating
+-- -----------------------------------------------------------------------------
+--  Dump the authoritative live schema:        python -m db.dump_schema
+--  Then translate SQLite → Postgres types:
+--      INTEGER PRIMARY KEY AUTOINCREMENT  →  bigint generated always as identity primary key
+--      TEXT                               →  text
+--      REAL                               →  numeric
+--      INTEGER (used as a boolean flag)   →  boolean        (frozen, edge_allowed, decision, …)
+--      TEXT timestamp (ISO-8601 UTC)      →  timestamptz
+--      TEXT holding JSON                  →  jsonb          (steps_json, reason_chain, metrics, …)
+--  Keep every UNIQUE(...) and the point-in-time columns (event_date/reported_at/ingested_at/
+--  known_at) — they are what make backtests honest and MUST survive the migration.
+--
+-- -----------------------------------------------------------------------------
+--  (2) RLS / permissions — the second wall (enforce with a dedicated 'camel' role)
+-- -----------------------------------------------------------------------------
+--  In Phase 0 the agent process is kept off the founder-owned config by OS file ACLs and a
+--  config-immutability test. In Postgres, enforce the same invariants at the DB layer so the
+--  agent role *structurally* cannot tamper — the constitution made un-bypassable by grants.
+--
+--      -- the ledger is append-only: the agent may INSERT, never UPDATE/DELETE (hash chain integrity)
+--      alter table ledger enable row level security;
+--      create policy camel_ledger_insert on ledger for insert to camel with check (true);
+--      revoke update, delete on ledger from camel;
+--
+--      -- founder-owned limits/config are READ-ONLY to the agent (Constitution rule #7)
+--      revoke insert, update, delete on config   from camel;
+--      grant  select                  on config   to   camel;
+--      revoke insert, update, delete on whitelist from camel;   -- Sharia gate is founder-owned
+--      grant  select                  on whitelist to   camel;
+--
+--      -- approvals: the agent may REQUEST (insert pending), only a human DECIDES (update status)
+--      revoke update on approvals from camel;
+--
+--      -- audit trails are append-only telemetry
+--      revoke update, delete on guardrail_events, runs, edge_reports, desk_runs from camel;
+--
+--  Migrate to this when multi-device / remote dashboard / real capital makes DB-enforced
+--  permissions worth the operational cost. Until then, db/*.py + init_all is the schema, and
+--  the brain/window split already keeps the service-role key brain-side only.
