@@ -97,13 +97,14 @@ What you'll see it prove:
 - Flip the seeded macro to an inverted curve and the Opportunity Router goes to **Wait** — no edge, no trade.
 
 ```bash
-pytest -q          # then run the suite — expect 748 passed
+pytest -q          # then run the suite — expect 763 passed
 ```
 
 ## Where to start
 
 | You want to… | Read |
 |---|---|
+| **Review the whole project (for a consultant)** | [`docs/CAMEL_CONSULTANT_HANDOFF.md`](docs/CAMEL_CONSULTANT_HANDOFF.md) — full description + safety model + review asks |
 | Understand the project (why, who, context) | [`docs/CAMEL_BRIEF.md`](docs/CAMEL_BRIEF.md) |
 | Get current status + run it | [`HANDOFF.md`](HANDOFF.md) |
 | Work in the repo (build a sprint) | [`CLAUDE.md`](CLAUDE.md) — the operating manual |
