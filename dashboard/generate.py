@@ -345,9 +345,10 @@ def build_dashboard_html(dbs: CamelDbs, mode: str = "paper") -> str:
 <style>
  /* ===== Camel Design System tokens (offline; system-font fallbacks) ===== */
  :root {{
-   --green-900:#0a2b25; --green-800:#0f3b34; --green-700:#16443a; --green-600:#1a3e2c; --green-300:#4f8276;
-   --gold-700:#7a5a10; --gold-600:#a9842f; --gold-500:#c9a14a; --gold-400:#d8b96e; --gold-200:#ecd9a8;
-   --sand-50:#faf7ee; --sand-100:#f5f1e6; --sand-200:#efe9da; --ink-800:#262626; --ink-500:#595959;
+   /* Brand colours — BRAND GUIDELINES p1 "Official": green #0F2F2A · gold #C7A65A · charcoal #2B2B2B. */
+   --green-900:#0a2b25; --green-800:#0f2f2a; --green-700:#16443a; --green-600:#1a3e2c; --green-300:#4f8276;
+   --gold-700:#7a5a10; --gold-600:#a9842f; --gold-500:#c7a65a; --gold-400:#d8b96e; --gold-200:#ecd9a8;
+   --sand-50:#faf7ee; --sand-100:#f5f1e6; --sand-200:#efe9da; --ink-800:#2b2b2b; --ink-500:#595959;
    --up-600:#1a7f37; --down-600:#c13c1e;
    --signal-green:#1a7f37; --signal-yellow:#9a6700; --signal-red:#cf222e; --signal-black:#24292f;
    --text-strong:#1b1b1b; --text-body:var(--ink-800); --text-muted:rgba(38,38,38,.55); --text-faint:rgba(38,38,38,.38);
