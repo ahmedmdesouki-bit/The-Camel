@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS runs (
     ended_at    TEXT,
     phase       INTEGER,
     steps_json  TEXT,
-    outcome     TEXT
+    outcome     TEXT,
+    mode        TEXT DEFAULT 'operational'   -- S18: operational (last-close) | investment_valid (realistic)
 );
 
 CREATE TABLE IF NOT EXISTS guardrail_events (
@@ -130,3 +131,9 @@ CREATE TABLE IF NOT EXISTS portfolio_holdings (
 def init_portfolio_db(path: str) -> None:
     with connection(path) as conn:
         conn.executescript(DDL)
+        # Additive migration (S18): DBs whose `runs` table predates the `mode` column. CREATE IF NOT
+        # EXISTS won't add a column to an existing table, so ALTER it in (idempotent — errors if present).
+        try:
+            conn.execute("ALTER TABLE runs ADD COLUMN mode TEXT DEFAULT 'operational'")
+        except Exception:
+            pass

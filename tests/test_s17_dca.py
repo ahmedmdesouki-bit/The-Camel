@@ -167,10 +167,11 @@ def test_production_tick_no_edge_dcas_and_grades_complete(dbs, tmp_path):
     assert out["router_path"] == "dca"
     assert out["executed"] == ["SPUS"]
     assert out["outcome"] == "complete"
+    assert out["paper_mode"] == "operational"                        # default tick is last-close/operational
     assert held_qty(dbs.portfolio, "SPUS") > 0
     from ops.live_readiness import _paper_runs
-    assert _paper_runs(dbs) >= 1                                      # the autonomy clock advanced
-    with connection(dbs.portfolio) as conn:
+    assert _paper_runs(dbs) == 0                                      # S18: operational runs do NOT advance
+    with connection(dbs.portfolio) as conn:                          # the >=28-run clock — only realistic does
         row = conn.execute("SELECT outcome FROM runs WHERE id=?", (out["run_id"],)).fetchone()
     assert row["outcome"] == "complete"
 

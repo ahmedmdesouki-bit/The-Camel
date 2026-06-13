@@ -23,9 +23,14 @@ class LiveReadinessReport:
 
 
 def _paper_runs(dbs: CamelDbs) -> int:
+    """Completed runs that count toward the live-readiness clock. S18: ONLY investment-valid (realistic)
+    runs count — operational (last-close) runs prove the loop works but are too optimistic to be a track
+    record. Old rows without a mode default to 'operational' (excluded)."""
     try:
         with connection(dbs.portfolio) as conn:
-            return conn.execute("SELECT COUNT(*) FROM runs WHERE outcome LIKE 'complete%'").fetchone()[0]
+            return conn.execute(
+                "SELECT COUNT(*) FROM runs WHERE outcome LIKE 'complete%' "
+                "AND COALESCE(mode,'operational')='investment_valid'").fetchone()[0]
     except Exception:
         return 0
 

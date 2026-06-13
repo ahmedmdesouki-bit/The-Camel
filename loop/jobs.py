@@ -128,7 +128,7 @@ def ensure_opening_balance(dbs: CamelDbs, amount: float) -> bool:
 
 def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limits.yaml",
                      registry=None, notional_per_trade: float = 50.0,
-                     approval_fn=None, broker=None, learn: bool = True) -> dict:
+                     approval_fn=None, broker=None, learn: bool = True, realistic: bool = False) -> dict:
     """The PRODUCTION post-close decision job — the FULL §4 loop, strung together (P1-C/D/E + S16).
 
     Unlike the legacy `loop/scheduler.py` heartbeat (which has no Edge Proof gate), this wires the full
@@ -171,7 +171,15 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
     # S16 — a real paper broker so "Act" is durable (orders + ledger + positions in one txn). The loop
     # only calls this AFTER Edge Proof + Constitution + Budget + (phase-gated) Approval have passed, so the
     # decision the broker receives is allow=True by construction; submit() re-asserts it defensively.
-    broker = broker or PaperBroker(dbs.portfolio, dbs.market)
+    if broker is None:
+        # S18: realistic=True drives the investment-valid executor (spread/fees/whole-share) — the runs that
+        # count toward the readiness clock. Default stays operational last-close (proves the loop; doesn't
+        # count). Sells/exits delegate to last-close inside the realistic broker — de-risking is never blocked.
+        if realistic:
+            from broker.realistic import RealisticPaperBroker
+            broker = RealisticPaperBroker(dbs.portfolio, dbs.market)
+        else:
+            broker = PaperBroker(dbs.portfolio, dbs.market)
 
     def _execute(action):
         return broker.submit(action, Decision(
@@ -180,7 +188,8 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
     # S16 — persist a run row (the ≥28-run live-readiness clock can only advance if the tick records runs).
     # The whole governed body is wrapped: if anything raises (regime classify, strategy signals, the driver's
     # phase≥1 non-enforcing refusal, …) the run is finished as 'error' and NEVER left stuck 'running'.
-    run = begin_run(dbs.portfolio, phase=phase)
+    run = begin_run(dbs.portfolio, phase=phase,
+                    mode=("investment_valid" if realistic else "operational"))
     learn_summary: dict = {"resolved": 0, "strategies_updated": [], "proposals": []}
     try:
         loop = AssembledLoop(
@@ -287,6 +296,7 @@ def run_trading_tick(dbs: CamelDbs, *, symbols, config_path: str = "config/limit
     return {
         "phase": phase, "regime": tick.regime, "router_path": tick.router_path,
         "executed": tick.executed, "exits": exits_executed, "outcome": outcome,
+        "paper_mode": ("investment_valid" if realistic else "operational"),
         "budget_present": True, "fund_usd": state.fund_usd, "cash_usd": state.cash_usd,
         "run_id": run.run_id, "learning": learn_summary,
     }
@@ -315,6 +325,14 @@ def main(argv=None) -> int:                              # pragma: no cover - CL
     p.add_argument("--open-cash", type=float,
                    default=float(os.environ.get("CAMEL_PAPER_OPENING_CASH", "0") or 0),
                    help="one-time PAPER opening cash balance (DEPOSIT) if the ledger is empty; 0 = none")
+    p.add_argument("--realistic", action="store_true",
+                   help="S18: use the investment-valid realistic executor (spread/fees/whole-share). These "
+                        "are the runs that count toward the >=28-run readiness clock; default is operational "
+                        "last-close (proves the loop, does not count).")
+    p.add_argument("--notional", type=float,
+                   default=float(os.environ.get("CAMEL_NOTIONAL_PER_TRADE", "50") or 50),
+                   help="per-trade notional USD; size it >= one whole share for realistic-mode fills (Sahm "
+                        "has no fractional shares, so e.g. $50 cannot buy a $55 ETF under --realistic).")
     args = p.parse_args(argv)
 
     from db.paths import init_all
@@ -328,7 +346,8 @@ def main(argv=None) -> int:                              # pragma: no cover - CL
         syms = [s.strip() for s in args.symbols.split(",") if s.strip()]
         if ensure_opening_balance(dbs, args.open_cash):
             print(f"seeded paper opening balance: ${args.open_cash:,.2f}")
-        print(run_trading_tick(dbs, symbols=syms, config_path=args.config))
+        print(run_trading_tick(dbs, symbols=syms, config_path=args.config, realistic=args.realistic,
+                               notional_per_trade=args.notional))
     else:
         print(run_weekly_safety(dbs, args.backup_dir))
     return 0

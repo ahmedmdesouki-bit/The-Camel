@@ -53,29 +53,20 @@ class RunState:
 
 
 def _ensure_table(db_path: str) -> None:
-    # Canonical schema for `runs` lives in db/portfolio.py; this defensive
-    # CREATE IF NOT EXISTS only lets the loop run before init_all() has been called.
-    with connection(db_path) as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS runs (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                started_at  TEXT,
-                ended_at    TEXT,
-                phase       INTEGER,
-                steps_json  TEXT,
-                outcome     TEXT
-            )
-        """)
+    # Single source of truth for the schema is db/portfolio.py; this defensive ensure (which also runs
+    # the additive `mode` migration) just lets the loop run before init_all() on a fresh dir.
+    from db.portfolio import init_portfolio_db
+    init_portfolio_db(db_path)
 
 
-def begin_run(db_path: str, phase: int = 0) -> RunState:
+def begin_run(db_path: str, phase: int = 0, mode: str = "operational") -> RunState:
     _ensure_table(db_path)
     now = datetime.now(timezone.utc).isoformat()
     state = RunState(phase=phase, started_at=now)
     with connection(db_path) as conn:
         cur = conn.execute(
-            "INSERT INTO runs (started_at, phase, steps_json, outcome) VALUES (?,?,?,?)",
-            (now, phase, state.to_steps_json(), "running"),
+            "INSERT INTO runs (started_at, phase, steps_json, outcome, mode) VALUES (?,?,?,?,?)",
+            (now, phase, state.to_steps_json(), "running", mode),
         )
         state.run_id = cur.lastrowid
     return state
