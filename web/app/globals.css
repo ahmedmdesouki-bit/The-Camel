@@ -8,9 +8,10 @@
   /* muted/faint darkened to clear WCAG AA (4.5:1) on the light card/parchment surfaces */
   --text-strong:#1b1b1b; --text-body:var(--ink-800); --text-muted:rgba(38,38,38,.72); --text-faint:rgba(38,38,38,.55);
   --surface-card:#fff; --line:rgba(38,38,38,.12); --line-strong:rgba(38,38,38,.22); --accent-wash:rgba(201,161,74,.16);
-  --font-serif:'Iowan Old Style',Georgia,'Times New Roman',serif;
-  --font-sans:system-ui,-apple-system,'Segoe UI',sans-serif;
-  --font-mono:ui-monospace,'Cascadia Code','Segoe UI Mono',Consolas,monospace;
+  /* three-voice system (next/font), with system fallbacks if a face fails to load */
+  --font-serif:var(--font-spectral),'Iowan Old Style',Georgia,'Times New Roman',serif;
+  --font-sans:var(--font-plex-sans),system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:var(--font-plex-mono),ui-monospace,'Cascadia Code','Segoe UI Mono',Consolas,monospace;
   --text-2xs:11px; --text-xs:12px; --text-sm:13px; --text-md:15px; --text-lg:18px; --text-2xl:30px; --text-3xl:38px;
   --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-7:32px; --space-9:48px;
   --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-pill:999px;
@@ -129,3 +130,25 @@ a{color:var(--green-700)}
 .k-desk__summary{font-family:var(--font-serif);font-size:var(--text-xs);color:var(--text-muted);margin:6px 0 8px;min-height:30px}
 .k-desk__ctl,.k-board__ctl{display:flex;gap:6px;flex-wrap:wrap}
 .k-desk__ctl .cml-btn,.k-board__ctl .cml-btn{padding:5px 10px;font-size:var(--text-2xs)}
+
+/* ===== interaction polish (DESIGN-GUIDE §VISUAL FOUNDATIONS) ===== */
+/* Focus is always the gold ring — never a default browser outline. */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
+textarea:focus-visible,[tabindex]:focus-visible{
+  outline:none;box-shadow:0 0 0 3px rgba(201,161,74,.55)}
+/* Buttons: darken on hover (green-700), nudge down + darkest on press (green-900). */
+.cml-btn{transition:var(--transition)}
+.cml-btn:active{background:var(--green-900);transform:translateY(.5px)}
+.cml-btn--ghost:hover{background:var(--accent-wash)}
+.cml-input{transition:border-color .18s ease}
+.cml-input:focus{border-color:var(--gold-500)}
+.k-signout{transition:var(--transition)}
+.k-signout:hover{background:rgba(245,241,230,.12)}
+/* Table rows get a 3%-green hover tint; cards keep a calm shadow transition. */
+.k-table tbody tr{transition:background .15s ease}
+.k-table tbody tr:hover td{background:rgba(15,59,52,.03)}
+.cml-card{transition:box-shadow .22s cubic-bezier(.22,.61,.36,1)}
+.cml-tab,.cml-subtab{transition:var(--transition)}
+/* Respect reduced-motion: collapse everything to near-instant. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:.001ms!important;animation-duration:.001ms!important;scroll-behavior:auto!important}}

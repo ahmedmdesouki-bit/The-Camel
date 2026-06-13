@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="The Camel">
+  <!-- PLACEHOLDER favicon — monogram in the brand palette. Swap for the commissioned
+       app-icon (replace this file with app/icon.png or update this SVG) when it arrives. -->
+  <rect width="64" height="64" rx="14" fill="#0F3B34"/>
+  <rect x="5" y="5" width="54" height="54" rx="10" fill="none" stroke="#C9A14A" stroke-width="2"/>
+  <text x="32" y="45" text-anchor="middle" font-family="Georgia,'Times New Roman',serif"
+        font-size="38" font-weight="700" fill="#C9A14A">C</text>
+</svg>

@@ -37,6 +37,8 @@ export default async function Page() {
       <LiveRefresh />
       <header className="k-header">
         <div className="k-brand">
+          {/* LOGO swap point: replace this seal with <img src="/emblem.svg" alt="The Camel" className="k-seal" />
+              (drop emblem.svg into web/public/) once the commissioned brand mark arrives. */}
           <div className="k-seal">C</div>
           <div>
             <h1 className="k-title">The Camel</h1>
