@@ -1436,6 +1436,56 @@ auto-trading, never advice. Sub-sprints S17.1–S17.8 are independently pickable
 **S17.1 → S17.6 → S17.7**. Everything is buildable+testable now; the parts that become *real* money-insight light up
 when the founder adds the free Alpaca + FRED keys. No sub-sprint weakens the trust-inversion or moves real money.
 
+---
+
+### S18+ — Evidence-Deepening & Next-Wave track  (from the 2026-06-11 consultant review)
+
+Two external consultant proposals (a full stress-test + a portfolio/data/agent expansion) were reviewed
+line-by-line. **~65% of their recommendations were already built** — S8 (data backbone + source registry +
+provenance + point-in-time), S9 (**Event Reaction DB** `trader/events/reactions.py` + regime engine), S10
+(17-check Edge Proof incl. regime-conditioning/multiple-testing/decay/walk-forward), S11 (portfolio engine +
+strategy-portfolio matrix + promotion ladder + `dividend_growth`), S12.5 (research-desk evidence contract),
+S17.2 (token/API cost cap), S17.5 (memory consolidation). The genuine residue is folded in here, **CALIBRATED**:
+Tier A (do now; cheap; makes the track record *trustworthy*) → Tier B (let the ≥28-day clock run) → Tier C
+(alpha discovery — **research-only, gated on a proven edge + a funded decision; never a trading shortcut**).
+
+> ⚠️ **Governing caveat (the golden rule):** the "find the next major wave / beat the market" idea is the
+> highest-value AND highest-risk part of the review. The Camel is trustworthy *because* it DCAs honestly when
+> there is no edge; a wave engine is a narrative generator and must stay evidence-gated, SKEPTIC-checked,
+> paper-only, Sharia-walled. Build it as **proof**, never as a faster path to acting.
+
+**Tier A — trustworthy track record (free, buildable now):**
+- **S18 — Production-Paper Integrity.** Wire the existing `trader/execution/realistic_paper.py` (spread/
+  slippage/partial-fills/fees/stale-reject/whole-share) into the PRODUCTION tick as an **investment-valid**
+  mode, distinct from the **operational** last-close mode — and make the **≥28-run readiness clock count only
+  investment-valid runs**. (The executor exists in the Sandbox; this is wiring + a mode flag + run-grading.) *Top gap.*
+- **S19 — Multi-source quorum enforcement.** The logic exists (`security/source_allowlist.has_quorum`,
+  `data/triangulation`, `data/quality.data_eligible`); add a `require_quorum` gate so a price/corporate-action
+  with <2 agreeing approved sources is research-only, not risk-eligible. *No-op-but-wired until a healthy 2nd
+  free feed (Stooq) exists, then it bites.*
+- **S20 — Portfolio & strategy attribution.** Decompose return into price / dividend / allocation / selection
+  per `portfolio_id`+`strategy_id`+`edge_report_id`; an attribution view + benchmark-relative report.
+- **S21 — SKEPTIC desk + structured dissent.** A new evidence desk attaching a mandatory counterargument +
+  invalidation list to every Opportunity-Board proposal (deterministic risk flags now; LLM later). *The single
+  best new idea in the review — institutionalized dissent, fits the trust-inversion.*
+
+**Tier B — accrue evidence (no new code):** let S18's investment-valid paper run the ≥28-day track record.
+
+**Tier C — alpha discovery (research-only; gated on Tier B + a funded decision):**
+- **S22 — Signal-Definition Registry + Edge-Proof front-door.** Explicit signal objects (definition, known_at
+  rule, eligible universe, holding periods, benchmark/controls) feeding the existing 17-check engine — so alpha
+  proposers are tested as *signals*, not just symbols. (The checks exist; this is the missing front-door.)
+- **S23 — Next-Wave Radar (`trader/waves/`).** detector → theme/sector/company-exposure graph → Sharia wall →
+  signal-conditioned Edge Proof → SKEPTIC dissent → Opportunity Board; stages Radar→Watchlist→Candidate→Paper→
+  Satellite→Scale→Retire. **Research/paper-only; never an autonomous live path.** Premature until an edge is proven.
+- **Data depth (paid; founder):** EODHD (dividends/fundamentals) is the first sensible paid step; Polygon/
+  Sharadar/Norgate are *post-edge* expenses (stay in S15), not pre-edge.
+
+**Founder / external (not code):**
+- **S-Sharia — External Sharia review** before any individual-equity trading: document the in-house AAOIFI
+  methodology, cross-check Musaffa/Zoya/issuer, validate denominators + purification, obtain a qualified review.
+  *The most important non-engineering gate; schedule independent of the engineering tracks.*
+
 ## Open decisions
 
 **Resolved (founder + review round #5):**
