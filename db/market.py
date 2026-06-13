@@ -42,6 +42,17 @@ CREATE TABLE IF NOT EXISTS splits (
     source      TEXT,
     PRIMARY KEY (symbol, split_date)
 );
+
+-- Founder-curated lists for the interface (S-UI). kind: 'watch' (tracking) | 'hot' (high-conviction pin).
+-- A name is just TRACKED here — being on the watchlist is NOT the tradeable whitelist (camel_sharia).
+CREATE TABLE IF NOT EXISTS watchlist (
+    symbol      TEXT,
+    kind        TEXT DEFAULT 'watch',
+    note        TEXT,
+    added_at    TEXT,
+    added_by    TEXT,
+    PRIMARY KEY (symbol, kind)
+);
 """ + SOURCE_DOCUMENTS_DDL
 
 

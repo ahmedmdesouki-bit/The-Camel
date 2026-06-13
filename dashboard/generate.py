@@ -236,8 +236,78 @@ def _strategies_view(s: dict) -> str:
             + "</div>")
 
 
-_NAV = [("overview", "Overview"), ("portfolio", "Portfolio"), ("decisions", "Decisions"),
-        ("regime", "Regime"), ("strategies", "Strategies"), ("sharia", "Sharia"), ("ops", "Ops")]
+def _chg(v) -> str:
+    if v is None:
+        return "<span class='k-fig'>—</span>"
+    return f"<span class='k-fig {_pnl_class(v)}'>{v:+.2f}%</span>"
+
+
+def _sharia_badge(status) -> str:
+    st = (status or "").lower()
+    return _badge(_esc(status or "unscreened"), "green" if st in ("compliant", "pass") else "neutral")
+
+
+def _market_view(s: dict) -> str:
+    m = s.get("market", {})
+    macro = _table(['Indicator', 'Latest', 'As of'],
+                   [[_esc(x["label"]), _fig(x["value"] if x["value"] is not None else "—"),
+                     _esc(x.get("as_of") or "—")] for x in m.get("macro", [])],
+                   empty='no macro data ingested yet')
+    r = m.get("regime")
+    regime_html = ((f"<div class='cml-eyebrow'>Current regime</div>"
+                    f"<div class='k-regime-val'>{_esc(r['regime'])}</div>"
+                    f"<div class='k-regime-conf'>confidence {_esc(r['confidence'])}</div>") if r
+                   else "<p class='k-empty'>no regime classified yet (needs macro data)</p>")
+    uni = _table(['Symbol', 'Last', '1d', '~1mo', 'Sharia'],
+                 [[_tick(u["symbol"]), _fig(u["last"] if u["last"] is not None else "—"),
+                   _chg(u["change_1d_pct"]), _chg(u["change_21d_pct"]), _sharia_badge(u["sharia_status"])]
+                  for u in m.get("universe", [])],
+                 empty='no universe prices yet')
+    return (f"<div class='view' data-view='market'><div class='k-stack'>"
+            + _card('Macro — the real market state', macro, badge=_badge('FRED', 'gold'),
+                    hint='Free FRED data, as of the last ingest — not live-ticking.')
+            + _card('Regime', regime_html)
+            + _card('Compliant universe', uni, badge=_badge('Alpaca', 'gold'))
+            + "</div></div>")
+
+
+def _watchlist_view(s: dict) -> str:
+    tbl = _table(['Symbol', 'Name', 'Last', '1d', '~1mo', 'Sharia'],
+                 [[_tick(w["symbol"]), _esc(w.get("note") or ""),
+                   _fig(w["last"] if w["last"] is not None else "—"),
+                   _chg(w["change_1d_pct"]), _chg(w["change_21d_pct"]), _sharia_badge(w["sharia_status"])]
+                  for w in s.get("watchlist", [])],
+                 empty='watchlist empty — seed the compliant ETF family with: python -m data.watchlist seed')
+    return (f"<div class='view' data-view='watchlist'>"
+            + _card('Watchlist', tbl,
+                    hint='Founder-curated names being tracked. On the watchlist is NOT the tradeable '
+                         'whitelist — a name is only tradeable once founder-vetted into the Sharia whitelist. '
+                         'Numbers are as of the last data pull.')
+            + "</div>")
+
+
+def _hotlist_view(s: dict) -> str:
+    h = s.get("hotlist", {})
+    pinned = _table(['Symbol', 'Note', 'Last', '1d', 'Sharia'],
+                    [[_tick(x["symbol"]), _esc(x.get("note") or ""),
+                      _fig(x["last"] if x["last"] is not None else "—"),
+                      _chg(x["change_1d_pct"]), _sharia_badge(x["sharia_status"])] for x in h.get("pinned", [])],
+                    empty='no pinned names — pin one: python -m data.watchlist hot <SYMBOL>')
+    movers = _table(['Symbol', 'Last', '1d', '~1mo', 'Sharia'],
+                    [[_tick(x["symbol"]), _fig(x["last"] if x["last"] is not None else "—"),
+                      _chg(x["change_1d_pct"]), _chg(x["change_21d_pct"]), _sharia_badge(x["sharia_status"])]
+                     for x in h.get("movers", [])],
+                    empty='no priced names yet')
+    return (f"<div class='view' data-view='hotlist'><div class='k-stack'>"
+            + _card('Pinned — high conviction', pinned)
+            + _card('Movers — biggest 1-day moves', movers,
+                    hint='Computed from the names that have price data, ranked by absolute 1-day move.')
+            + "</div></div>")
+
+
+_NAV = [("overview", "Overview"), ("market", "Market"), ("watchlist", "Watchlist"), ("hotlist", "Hotlist"),
+        ("portfolio", "Portfolio"), ("decisions", "Decisions"), ("regime", "Regime"),
+        ("strategies", "Strategies"), ("sharia", "Sharia"), ("ops", "Ops")]
 
 
 def build_dashboard_html(dbs: CamelDbs, mode: str = "paper") -> str:
@@ -261,7 +331,8 @@ def build_dashboard_html(dbs: CamelDbs, mode: str = "paper") -> str:
         f"box-shadow:0 1px 6px rgba(201,161,74,.5)}}"
         for vid, _ in _NAV)
 
-    views = (_overview(s) + _portfolio(s) + _decisions(s) + _regime(s) + _strategies_view(s)
+    views = (_overview(s) + _market_view(s) + _watchlist_view(s) + _hotlist_view(s)
+             + _portfolio(s) + _decisions(s) + _regime(s) + _strategies_view(s)
              + _sharia(s) + _ops(s))
 
     halt_banner = ("<div class='k-halt-banner'>⛔ Kill switch engaged — the loop is frozen and no actions "

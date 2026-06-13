@@ -178,6 +178,74 @@ def _strategies() -> List[dict]:
         return []
 
 
+def _sharia_map(dbs: CamelDbs) -> dict:
+    """symbol -> sharia status from the whitelist ('frozen' wins; 'unscreened' if not on the list)."""
+    out = {}
+    for r in _rows(dbs.sharia, "SELECT symbol, sharia_status, frozen FROM whitelist"):
+        out[r["symbol"]] = "frozen" if r.get("frozen") else (r.get("sharia_status") or "unknown")
+    return out
+
+
+def _market(dbs: CamelDbs, latest_regime) -> dict:
+    """Real market numbers for the Market tab: key FRED macro (as of the last pull) + the regime + the
+    compliant universe's latest price and change. All from ingested data — never mocked."""
+    from data.watchlist import price_change
+    rows, vals = [], {}
+    with connection(dbs.macro) as conn:
+        for label, sid in [("Fed funds rate", "FEDFUNDS"), ("2Y yield", "DGS2"), ("10Y yield", "DGS10"),
+                            ("VIX (volatility)", "VIXCLS"), ("HY credit spread", "BAMLH0A0HYM2")]:
+            try:
+                r = conn.execute("SELECT value, event_date FROM macro_observations WHERE series_id=? "
+                                 "AND value IS NOT NULL ORDER BY event_date DESC LIMIT 1", (sid,)).fetchone()
+            except Exception:
+                r = None
+            v = _round(r["value"], 2) if r else None
+            vals[sid] = v
+            rows.append({"label": label, "value": v, "as_of": (r["event_date"] if r else None)})
+    if vals.get("DGS2") is not None and vals.get("DGS10") is not None:
+        rows.append({"label": "Yield curve (10Y − 2Y)", "value": round(vals["DGS10"] - vals["DGS2"], 2),
+                     "as_of": None})
+    smap = _sharia_map(dbs)
+    universe = []
+    for sym in sorted(smap):
+        pc = price_change(dbs, sym)
+        pc["sharia_status"] = smap.get(sym, "unknown")
+        universe.append(pc)
+    return {"macro": rows, "regime": latest_regime, "universe": universe}
+
+
+def _watchlist(dbs: CamelDbs) -> List[dict]:
+    from data.watchlist import list_watchlist, price_change
+    smap = _sharia_map(dbs)
+    out = []
+    for w in list_watchlist(dbs, kind="watch"):
+        pc = price_change(dbs, w["symbol"])
+        pc["note"] = w.get("note") or ""
+        pc["sharia_status"] = smap.get(w["symbol"], "unscreened")
+        out.append(pc)
+    return out
+
+
+def _hotlist(dbs: CamelDbs) -> dict:
+    """Founder-pinned 'hot' names + the computed movers (every priced symbol ranked by |1-day move|)."""
+    from data.watchlist import list_watchlist, priced_symbols, price_change
+    smap = _sharia_map(dbs)
+    movers = []
+    for s in priced_symbols(dbs):
+        pc = price_change(dbs, s)
+        pc["sharia_status"] = smap.get(s, "unscreened")
+        if pc["change_1d_pct"] is not None:
+            movers.append(pc)
+    movers.sort(key=lambda m: abs(m["change_1d_pct"]), reverse=True)
+    pinned = []
+    for w in list_watchlist(dbs, kind="hot"):
+        pc = price_change(dbs, w["symbol"])
+        pc["note"] = w.get("note") or ""
+        pc["sharia_status"] = smap.get(w["symbol"], "unscreened")
+        pinned.append(pc)
+    return {"pinned": pinned, "movers": movers[:8]}
+
+
 def build_snapshot(dbs: CamelDbs, mode: str = "paper") -> dict:
     """Return a JSON-serializable snapshot of the Camel's current governed state."""
     report = check(dbs, mode=mode)
@@ -277,4 +345,7 @@ def build_snapshot(dbs: CamelDbs, mode: str = "paper") -> dict:
         "desks": _desks(dbs),                  # S17.7 — the Kitchen: workforce status
         "board": _board(dbs),                  # S17.7 — the Kitchen: Opportunity Board
         "strategies": _strategies(),           # S17 — the strategy roster + fit metadata (read-only)
+        "market": _market(dbs, latest_regime),  # S-UI — real market numbers (FRED macro + regime + universe)
+        "watchlist": _watchlist(dbs),           # S-UI — founder-curated tracking list + live numbers
+        "hotlist": _hotlist(dbs),               # S-UI — pinned hot names + computed movers
     }
