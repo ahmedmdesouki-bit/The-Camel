@@ -100,9 +100,34 @@ def _why(s: dict, symbol: str) -> str:
     return f"{sym} is not on the current Opportunity Board."
 
 
+def _dissent_one(s: dict, symbol: str) -> str:
+    from types import SimpleNamespace
+    from research.skeptic import dissent
+    sym = (symbol or "").upper().strip()
+    for r in s["board"]:
+        if (r.get("symbol") or "").upper() == sym:
+            d = dissent(SimpleNamespace(**r))
+            risks = ("\n   - " + "\n   - ".join(d["key_risks"])) if d["key_risks"] else " (none)"
+            inval = ("\n   - " + "\n   - ".join(d["invalidation_events"])) if d["invalidation_events"] else " (none)"
+            return (f"SKEPTIC on {sym} [{d['stance'].upper()}]: {d['summary']}\n"
+                    f"Key risks:{risks}\nInvalidation:{inval}")
+    return f"{sym} is not on the current Opportunity Board."
+
+
+def _skeptic(s: dict) -> str:
+    from types import SimpleNamespace
+    from research.skeptic import audit_board_dissent
+    board = s["board"]
+    if not board:
+        return "The Opportunity Board is empty — nothing to dissent against."
+    rows = audit_board_dissent([SimpleNamespace(**r) for r in board])
+    lines = [f"  {d['symbol']:<6} [{d['stance']:<7}] {d['summary']}" for d in rows]
+    return "SKEPTIC — structured dissent (highest objection first):\n" + "\n".join(lines)
+
+
 def _help() -> str:
-    return ("Ask me about: status · positions · board · why <SYMBOL> · regime · safety · desks · edge. "
-            "I report the governed state; I don't advise or trade.")
+    return ("Ask me about: status · positions · board · why <SYMBOL> · risks <SYMBOL> · skeptic · regime · "
+            "safety · desks · strategies · edge. I report the governed state; I don't advise or trade.")
 
 
 def coach(dbs: CamelDbs, question: str, *, mode: str = "paper") -> str:
@@ -117,12 +142,15 @@ def coach(dbs: CamelDbs, question: str, *, mode: str = "paper") -> str:
     s = build_snapshot(dbs, mode=mode)
     if ql.startswith("why ") and len(q.split(None, 1)) == 2:
         return _why(s, q.split(None, 1)[1]) + _FOOTER
+    if ql.startswith("risks ") and len(q.split(None, 1)) == 2:
+        return _dissent_one(s, q.split(None, 1)[1]) + _FOOTER
 
     routes = [
         (("status", "posture", "overall", "how are we"), _status),
         (("position", "holding", "portfolio"), _positions),
         (("board", "opportunit"), _board),
         (("regime", "macro"), _regime),
+        (("skeptic", "dissent", "objection"), _skeptic),
         (("safe", "gate", "risk"), _safety),
         (("desk", "workforce"), _desks),
         (("strateg",), _strategies),
