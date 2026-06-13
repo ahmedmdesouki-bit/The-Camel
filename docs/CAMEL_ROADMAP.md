@@ -1455,7 +1455,7 @@ Tier A (do now; cheap; makes the track record *trustworthy*) → Tier B (let the
 > paper-only, Sharia-walled. Build it as **proof**, never as a faster path to acting.
 
 **Tier A — trustworthy track record (free, buildable now):**
-- **S18 — Production-Paper Integrity.** Wire the existing `trader/execution/realistic_paper.py` (spread/
+- ✅ **S18 — Production-Paper Integrity (DONE, 2026-06-11).** Wired `trader/execution/realistic_paper.py` (spread/
   slippage/partial-fills/fees/stale-reject/whole-share) into the PRODUCTION tick as an **investment-valid**
   mode, distinct from the **operational** last-close mode — and make the **≥28-run readiness clock count only
   investment-valid runs**. (The executor exists in the Sandbox; this is wiring + a mode flag + run-grading.) *Top gap.*
@@ -1465,7 +1465,7 @@ Tier A (do now; cheap; makes the track record *trustworthy*) → Tier B (let the
   free feed (Stooq) exists, then it bites.*
 - **S20 — Portfolio & strategy attribution.** Decompose return into price / dividend / allocation / selection
   per `portfolio_id`+`strategy_id`+`edge_report_id`; an attribution view + benchmark-relative report.
-- **S21 — SKEPTIC desk + structured dissent.** A new evidence desk attaching a mandatory counterargument +
+- ✅ **S21 — SKEPTIC + structured dissent (DONE, 2026-06-11).** `research/skeptic.py` attaches a mandatory counterargument +
   invalidation list to every Opportunity-Board proposal (deterministic risk flags now; LLM later). *The single
   best new idea in the review — institutionalized dissent, fits the trust-inversion.*
 
