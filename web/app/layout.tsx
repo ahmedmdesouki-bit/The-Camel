@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
-import { Spectral, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Cinzel, Montserrat, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-// The Camel three-voice type system (DESIGN-GUIDE.md §VISUAL FOUNDATIONS):
-//   Spectral      — the brand voice: wordmark, headings, long-form prose (scholarly authority).
-//   IBM Plex Sans — UI furniture: eyebrows, nav, table headers, micro-labels.
-//   IBM Plex Mono — every figure that matters: tickers, money, hit-rates, verdicts, limit names.
-// Loaded via next/font (self-hosted at build → no layout shift, no external CDN call at runtime).
-const spectral = Spectral({
+// The Camel brand type system (BRAND GUIDELINES p4 — Typography):
+//   Cinzel (Display) — PRIMARY face: wordmark, headlines, display figures (elegant, authoritative, timeless).
+//   Montserrat       — SUPPORTING face: body, UI furniture, labels, captions (clean, modern, highly legible).
+//   IBM Plex Mono    — the functional data voice for tabular figures (tickers, money, hit-rates, ledger).
+//                      The brand sheet specifies only the two faces above; the operator view needs tabular
+//                      number alignment, so we keep a mono as a third, purely-functional voice.
+// Loaded via next/font (self-hosted at build → no layout shift, no runtime CDN call).
+const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
-  variable: "--font-spectral",
+  variable: "--font-cinzel",
   display: "swap",
 });
-const plexSans = IBM_Plex_Sans({
+const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-plex-sans",
+  variable: "--font-montserrat",
   display: "swap",
 });
 const plexMono = IBM_Plex_Mono({
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${spectral.variable} ${plexSans.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${cinzel.variable} ${montserrat.variable} ${plexMono.variable}`}>
       <body>{children}</body>
     </html>
   );

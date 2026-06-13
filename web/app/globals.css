@@ -8,9 +8,12 @@
   /* muted/faint darkened to clear WCAG AA (4.5:1) on the light card/parchment surfaces */
   --text-strong:#1b1b1b; --text-body:var(--ink-800); --text-muted:rgba(38,38,38,.72); --text-faint:rgba(38,38,38,.55);
   --surface-card:#fff; --line:rgba(38,38,38,.12); --line-strong:rgba(38,38,38,.22); --accent-wash:rgba(201,161,74,.16);
-  /* three-voice system (next/font), with system fallbacks if a face fails to load */
-  --font-serif:var(--font-spectral),'Iowan Old Style',Georgia,'Times New Roman',serif;
-  --font-sans:var(--font-plex-sans),system-ui,-apple-system,'Segoe UI',sans-serif;
+  /* Brand faces (BRAND GUIDELINES p4): Cinzel Display = display/wordmark/headlines; Montserrat = body + UI.
+     IBM Plex Mono stays the functional data voice for tabular figures. --font-serif is kept as a legacy
+     alias → Montserrat so existing prose usages land on the brand body face. System fallbacks if a face fails. */
+  --font-display:var(--font-cinzel),'Trajan Pro',Georgia,'Times New Roman',serif;
+  --font-sans:var(--font-montserrat),system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-serif:var(--font-montserrat),system-ui,-apple-system,'Segoe UI',sans-serif;
   --font-mono:var(--font-plex-mono),ui-monospace,'Cascadia Code','Segoe UI Mono',Consolas,monospace;
   --text-2xs:11px; --text-xs:12px; --text-sm:13px; --text-md:15px; --text-lg:18px; --text-2xl:30px; --text-3xl:38px;
   --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-7:32px; --space-9:48px;
@@ -32,8 +35,8 @@ a{color:var(--green-700)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .k-brand{display:flex;align-items:center;gap:var(--space-4)}
 .k-seal{width:38px;height:38px;border-radius:50%;border:2px solid var(--gold-400);display:flex;align-items:center;
-  justify-content:center;color:var(--gold-400);font-family:var(--font-serif);font-weight:700;font-size:18px}
-.k-title{font-family:var(--font-serif);font-weight:700;font-size:var(--text-2xl);letter-spacing:.01em;line-height:1;margin:0}
+  justify-content:center;color:var(--gold-400);font-family:var(--font-display);font-weight:700;font-size:18px}
+.k-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-2xl);letter-spacing:.04em;line-height:1;margin:0}
 .k-tag{font-family:var(--font-sans);font-size:var(--text-2xs);color:rgba(245,241,230,.66);margin-top:5px;letter-spacing:.04em}
 .k-userbox{font-family:var(--font-sans);font-size:var(--text-xs);color:rgba(245,241,230,.8);display:flex;align-items:center;gap:var(--space-3)}
 .k-signout{background:transparent;border:1px solid rgba(245,241,230,.4);color:var(--sand-100);font-family:var(--font-sans);
@@ -92,7 +95,7 @@ a{color:var(--green-700)}
 .cml-gate__mark--ok{background:rgba(26,127,55,.14);color:var(--up-600)} .cml-gate__mark--no{background:rgba(207,34,46,.14);color:var(--signal-red)}
 
 /* regime */
-.k-regime-val{font-family:var(--font-serif);font-weight:700;font-size:var(--text-3xl);color:var(--green-800);margin:3px 0;line-height:1.05}
+.k-regime-val{font-family:var(--font-display);font-weight:700;font-size:var(--text-3xl);color:var(--green-800);margin:3px 0;line-height:1.05;letter-spacing:.02em}
 .k-regime-conf{font-family:var(--font-sans);font-size:var(--text-xs);color:var(--text-muted)}
 .k-chip{display:inline-block;font-family:var(--font-mono);font-size:var(--text-2xs);background:rgba(15,59,52,.07);color:var(--green-800);padding:4px 10px;border-radius:var(--radius-pill);margin:3px 4px 0 0}
 
@@ -108,7 +111,7 @@ a{color:var(--green-700)}
 
 /* login */
 .k-login{max-width:380px;margin:10vh auto;padding:var(--space-7);background:var(--surface-card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
-.k-login h1{font-family:var(--font-serif);color:var(--green-800);font-size:var(--text-2xl);margin:0 0 6px}
+.k-login h1{font-family:var(--font-display);color:var(--green-800);font-size:var(--text-2xl);margin:0 0 6px;letter-spacing:.03em}
 .k-login p{font-family:var(--font-sans);font-size:var(--text-sm);color:var(--text-muted);margin:0 0 var(--space-5)}
 
 .cml-eyebrow{font-family:var(--font-sans);font-size:var(--text-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
