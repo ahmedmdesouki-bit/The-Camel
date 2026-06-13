@@ -36,6 +36,15 @@ export interface BoardRow {
   recommended_action: string; invalidation: string; reason_chain: string[];
 }
 
+// S-UI — Market / Watchlist / Hotlist (real ingested numbers; numeric fields null when no data)
+export interface MacroRow { label: string; value: number | null; as_of: string | null; }
+export interface PriceRow {
+  symbol: string; last: number | null; date?: string | null;
+  change_1d_pct: number | null; change_21d_pct: number | null; sharia_status: string; note?: string;
+}
+export interface MarketBlock { macro: MacroRow[]; regime: Regime | null; universe: PriceRow[]; }
+export interface HotList { pinned: PriceRow[]; movers: PriceRow[]; }
+
 export interface Snapshot {
   mode: string;
   health: { status: string; issues: string[]; checks: Record<string, string> };
@@ -51,6 +60,9 @@ export interface Snapshot {
   whitelist: WhitelistRow[];
   desks?: DeskStatus[];     // S17.7 — the Kitchen (optional: older snapshots predate it)
   board?: BoardRow[];       // S17.7 — the Opportunity Board
+  market?: MarketBlock;     // S-UI — real market numbers (FRED macro + regime + compliant universe)
+  watchlist?: PriceRow[];   // S-UI — founder-curated tracking list + live numbers
+  hotlist?: HotList;        // S-UI — pinned hot names + computed movers
 }
 
 export interface SystemStateRow { id: number; state: Snapshot; updated_at: string; }

@@ -3,6 +3,7 @@ import { getLatestSnapshot, getEquityPoints, isAllowed } from "@/lib/data";
 import SignOut from "@/components/SignOut";
 import ControlBar from "@/components/ControlBar";
 import Kitchen from "@/components/Kitchen";
+import MarketsTabs from "@/components/MarketsTabs";
 import EquityChart from "@/components/EquityChart";
 import LiveRefresh from "@/components/LiveRefresh";
 import type { Snapshot, EquityPoint } from "@/lib/types";
@@ -108,6 +109,11 @@ function Dashboard({ snapshot: s, updatedAt, email, equity }: { snapshot: Snapsh
         {/* THE KITCHEN — watch the desks work + steer the Opportunity Board (S17.7) */}
         <Card title="The Kitchen" hint="The workforce at work — each desk's status, and the ranked, reasoned Opportunity Board you approve. Watch + control; the brain executes." col={12}>
           <Kitchen desks={s.desks ?? []} board={s.board ?? []} />
+        </Card>
+
+        {/* Markets — real market numbers, the watchlist, and the hotlist (tabbed) */}
+        <Card title="Markets" hint="Macro, the compliant universe, your watchlist, and today's movers — real ingested data, as of the last pull." col={12}>
+          <MarketsTabs market={s.market} watchlist={s.watchlist} hotlist={s.hotlist} />
         </Card>
 
         {/* Equity curve (paper track record) */}
