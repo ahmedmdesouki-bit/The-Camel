@@ -25,6 +25,10 @@ Human oversight is structural, not optional: the operator runs as a **brain (Pyt
 
 ## 2. System Overview — The One Idea: Inversion of Trust
 
+![The Camel — inversion of trust: the AI proposes at the top as the least-privileged component, and every action descends through Edge Proof, the Constitution, the Budget Kernel, and a Human Approval gate before any act, recorded in a hash-chained audit; a founder-owned panel (limits.yaml, kill switch, config guard) feeds the gates from the side.](architecture-cascade.svg)
+
+***Figure 1 — the trust-inversion cascade.*** *The text fallback below renders the same flow for plain-text viewers.*
+
 ```
 Observe (regime)  ─►  Opportunity Router  ─►  Strategies / Agents PROPOSE
         │

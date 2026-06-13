@@ -1,0 +1,94 @@
+<svg viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl desc">
+  <title id="ttl">The Camel — inversion of trust</title>
+  <desc id="desc">The AI proposes at the top and is the least-privileged component. Every action descends through four deterministic gates it cannot edit or skip — Edge Proof, the Constitution, the Budget Kernel, and a Human Approval gate that withholds by default — before any act, which is then recorded in a hash-chained audit. A founder-owned panel (limits.yaml, kill switch, config guard) feeds the gates from the side; the agent has no override.</desc>
+
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .th{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:15px;fill:#16302a}
+      .t {font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:12px;fill:#243531}
+      .ts{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;fill:#4b5a55}
+      .gray  rect{fill:#eef1f3;stroke:#6b7a76;stroke-width:1.5}
+      .green rect{fill:#e6f2ec;stroke:#2f6f5e;stroke-width:1.5}
+      .teal  rect{fill:#e3f0f1;stroke:#2b7a78;stroke-width:1.5}
+      .amber rect{fill:#f7efda;stroke:#b8902f;stroke-width:1.5}
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="680" height="560" rx="10" fill="#fbf8f1"/>
+
+  <text class="th" x="320" y="28" text-anchor="middle">Inversion of Trust — the decision cascade</text>
+
+  <text class="ts" x="26" y="229" text-anchor="middle" transform="rotate(-90 26 229)">DETERMINISTIC · NO AGENT OVERRIDE</text>
+
+  <g class="gray">
+    <rect x="170" y="46" width="300" height="46" rx="6"/>
+    <text class="th" x="320" y="68" text-anchor="middle">AI Proposers</text>
+    <text class="ts" x="320" y="84" text-anchor="middle">strategies · agents — propose only</text>
+  </g>
+  <line x1="320" y1="93" x2="320" y2="108" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+  <text class="ts" x="332" y="105" text-anchor="start">proposes</text>
+
+  <g class="green">
+    <rect x="170" y="110" width="300" height="46" rx="6"/>
+    <text class="th" x="320" y="132" text-anchor="middle">Edge Proof</text>
+    <text class="ts" x="320" y="148" text-anchor="middle">17 evidence checks</text>
+  </g>
+  <line x1="320" y1="157" x2="320" y2="172" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+
+  <g class="green">
+    <rect x="170" y="174" width="300" height="46" rx="6"/>
+    <text class="th" x="320" y="196" text-anchor="middle">Constitution</text>
+    <text class="ts" x="320" y="212" text-anchor="middle">Sharia #1 · risk · phase rails</text>
+  </g>
+  <line x1="320" y1="221" x2="320" y2="236" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+
+  <g class="green">
+    <rect x="170" y="238" width="300" height="46" rx="6"/>
+    <text class="th" x="320" y="260" text-anchor="middle">Budget Kernel</text>
+    <text class="ts" x="320" y="276" text-anchor="middle">spend limits · capital buckets</text>
+  </g>
+  <line x1="320" y1="285" x2="320" y2="300" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+
+  <g class="green">
+    <rect x="170" y="302" width="300" height="46" rx="6"/>
+    <text class="th" x="320" y="324" text-anchor="middle">Human Approval</text>
+    <text class="ts" x="320" y="340" text-anchor="middle">phase-gated · withholds by default</text>
+  </g>
+  <line x1="320" y1="349" x2="320" y2="364" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+
+  <g class="teal">
+    <rect x="170" y="366" width="300" height="46" rx="6"/>
+    <text class="th" x="320" y="388" text-anchor="middle">Act</text>
+    <text class="ts" x="320" y="404" text-anchor="middle">paper · realistic · live (gated off)</text>
+  </g>
+  <line x1="320" y1="413" x2="320" y2="428" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+
+  <g class="gray">
+    <rect x="170" y="430" width="300" height="46" rx="6"/>
+    <text class="th" x="320" y="452" text-anchor="middle">Audit &amp; Learn</text>
+    <text class="ts" x="320" y="468" text-anchor="middle">hash-chained ledger · propose-only</text>
+  </g>
+
+  <g class="amber">
+    <rect x="498" y="110" width="166" height="238" rx="6"/>
+    <text class="th" x="581" y="136" text-anchor="middle">FOUNDER-OWNED</text>
+    <text class="t"  x="581" y="172" text-anchor="middle">limits.yaml</text>
+    <text class="ts" x="581" y="188" text-anchor="middle">the autonomy dial</text>
+    <text class="t"  x="581" y="224" text-anchor="middle">kill switch</text>
+    <text class="ts" x="581" y="240" text-anchor="middle">halts everything</text>
+    <text class="t"  x="581" y="290" text-anchor="middle">config guard</text>
+    <text class="ts" x="581" y="306" text-anchor="middle">agent cannot write</text>
+  </g>
+  <line x1="498" y1="197" x2="473" y2="197" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+  <line x1="498" y1="261" x2="473" y2="261" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+
+  <g class="gray"><rect x="120" y="508" width="14" height="14" rx="3"/></g>
+  <text class="t" x="140" y="519" text-anchor="start">AI — proposes &amp; is recorded</text>
+  <g class="green"><rect x="330" y="508" width="14" height="14" rx="3"/></g>
+  <text class="t" x="350" y="519" text-anchor="start">Deterministic gate</text>
+  <g class="amber"><rect x="500" y="508" width="14" height="14" rx="3"/></g>
+  <text class="t" x="520" y="519" text-anchor="start">Founder-owned</text>
+</svg>
